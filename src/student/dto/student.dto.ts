@@ -1,0 +1,76 @@
+import { IsString, IsOptional, IsEmail, IsInt, IsBoolean, IsDateString } from 'class-validator';
+
+export class StudentDto {
+  @IsInt()
+  id: number;
+
+  @IsString()
+  name: string;
+
+  @IsString()
+  address: string;
+
+  @IsString()
+  city: string;
+
+  @IsString()
+  state: string;
+
+  @IsString()
+  country: string;
+
+  @IsString()
+  zipCode: string;
+
+  @IsString()
+  phone: string;
+
+  @IsEmail()
+  email: string;
+
+  @IsOptional()
+  @IsString()
+  companyName?: string;
+
+  @IsOptional()
+  @IsString()
+  profession?: string;
+
+  @IsOptional()
+  @IsString()
+  referredBy?: string;
+
+  @IsString()
+  password: string;
+
+  @IsDateString()
+  signupDate: string;
+
+  @IsInt()
+  downloadedImfopac: number;
+
+  @IsInt()
+  addedBy: number;
+
+  @IsOptional()
+  @IsInt()
+  updatedBy?: number;
+
+  @IsBoolean()
+  isDelete: boolean;
+
+  @IsBoolean()
+  active: boolean;
+
+  @IsOptional()
+  @IsDateString()
+  lastLogin?: string;
+
+  @IsOptional()
+  @IsDateString()
+  createdAt?: string;
+
+  @IsOptional()
+  @IsDateString()
+  updatedAt?: string;
+}

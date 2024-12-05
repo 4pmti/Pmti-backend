@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AdminModule } from './admin/admin.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { StudentModule } from './student/student.module';
 import typeorm from './config/typeorm';
 
 @Module({
@@ -11,7 +12,8 @@ import typeorm from './config/typeorm';
       isGlobal: true,
       load: [typeorm],
     }),
-    AdminModule],
+    AdminModule,
+    StudentModule],
   controllers: [AppController],
   providers: [AppService],
 })

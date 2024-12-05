@@ -12,6 +12,7 @@ const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const admin_module_1 = require("./admin/admin.module");
 const config_1 = require("@nestjs/config");
+const student_module_1 = require("./student/student.module");
 const typeorm_1 = require("./config/typeorm");
 let AppModule = class AppModule {
 };
@@ -23,7 +24,8 @@ exports.AppModule = AppModule = __decorate([
                 isGlobal: true,
                 load: [typeorm_1.default],
             }),
-            admin_module_1.AdminModule
+            admin_module_1.AdminModule,
+            student_module_1.StudentModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
