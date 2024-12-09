@@ -7,6 +7,8 @@ import { StudentModule } from './student/student.module';
 import { AuthModule } from './auth/auth.module';
 import { CountryModule } from './country/country.module';
 import typeorm from './config/typeorm';
+import { JwtModule } from '@nestjs/jwt';
+
 
 @Module({
   imports: [
@@ -14,6 +16,7 @@ import typeorm from './config/typeorm';
       isGlobal: true,
       load: [typeorm],
     }),
+
     AdminModule,
     StudentModule,
     AuthModule,
@@ -21,4 +24,4 @@ import typeorm from './config/typeorm';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

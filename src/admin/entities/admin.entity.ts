@@ -13,13 +13,13 @@ import {
   @Entity('TB_Admin')
   export class Admin {
     @PrimaryGeneratedColumn()
-    AdminId: number;
+    id: number;
   
     @Column({ type: 'varchar', length: 255 })
-    Name: string;
+    name: string;
   
     @Column({ type: 'varchar', length: 255 })
-    Designation: string;
+    designation: string;
   
     @Column({ type: 'varchar', length: 15 })
     phone: string;

@@ -15,11 +15,11 @@ const config = {
   saltkey: process.env.SALT_KEY,
   // entities: entities,
   entities: [
-    join(__dirname, '../../node_modules/@festa-world/common/dist/index.js'),
+    join(__dirname,'/../**/*.entity{.ts,.js}'),
   ],
   //entities: ['dist/app.entity{.ts,.js}'],
   migrations: ['dist/migrations/*{.ts,.js}'],
-  synchronize: false,
+  synchronize: true,
   autoLoadEntities: true,
   ssl: process.env.SSL_MODE == 'false' || false ? false : true,
 };
