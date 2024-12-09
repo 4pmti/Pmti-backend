@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { CountryModule } from './country/country.module';
 import typeorm from './config/typeorm';
 import { JwtModule } from '@nestjs/jwt';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 
 @Module({
@@ -16,7 +17,13 @@ import { JwtModule } from '@nestjs/jwt';
       isGlobal: true,
       load: [typeorm],
     }),
-
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) =>
+        // refering this file from config/typeorm.ts
+        configService.get('typeorm'),
+      inject: [ConfigService],
+    }),
     AdminModule,
     StudentModule,
     AuthModule,

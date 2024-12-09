@@ -10,7 +10,7 @@ import {
   } from 'typeorm';
  
   
-  @Entity('TB_Admin')
+  @Entity('Admin')
   export class Admin {
     @PrimaryGeneratedColumn()
     id: number;
