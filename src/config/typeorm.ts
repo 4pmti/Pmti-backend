@@ -13,6 +13,7 @@ const config = {
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   saltkey: process.env.SALT_KEY,
+  saltRounds:process.env.SALT_ROUNDS,
   // entities: entities,
   entities: [
     join(__dirname,'/../**/*.entity{.ts,.js}'),

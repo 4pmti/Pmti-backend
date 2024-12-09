@@ -9,7 +9,7 @@ import {
   @Entity('Country')
   export class  Country {
     @PrimaryGeneratedColumn()
-    CountryId: number;
+    id: number;
   
     @Column({ type: 'varchar', length: 255 })
     CountryName: string;

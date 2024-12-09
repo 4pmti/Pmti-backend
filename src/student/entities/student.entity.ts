@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { User } from 'src/user/entities/user.entity';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn } from 'typeorm';
 
 @Entity('student')
 export class Student {
@@ -37,6 +38,11 @@ export class Student {
 
   @Column({ nullable: true })
   referredBy?: string;
+
+  @OneToOne(() => User, user => user.student)
+  @JoinColumn()
+  user: User;
+
 
   @Column()
   password: string;

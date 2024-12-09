@@ -9,6 +9,8 @@ import { CountryModule } from './country/country.module';
 import typeorm from './config/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserModule } from './user/user.module';
+import { BcryptService } from './common/util/bcrypt.service';
 
 
 @Module({
@@ -27,7 +29,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     AdminModule,
     StudentModule,
     AuthModule,
-    CountryModule],
+    CountryModule,
+    UserModule],
   controllers: [AppController],
   providers: [AppService],
 })
