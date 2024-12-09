@@ -1,1 +1,52 @@
-export class Admin {}
+import { Country } from 'src/country/entities/country.entity';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToOne,
+    JoinColumn,
+    CreateDateColumn,
+    UpdateDateColumn,
+  } from 'typeorm';
+ 
+  
+  @Entity('TB_Admin')
+  export class Admin {
+    @PrimaryGeneratedColumn()
+    AdminId: number;
+  
+    @Column({ type: 'varchar', length: 255 })
+    Name: string;
+  
+    @Column({ type: 'varchar', length: 255 })
+    Designation: string;
+  
+    @Column({ type: 'varchar', length: 15 })
+    phone: string;
+  
+    @Column({ type: 'varchar', length: 255, unique: true })
+    email: string;
+  
+    @ManyToOne(() => Country, (country) => country.CountryId)
+    @JoinColumn({ name: 'countryId' })
+    country: Country;
+  
+    @Column({ type: 'boolean', default: false })
+    isSuperAdmin: boolean;
+  
+    @Column({ type: 'boolean', default: true })
+    isActive: boolean;
+  
+    @Column({ type: 'varchar', length: 255 })
+    password: string;
+  
+    @Column({ type: 'datetime', nullable: true })
+    lastlogin: Date;
+  
+    @CreateDateColumn({ type: 'datetime' })
+    createdAt: Date;
+  
+    @UpdateDateColumn({ type: 'datetime' })
+    updateAt: Date;
+  }
+  
