@@ -11,6 +11,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { BcryptService } from './common/util/bcrypt.service';
+import { ClassModule } from './class/class.module';
 
 
 @Module({
@@ -30,7 +31,8 @@ import { BcryptService } from './common/util/bcrypt.service';
     StudentModule,
     AuthModule,
     CountryModule,
-    UserModule],
+    UserModule,
+    ClassModule],
   controllers: [AppController],
   providers: [AppService],
 })

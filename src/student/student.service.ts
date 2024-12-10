@@ -12,11 +12,6 @@ export class StudentService {
     private readonly studentRepository: Repository<Student>,
   ) {}
 
-  create(createStudentDto: CreateStudentDto): Promise<Student> {
-    const student = this.studentRepository.create(createStudentDto);
-    return this.studentRepository.save(student);
-  }
-
   findAll(): Promise<Student[]> {
     return this.studentRepository.find();
   }

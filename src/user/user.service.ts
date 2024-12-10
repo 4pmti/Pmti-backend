@@ -28,25 +28,28 @@ export class UserService {
         private bcryptService: BcryptService,
     ) { }
 
-    //   async createStudent(createStudentDto: CreateStudentDto): Promise<Student> {
-    //     const user = new User();
-    //     user.firstName = createStudentDto.firstName;
-    //     user.lastName = createStudentDto.lastName;
-    //     user.email = createStudentDto.email;
-    //     user.role = UserRole.STUDENT;
-    //     user.password = await this.bcryptService.hashPassword(createStudentDto.password);
+    async createStudent(createStudentDto: CreateStudentDto): Promise<Student> {
+        console.log(createStudentDto);
+        const checkExistinguser = await this.usersRepository.findOne({ where: { email: createStudentDto.email } });
+        if (checkExistinguser) {
+            throw new Error("This Email Already Exists");
+        }
+        const user = new User();
+        user.name = createStudentDto.name;
+        user.email = createStudentDto.email;
+        user.role = Role.STUDENT;
+        user.password = await this.bcryptService.hashPassword(createStudentDto.password);
 
-    //     const savedUser = await this.usersRepository.save(user);
+        const savedUser = await this.usersRepository.save(user);
 
-    //     const student = new Student();
-    //     student.studentId = `STU-${Date.now()}`;
-    //     student.grade = createStudentDto.grade;
-    //     student.parentPhone = createStudentDto.parentPhone;
-    //     student.dateOfBirth = createStudentDto.dateOfBirth;
-    //     student.user = savedUser;
+        const student = new Student();
+        Object.assign(student, createStudentDto); // Copy all properties from DTO to student
+        student.uid = `STU-${Date.now()}`;
+        student.user = savedUser;
+        student.password = savedUser.password;
 
-    //     return this.studentsRepository.save(student);
-    //   }
+        return this.studentsRepository.save(student);
+    }
 
     //   async createTeacher(createTeacherDto: CreateTeacherDto): Promise<Teacher> {
     //     const user = new User();
@@ -92,9 +95,9 @@ export class UserService {
         admin.designation = createAdminDto.designation;
         admin.country = country;
         admin.email = createAdminDto.email,
-        admin.phone = createAdminDto.phone,
-        admin.password = savedUser.password,
-        admin.isActive = true;
+            admin.phone = createAdminDto.phone,
+            admin.password = savedUser.password,
+            admin.isActive = true;
         admin.uid = `ADM-${Date.now()}`;
         admin.user = savedUser;
         return await this.adminsRepository.save(admin);

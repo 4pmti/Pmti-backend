@@ -5,6 +5,7 @@ import { Role } from 'src/common/enums/role';
 import { CreateAdminDto } from 'src/admin/dto/create-admin.dto';
 import { ResponseDto } from 'src/common/dto/response.dto';
 import { LoginDto } from './dto/login.dto';
+import { CreateStudentDto } from 'src/student/dto/create-student.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -12,10 +13,10 @@ export class AuthController {
     private readonly userService: UserService
   ) { }
 
-  // @Post('signup/student')
-  // async studentSignup(@Body() createStudentDto: CreateStudentDto) {
-  //   return this.usersService.createStudent(createStudentDto);
-  // }
+  @Post('signup/student')
+  async studentSignup(@Body() createStudentDto: CreateStudentDto) {
+    return this.userService.createStudent(createStudentDto);
+  }
 
   // @Post('signup/teacher')
   // async teacherSignup(@Body() createTeacherDto: CreateTeacherDto) {

@@ -41,17 +41,23 @@ export class AuthService {
     }
 
 
-    let realuser:any;
-    if(user.role == Role.ADMIN){
-       realuser = await this.adminRepository.findOne({
-          where:{
-            email : email,
-          }
-       });
+    let realuser: any;
+    if (user.role == Role.ADMIN) {
+      realuser = await this.adminRepository.findOne({
+        where: {
+          email: email,
+        }
+      });
+    } else if (user.role == Role.STUDENT) {
+      realuser = await this.studentRepository.findOne({
+        where: {
+          email: email,
+        }
+      });
     }
     // TODO: add other roles
-    
-    const payload = { sub: user.id, username: user.email};
+
+    const payload = { sub: user.id, username: user.email };
     return {
       access_token: await this.jwtService.signAsync(payload),
     };

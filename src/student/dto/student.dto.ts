@@ -49,12 +49,13 @@ export class StudentDto {
   @IsInt()
   downloadedImfopac: number;
 
-  @IsInt()
-  addedBy: number;
+  @IsOptional()
+  @IsString()
+  addedBy?: string | (() => string);
 
   @IsOptional()
-  @IsInt()
-  updatedBy?: number;
+  @IsString()
+  updatedBy?: string | (() => string);
 
   @IsBoolean()
   isDelete: boolean;
