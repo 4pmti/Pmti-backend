@@ -4,7 +4,10 @@ import {
     Column,
     CreateDateColumn,
     UpdateDateColumn,
+    OneToMany,
   } from 'typeorm';
+
+  import { Location } from 'src/location/entities/location.entity';
   
   @Entity('Country')
   export class  Country {
@@ -22,6 +25,9 @@ import {
   
     @Column({ type: 'int', nullable: true })
     addedBy: number;
+
+    @OneToMany(() => Location, (location) => location.country)
+    locations: Location[];
   
     @Column({ type: 'int', nullable: true })
     updatedBy: number;
