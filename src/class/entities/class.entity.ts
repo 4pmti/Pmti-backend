@@ -1,9 +1,9 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { Category } from './Category'; // assuming you have a Category entity
-import { ClassType } from './ClassType'; // assuming you have a ClassType entity
-import { Location } from './Location'; // assuming you have a Location entity
+import { Location } from 'src/location/entities/location.entity';
 import { Country } from 'src/country/entities/country.entity';
 import { Instructor } from 'src/instructor/entities/instructor.entity';
+import { Category } from './category.entity';
+import { ClassType } from './classtype.entity';
 
 
 @Entity('Class')
