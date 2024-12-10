@@ -1,14 +1,14 @@
+import { BaseEntity } from 'src/common/dto/base.dto';
 import { Country } from 'src/country/entities/country.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 
-
 @Entity('Location')
-export class Location {
+export class Location extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
   
-  @ManyToOne(() => Country, (country) => country.locations)
-  country: Country;  // This is the foreign key reference to the Country table
+  @ManyToOne(() => Country, (country) => country.locations, { lazy: true })
+  country: Promise<Country>; 
 
   @Column({ type: 'varchar', length: 255 })
   location: string;

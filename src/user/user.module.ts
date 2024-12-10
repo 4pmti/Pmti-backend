@@ -9,6 +9,7 @@ import { BcryptService } from 'src/common/util/bcrypt.service';
 import { ConfigModule } from '@nestjs/config';
 import typeorm from 'src/config/typeorm';
 import { Country } from 'src/country/entities/country.entity';
+import { Instructor } from 'src/instructor/entities/instructor.entity';
 
 
 @Module({
@@ -20,7 +21,7 @@ import { Country } from 'src/country/entities/country.entity';
       isGlobal: true,
       load: [typeorm], 
     }),
-    TypeOrmModule.forFeature([User, Student, Admin,Country]), 
+    TypeOrmModule.forFeature([User, Student, Admin,Country,Instructor]), 
   ],
 
 })

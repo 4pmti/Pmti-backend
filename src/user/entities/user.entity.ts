@@ -2,6 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, OneToOne } from 'typeorm';
 import { Role } from '../../common/enums/role';
 import { Student } from 'src/student/entities/student.entity';
 import { Admin } from 'src/admin/entities/admin.entity';
+import { Instructor } from 'src/instructor/entities/instructor.entity';
 
 
 @Entity('users')
@@ -27,8 +28,8 @@ export class User {
   @OneToOne(() => Student, student => student.user)
   student: Student;
 
-//   @OneToOne(() => Teacher, teacher => teacher.user)
-//   teacher: Teacher;
+  @OneToOne(() => Instructor, instructor => instructor.user)
+  instructor: Instructor;
 
   @OneToOne(() => Admin, admin => admin.user)
   admin: Admin;

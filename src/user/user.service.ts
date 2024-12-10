@@ -9,7 +9,8 @@ import { CreateStudentDto } from 'src/student/dto/create-student.dto';
 import { Role } from 'src/common/enums/role';
 import { Admin } from 'src/admin/entities/admin.entity';
 import { Country } from 'src/country/entities/country.entity';
-import { ResponseDto } from 'src/common/dto/response.dto';
+import { CreateInstructorDto } from 'src/instructor/dto/create-instructor.dto';
+import { Instructor } from 'src/instructor/entities/instructor.entity';
 
 @Injectable()
 export class UserService {
@@ -18,8 +19,8 @@ export class UserService {
         private usersRepository: Repository<User>,
         @InjectRepository(Student)
         private studentsRepository: Repository<Student>,
-        // @InjectRepository(Teacher)
-        // private teachersRepository: Repository<Teacher>,
+        @InjectRepository(Instructor)
+        private instructorRepository: Repository<Instructor>,
         @InjectRepository(Admin)
         private adminsRepository: Repository<Admin>,
 
@@ -51,27 +52,25 @@ export class UserService {
         return this.studentsRepository.save(student);
     }
 
-    //   async createTeacher(createTeacherDto: CreateTeacherDto): Promise<Teacher> {
-    //     const user = new User();
-    //     user.firstName = createTeacherDto.firstName;
-    //     user.lastName = createTeacherDto.lastName;
-    //     user.email = createTeacherDto.email;
-    //     user.role = UserRole.TEACHER;
-    //     user.password = await this.bcryptService.hashPassword(createTeacherDto.password);
+    async createInstructor(createInstructorDto: CreateInstructorDto): Promise<Instructor> {
+        const user = new User();
+        user.name = createInstructorDto.name
+        user.email = createInstructorDto.emailID;
+        user.role = Role.INSTRUCTOR;
+        user.password = await this.bcryptService.hashPassword(createInstructorDto.password);
 
-    //     const savedUser = await this.usersRepository.save(user);
+        const savedUser = await this.usersRepository.save(user);
 
-    //     const teacher = new Teacher();
-    //     teacher.teacherId = `TEA-${Date.now()}`;
-    //     teacher.subject = createTeacherDto.subject;
-    //     teacher.qualification = createTeacherDto.qualification;
-    //     teacher.experience = createTeacherDto.experience;
-    //     teacher.user = savedUser;
+        const instructor = new Instructor();
+        Object.assign(instructor, createInstructorDto);
+        instructor.uid = `INS-${Date.now()}`;
+        instructor.user = savedUser;
 
-    //     return this.teachersRepository.save(teacher);
-    //   }
+        return this.instructorRepository.save(instructor);
+    }
 
     async createAdmin(createAdminDto: CreateAdminDto) {
+        console.log(createAdminDto);
         const country = await this.countryRepository.findOne({ where: { id: createAdminDto.countryId } });
         if (!country) {
             throw new UnauthorizedException('Country not found');

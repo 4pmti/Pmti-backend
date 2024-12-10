@@ -4,10 +4,12 @@ import { Country } from 'src/country/entities/country.entity';
 import { Instructor } from 'src/instructor/entities/instructor.entity';
 import { Category } from './category.entity';
 import { ClassType } from './classtype.entity';
+import { User } from 'src/user/entities/user.entity';
+import { BaseEntity } from 'src/common/dto/base.dto';
 
 
 @Entity('Class')
-export class Class {
+export class Class extends BaseEntity{
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -51,10 +53,11 @@ export class Class {
   @Column({ type: 'varchar', length: 255 })
   title: string;
 
-  @ManyToOne(() => Instructor)
-  @JoinColumn({ name: 'instructorID' })
-  instructor: Instructor;
 
+  @Column({ type: 'varchar', length: 255 })
+  instructorId: string;
+  
+  
   @Column({ type: 'text', nullable: true })
   description: string;
 
@@ -64,11 +67,13 @@ export class Class {
   @Column({ type: 'boolean', default: false })
   isCancel: boolean;
 
-  @Column({ type: 'varchar', length: 100 })
-  addedBy: string;
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'addedBy' })
+  addedBy: User;
 
-  @Column({ type: 'varchar', length: 100 })
-  updatedBy: string;
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'updatedBy' })
+  updatedBy: User;
 
   @Column({ type: 'boolean', default: false })
   isDelete: boolean;

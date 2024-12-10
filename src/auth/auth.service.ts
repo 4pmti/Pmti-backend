@@ -27,7 +27,7 @@ export class AuthService {
     email: string,
     pass: string,
   ): Promise<{ access_token: string }> {
-
+    console.log(email, pass);
     const user = await this.usersRepository.findOne({
       where: { email }
     });
@@ -57,7 +57,7 @@ export class AuthService {
     }
     // TODO: add other roles
 
-    const payload = { sub: user.id, username: user.email };
+    const payload = { id: user.id, email: user.email };
     return {
       access_token: await this.jwtService.signAsync(payload),
     };

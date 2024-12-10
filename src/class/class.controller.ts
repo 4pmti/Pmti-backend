@@ -1,20 +1,31 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+
+import { Controller, Get, Post, Body, Patch, Param, Delete,Req, UseGuards, Query } from '@nestjs/common';
 import { ClassService } from './class.service';
 import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
+import { AuthGuard } from 'src/auth/guard/auth.guard';
+import { Request } from 'express';
+import { FilterDto } from './dto/filter.dto';
+
 
 @Controller('class')
+@UseGuards(AuthGuard)
 export class ClassController {
   constructor(private readonly classService: ClassService) {}
 
   @Post()
-  create(@Body() createClassDto: CreateClassDto) {
-    return this.classService.create(createClassDto);
+  create(
+    @Req() req: Request,
+    @Body() createClassDto: CreateClassDto) {
+    const userId = req.user?.id??'';
+    return this.classService.create(userId,createClassDto);
   }
 
   @Get()
-  findAll() {
-    return this.classService.findAll();
+  findAll(
+    @Query() filterDto: FilterDto
+  ) {
+    return this.classService.findAll(filterDto);
   }
 
   @Get(':id')

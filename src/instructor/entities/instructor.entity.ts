@@ -1,9 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Class } from 'src/class/entities/class.entity';
+import { User } from 'src/user/entities/user.entity';
+import { Entity, PrimaryGeneratedColumn, Column, JoinColumn, ManyToOne, OneToOne, OneToMany } from 'typeorm';
 
 @Entity('Instructor')
 export class Instructor {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @PrimaryGeneratedColumn('uuid')
+  uid: string;
 
   @Column({ type: 'varchar', length: 255 })
   name: string;
@@ -26,15 +31,22 @@ export class Instructor {
   @Column({ type: 'text', nullable: true })
   profile: string;
 
-  @Column({ type: 'varchar', length: 100 })
-  addedBy: string;
+  @ManyToOne(() => User, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'addedBy' })
+  addedBy: User;
 
-  @Column({ type: 'varchar', length: 100 })
-  updatedBy: string;
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'updatedBy' })
+  updatedBy: User;
 
   @Column({ type: 'boolean', default: false })
   isDelete: boolean;
 
   @Column({ type: 'boolean', default: true })
   active: boolean;
+
+  @OneToOne(() => User, user => user.instructor)
+  @JoinColumn()
+  user: User;
+  
 }

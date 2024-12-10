@@ -6,6 +6,7 @@ import { CreateAdminDto } from 'src/admin/dto/create-admin.dto';
 import { ResponseDto } from 'src/common/dto/response.dto';
 import { LoginDto } from './dto/login.dto';
 import { CreateStudentDto } from 'src/student/dto/create-student.dto';
+import { CreateInstructorDto } from 'src/instructor/dto/create-instructor.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -18,10 +19,10 @@ export class AuthController {
     return this.userService.createStudent(createStudentDto);
   }
 
-  // @Post('signup/teacher')
-  // async teacherSignup(@Body() createTeacherDto: CreateTeacherDto) {
-  //   return this.usersService.createTeacher(createTeacherDto);
-  // }
+  @Post('signup/instructor')
+  async teacherSignup(@Body() createTeacherDto: CreateInstructorDto) {
+    return this.userService.createInstructor(createTeacherDto);
+  }
 
   @Post('signup/admin')
   async adminSignup(@Body() createAdminDto: CreateAdminDto) {
