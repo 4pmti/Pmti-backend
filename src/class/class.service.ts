@@ -121,7 +121,7 @@ export class ClassService {
       // Apply search if provided
       if (search) {
         queryBuilder.where(
-          'class.name ILIKE :search OR class.description ILIKE :search',
+          'LOWER(class.name) LIKE LOWER(:search) OR LOWER(class.description) LIKE LOWER(:search)',
           { search: `%${search}%` }
         );
       }
@@ -250,7 +250,7 @@ export class ClassService {
   }
   async getAllClassType() {
     try {
-      
+
       return await this.classTypeRepository.find();
     } catch (error) {
       console.log(error);

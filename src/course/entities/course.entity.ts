@@ -1,5 +1,6 @@
 import { Category } from 'src/class/entities/category.entity';
 import { ClassType } from 'src/class/entities/classtype.entity';
+import { BaseEntity } from 'src/common/dto/base.dto';
 import { User } from 'src/user/entities/user.entity';
 import {
     Entity,
@@ -12,7 +13,7 @@ import {
   } from 'typeorm';
   
   @Entity('courses')
-  export class Course {
+  export class Course extends BaseEntity{
     @PrimaryGeneratedColumn()
     id: number;
   

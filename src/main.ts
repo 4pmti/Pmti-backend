@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ResponseInterceptor } from './common/interceptor/response.interceptor';
 import { AllExceptionsFilter } from './common/exceptions/exception.filter';
-import { ValidationPipe } from '@nestjs/common';
 import { ExcludePasswordInterceptor } from './common/interceptor/password.interceptor';
 
 async function bootstrap() {
