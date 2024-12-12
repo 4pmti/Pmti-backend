@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
+import { Request } from 'express';
+import { AuthGuard } from 'src/auth/guard/auth.guard';
 
 @Controller('admin')
+@UseGuards(AuthGuard)
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
@@ -23,8 +26,9 @@ export class AdminController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAdminDto: UpdateAdminDto) {
-    return this.adminService.update(+id, updateAdminDto);
+  update(@Param('id') id: string,  @Req() req: Request,@Body() updateAdminDto: UpdateAdminDto) {
+    const userId = req.user?.id??'';
+    return this.adminService.update(+id, userId,updateAdminDto);
   }
 
   @Delete(':id')

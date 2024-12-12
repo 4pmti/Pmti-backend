@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,6 +14,7 @@ import { Country } from 'src/country/entities/country.entity';
 import { Role } from 'src/common/enums/role';
 import { Class } from './entities/class.entity';
 import { FilterDto } from './dto/filter.dto';
+import { CreateCategoryDto } from './dto/create-category.dto';
 
 @Injectable()
 export class ClassService {
@@ -105,7 +106,7 @@ export class ClassService {
 
   }
 
-  async findAll(filters:FilterDto) {
+  async findAll(filters: FilterDto) {
     try {
       const {
         page = 1,
@@ -161,15 +162,99 @@ export class ClassService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} class`;
+  async findOne(id: number) {
+    try {
+      const classs = await this.classRepository.findOne({
+        where: {
+          id: id
+        }
+      });
+      if (!classs) {
+        throw new NotFoundException("Class not Found");
+      }
+      return classs;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 
-  update(id: number, updateClassDto: UpdateClassDto) {
-    return `This action updates a #${id} class`;
+  async update(id: number, userId: string, updateClassDto: UpdateClassDto) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: {
+          id: userId
+        }
+      });
+      if (!user) {
+        throw new UnauthorizedException("Invalid User");
+      }
+      if (user.role != Role.ADMIN) {
+        throw new ForbiddenException("You don't have this permission!");
+      }
+
+      const classs = await this.classRepository.findOne({
+        where: {
+          id: id
+        }
+      });
+      if (!classs) {
+        throw new NotFoundException("Class not Found");
+      }
+      Object.assign(classs, updateClassDto);
+
+
+      const updatedClass = await this.classRepository.save(classs);
+
+      return updatedClass;
+
+
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 
   remove(id: number) {
     return `This action removes a #${id} class`;
+  }
+
+
+  async createCategory(createCategory: CreateCategoryDto) {
+    try {
+      const newCategory = this.categoryRepository.create(createCategory);
+      return await this.categoryRepository.save(newCategory);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+  async getAllCategory() {
+    try {
+
+      return await this.categoryRepository.find();
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  async createClassType(createCategory: CreateCategoryDto) {
+    try {
+      const newClassType = this.classTypeRepository.create(createCategory);
+      return await this.categoryRepository.save(newClassType);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+  async getAllClassType() {
+    try {
+      
+      return await this.classTypeRepository.find();
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 }

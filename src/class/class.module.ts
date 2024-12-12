@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ClassService } from './class.service';
-import { ClassController } from './class.controller';
+import { CategoryController, ClassController, ClassTypeController } from './class.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Student } from 'src/student/entities/student.entity';
 import { User } from 'src/user/entities/user.entity';
@@ -14,7 +14,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { Class } from './entities/class.entity';
 
 @Module({
-  controllers: [ClassController],
+  controllers: [ClassController,CategoryController,ClassTypeController],
   providers: [ClassService,AuthModule],
   imports: [TypeOrmModule.forFeature([Student,User,Admin,ClassType,Location,Instructor,Category,Country,Class]),AuthModule]
 })

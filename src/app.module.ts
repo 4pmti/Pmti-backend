@@ -14,6 +14,7 @@ import { BcryptService } from './common/util/bcrypt.service';
 import { ClassModule } from './class/class.module';
 import { InstructorModule } from './instructor/instructor.module';
 import { LocationModule } from './location/location.module';
+import { CourseModule } from './course/course.module';
 
 
 @Module({
@@ -36,7 +37,8 @@ import { LocationModule } from './location/location.module';
     UserModule,
     ClassModule,
     InstructorModule,
-    LocationModule],
+    LocationModule,
+    CourseModule],
   controllers: [AppController],
   providers: [AppService],
 })

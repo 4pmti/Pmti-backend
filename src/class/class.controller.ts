@@ -6,6 +6,8 @@ import { UpdateClassDto } from './dto/update-class.dto';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { Request } from 'express';
 import { FilterDto } from './dto/filter.dto';
+import { CreateCategoryDto } from './dto/create-category.dto';
+
 
 
 @Controller('class')
@@ -20,7 +22,7 @@ export class ClassController {
     const userId = req.user?.id??'';
     return this.classService.create(userId,createClassDto);
   }
-
+  
   @Get()
   findAll(
     @Query() filterDto: FilterDto
@@ -28,18 +30,54 @@ export class ClassController {
     return this.classService.findAll(filterDto);
   }
 
+
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.classService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateClassDto: UpdateClassDto) {
-    return this.classService.update(+id, updateClassDto);
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Req() req: Request, @Body() updateClassDto: UpdateClassDto) {
+  //   const userId = req.user?.id??'';
+  //   return this.classService.update(+id,userId, updateClassDto);
+  // }
+
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.classService.remove(+id);
+  // }
+}
+
+@Controller('category')
+@UseGuards(AuthGuard)
+export class CategoryController {
+  constructor(private readonly classService: ClassService) {}
+
+  @Post()
+  async createClass(@Body() createCategory: CreateCategoryDto) {
+    return await this.classService.createCategory(createCategory);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.classService.remove(+id);
+  @Get()
+  async getAllCategory() {
+    return await this.classService.getAllCategory();
+  }
+}
+
+
+@Controller('classtype')
+@UseGuards(AuthGuard)
+export class ClassTypeController {
+  constructor(private readonly classService: ClassService) {}
+
+  @Post()
+  async createType(@Body() createClassType: CreateCategoryDto) {
+    return await this.classService.createClassType(createClassType);
+  }
+
+  @Get()
+  async getAllClassType() {
+    return await this.classService.getAllClassType();
   }
 }

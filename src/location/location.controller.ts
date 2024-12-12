@@ -16,20 +16,21 @@ export class LocationController {
     return this.locationService.create(userId,createLocationDto);
   }
 
-  // @Get()
-  // findAll() {
-  //   return this.locationService.findAll();
-  // }
+  @Get()
+  findAll() {
+    return this.locationService.findAll();
+  }
 
   // @Get(':id')
   // findOne(@Param('id') id: string) {
   //   return this.locationService.findOne(+id);
   // }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateLocationDto: UpdateLocationDto) {
-  //   return this.locationService.update(+id, updateLocationDto);
-  // }
+  @Patch(':id')
+  update(@Param('id') id: string, @Req() req: Request,@Body() updateLocationDto: UpdateLocationDto) {
+    const userId = req.user.id
+    return this.locationService.update(userId,+id, updateLocationDto);
+  }
 
   // @Delete(':id')
   // remove(@Param('id') id: string) {
