@@ -9,6 +9,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new ExcludePasswordInterceptor());
+  app.enableCors();
   
   await app.listen(3000,()=>{
         console.log("Server Started on Port 3000");

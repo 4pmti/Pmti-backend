@@ -15,6 +15,7 @@ import { ClassModule } from './class/class.module';
 import { InstructorModule } from './instructor/instructor.module';
 import { LocationModule } from './location/location.module';
 import { CourseModule } from './course/course.module';
+import { PaymentModule } from './payment/payment.module';
 
 
 @Module({
@@ -38,7 +39,8 @@ import { CourseModule } from './course/course.module';
     ClassModule,
     InstructorModule,
     LocationModule,
-    CourseModule],
+    CourseModule,
+    PaymentModule],
   controllers: [AppController],
   providers: [AppService],
 })

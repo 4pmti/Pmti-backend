@@ -7,10 +7,11 @@ import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { FilterDto } from 'src/class/dto/filter.dto';
 
 @Controller('course')
-@UseGuards(AuthGuard)
+
 export class CourseController {
   constructor(private readonly courseService: CourseService) { }
 
+  @UseGuards(AuthGuard)
   @Post()
   create(@Body() createCourseDto: CreateCourseDto, @Req() req: Request) {
     const userId = req.user.id;
@@ -24,17 +25,20 @@ export class CourseController {
     return this.courseService.findAll(filterDto);
   }
 
+
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.courseService.findOne(+id);
   }
 
+  @UseGuards(AuthGuard)
   @Patch(':id')
   update(@Param('id') id: string,@Req() req: Request,@Body() updateCourseDto: UpdateCourseDto) {
     const userId = req.user?.id??'';
     return this.courseService.update(+id, updateCourseDto,userId);
   }
 
+  @UseGuards(AuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.courseService.remove(+id);
