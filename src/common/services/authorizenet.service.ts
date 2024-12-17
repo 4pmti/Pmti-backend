@@ -11,7 +11,7 @@ export class AuthorizeNetService {
     this.merchantAuthentication.setTransactionKey(process.env.AUTHORIZE_TRANSACTION_KEY);
   }
 
-  async chargeCreditCard(amount: number, cardNumber: string, expirationDate: string, cvv: string): Promise<any> {
+  async chargeCreditCard(amount: number, cardNumber: string, expirationDate: string, cvv: string, customerEmail: string, transactionKey: string, transactionName: string): Promise<any> {
     const creditCard = new APIContracts.CreditCardType();
     creditCard.setCardNumber(cardNumber);
     creditCard.setExpirationDate(expirationDate);
@@ -29,13 +29,15 @@ export class AuthorizeNetService {
     createRequest.setMerchantAuthentication(this.merchantAuthentication);
     createRequest.setTransactionRequest(transactionRequest);
 
+    console.log(JSON.stringify(createRequest.getJSON(), null, 2));
+
     const ctrl = new APIControllers.CreateTransactionController(createRequest.getJSON());
-   // ctrl.setEnvironment(process.env.AUTHORIZE_ENVIRONMENT === 'sandbox' ? APIContracts.SANDBOX : APIContracts.PRODUCTION);
 
     return new Promise((resolve, reject) => {
       ctrl.execute(() => {
         const response = ctrl.getResponse();
         const result = new APIContracts.CreateTransactionResponse(response);
+        console.log(JSON.stringify(result.getJSON(), null, 2));
         if (result.getMessages().getResultCode() === APIContracts.MessageTypeEnum.OK) {
           resolve(result.getTransactionResponse());
         } else {
