@@ -29,7 +29,21 @@ export class UserService {
         private bcryptService: BcryptService,
     ) { }
 
+    private generateRandomPassword(): string {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const passwordLength = 12;
+        let password = '';
+        for (let i = 0; i < passwordLength; i++) {
+            password += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return password;
+    }
+
     async createStudent(createStudentDto: CreateStudentDto): Promise<Student> {
+
+        if (!createStudentDto.password) {
+            createStudentDto.password = this.generateRandomPassword();
+        }
         console.log(createStudentDto);
         const checkExistinguser = await this.usersRepository.findOne({ where: { email: createStudentDto.email } });
         if (checkExistinguser) {

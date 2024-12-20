@@ -41,6 +41,7 @@ export class StudentDto {
   referredBy?: string;
 
   @IsString()
+  @IsOptional()
   password: string;
 
   @IsDateString()
