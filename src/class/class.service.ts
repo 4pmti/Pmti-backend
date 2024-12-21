@@ -3,7 +3,7 @@ import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Student } from 'src/student/entities/student.entity';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Admin } from 'src/admin/entities/admin.entity';
 import { ClassType } from './entities/classtype.entity';
@@ -61,9 +61,23 @@ export class ClassService {
           id: createClassDto.classTypeId
         }
       });
+
+
+
+
       if (!classType) {
         throw new BadRequestException("Invalid class type");
       }
+      const instructor = await this.instructorRepository.findOne({
+        where: {
+          id: createClassDto.instructorId
+        }
+      });
+
+      if (!instructor) {
+        throw new BadRequestException("Invalid Insructor");
+      }
+
       const classCategory = await this.categoryRepository.findOne({
         where: {
           id: createClassDto.categoryId
@@ -94,6 +108,7 @@ export class ClassService {
       Object.assign(newClass, createClassDto);;
       newClass.category = classCategory;
       newClass.addedBy = user;
+      newClass.instructor = instructor;
       newClass.updatedBy = user;
       newClass.classType = classType;
       newClass.location = location;
@@ -112,7 +127,14 @@ export class ClassService {
         page = 1,
         limit = 10,
         search = '',
-        sort = 'createdAt:DESC'
+        sort = 'createdAt:DESC',
+        startFrom,
+        dateTo,
+        classType,
+        courseCategory,
+        locationId,
+        instructorId,
+        countryId
       } = filters;
 
       // Create query builder
@@ -120,16 +142,49 @@ export class ClassService {
 
       // Apply search if provided
       if (search) {
-        queryBuilder.where(
-          'LOWER(class.name) LIKE LOWER(:search) OR LOWER(class.description) LIKE LOWER(:search)',
+        queryBuilder.andWhere(
+          '(LOWER(class.title) LIKE LOWER(:search) OR LOWER(class.description) LIKE LOWER(:search))',
           { search: `%${search}%` }
         );
+      }
+
+      // Apply date range filter
+      if (startFrom) {
+        queryBuilder.andWhere('class.startDate >= :startFrom', { startFrom });
+      }
+      if (dateTo) {
+        queryBuilder.andWhere('class.endDate <= :dateTo', { dateTo });
+      }
+
+      // Apply class type filter
+      if (classType) {
+        queryBuilder.andWhere('class.classtypeID = :classType', { classType });
+      }
+
+      // Apply course category filter
+      if (courseCategory) {
+        queryBuilder.andWhere('class.categoryID = :courseCategory', { courseCategory });
+      }
+
+      // Apply location filter
+      if (locationId) {
+        queryBuilder.andWhere('class.locationID = :locationId', { locationId });
+      }
+
+      // Apply instructor filter
+      if (instructorId) {
+        queryBuilder.andWhere('class.instructorId = :instructorId', { instructorId });
+      }
+
+      // Apply country filter
+      if (countryId) {
+        queryBuilder.andWhere('class.countryID = :countryId', { countryId });
       }
 
       // Apply sorting
       if (sort) {
         const [field, order] = sort.split(':');
-        queryBuilder.orderBy(`class.${field}`, order as 'ASC' | 'DESC');
+        queryBuilder.orderBy(`class.${field}`, order.toUpperCase() as 'ASC' | 'DESC');
       }
 
       // Apply pagination
@@ -161,6 +216,7 @@ export class ClassService {
       throw new Error('Failed to fetch classes');
     }
   }
+
 
   async findOne(id: number) {
     try {
@@ -215,8 +271,34 @@ export class ClassService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} class`;
+  async bulkDelete(ids: number[]) {
+    try {
+      const classes = await this.classRepository.findBy({ id: In(ids) });
+      if (classes.length !== ids.length) {
+        throw new NotFoundException('Some classes were not found');
+      }
+      await this.classRepository.remove(classes);
+    } catch (error) {
+      console.error('Error in bulkDelete:', error);
+      throw new Error('Failed to delete classes');
+    }
+
+  }
+
+  async remove(id: number) {
+    try {
+      const classs = await this.classRepository.findOne({
+        where: {
+          id: id
+        }
+      });
+      if (!classs) {
+        throw new NotFoundException("Class not Found");
+      }
+      await this.classRepository.remove(classs);
+    } catch (error) {
+      throw error;
+    }
   }
 
 

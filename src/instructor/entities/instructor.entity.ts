@@ -48,5 +48,7 @@ export class Instructor {
   @OneToOne(() => User, user => user.instructor)
   @JoinColumn()
   user: User;
-  
+
+  @OneToMany(() => Class, classEntity => classEntity.instructor)
+  classes: Class[];
 }

@@ -7,9 +7,8 @@ import { ClassType } from './classtype.entity';
 import { User } from 'src/user/entities/user.entity';
 import { BaseEntity } from 'src/common/dto/base.dto';
 
-
 @Entity('Class')
-export class Class extends BaseEntity{
+export class Class extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -53,11 +52,6 @@ export class Class extends BaseEntity{
   @Column({ type: 'varchar', length: 255 })
   title: string;
 
-
-  @Column({ type: 'varchar', length: 255 })
-  instructorId: string;
-  
-  
   @Column({ type: 'text', nullable: true })
   description: string;
 
@@ -104,4 +98,8 @@ export class Class extends BaseEntity{
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   hotelConfirmation: string;
+
+  @ManyToOne(() => Instructor, instructor => instructor.classes)
+  @JoinColumn() 
+  instructor: Instructor;
 }

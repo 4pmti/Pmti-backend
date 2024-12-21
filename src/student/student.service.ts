@@ -10,22 +10,54 @@ export class StudentService {
   constructor(
     @InjectRepository(Student)
     private readonly studentRepository: Repository<Student>,
-  ) {}
+  ) { }
 
   findAll(): Promise<Student[]> {
     return this.studentRepository.find();
   }
 
-  findOne(id: number): Promise<Student> {
-    return this.studentRepository.findOne({ where: { id } });
+  async findOne(id: number): Promise<Student> {
+
+    const student = await this.studentRepository.findOne({ where: { id } });
+    if (!student) {
+      throw new Error('Student not found');
+    }
+    return student;
   }
 
   async update(id: number, updateStudentDto: UpdateStudentDto): Promise<Student> {
-    await this.studentRepository.update(id, updateStudentDto);
-    return this.findOne(id);
+    try {
+      const student = await this.studentRepository.findOne({
+        where: {
+          id: id
+        }
+      });
+
+      if (!student) {
+        throw new Error('Student not found');
+      }
+      Object.assign(student, updateStudentDto);
+      return await this.studentRepository.save(student);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 
-  async remove(id: number): Promise<void> {
-    await this.studentRepository.delete(id);
+  async remove(id: number): Promise<String> {
+     try{
+        const student = await this.studentRepository.findOne({
+          where: {
+            id: id
+          }
+        });
+        if (!student) {
+          throw new Error('Student not found');
+        }
+        await this.studentRepository.remove(student);
+        return "Successfully deleted";
+     } catch(error){
+       throw error;
+     }
   }
 }

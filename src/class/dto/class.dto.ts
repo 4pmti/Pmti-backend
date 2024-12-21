@@ -51,7 +51,7 @@ export class ClassDto {
   status: boolean;  // Status (active or inactive)
 
   @IsString()
-  instructorId?: string; 
+  instructorId?: number; 
 
   @IsOptional()
   @IsBoolean()
