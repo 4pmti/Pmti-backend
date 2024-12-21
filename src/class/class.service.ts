@@ -271,8 +271,19 @@ export class ClassService {
     }
   }
 
-  async bulkDelete(ids: number[]) {
+  async bulkDelete(userId: string, ids: number[]) {
     try {
+      const user = await this.userRepository.findOne({
+        where: {
+          id: userId
+        }
+      });
+      if (!user) {
+        throw new UnauthorizedException("Invalid User");
+      }
+      if (user.role != Role.ADMIN) {
+        throw new ForbiddenException("You don't have this permission!");
+      }
       const classes = await this.classRepository.findBy({ id: In(ids) });
       if (classes.length !== ids.length) {
         throw new NotFoundException('Some classes were not found');
@@ -285,8 +296,19 @@ export class ClassService {
 
   }
 
-  async remove(id: number) {
+  async remove(id: number, userId: string) {
     try {
+      const user = await this.userRepository.findOne({
+        where: {
+          id: userId
+        }
+      });
+      if (!user) {
+        throw new UnauthorizedException("Invalid User");
+      }
+      if (user.role != Role.ADMIN) {
+        throw new ForbiddenException("You don't have this permission!");
+      }
       const classs = await this.classRepository.findOne({
         where: {
           id: id

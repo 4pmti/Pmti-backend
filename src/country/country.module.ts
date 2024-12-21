@@ -4,14 +4,17 @@ import { CountryController } from './country.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Country } from './entities/country.entity';
 import { LocationModule } from 'src/location/location.module';
+import { AuthModule } from 'src/auth/auth.module';
+import { User } from 'src/user/entities/user.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Country]),
-    forwardRef(() => LocationModule)
+    TypeOrmModule.forFeature([Country,User]),
+    forwardRef(() => LocationModule),
+    AuthModule,
   ],
   controllers: [CountryController],
-  providers: [CountryService],
+  providers: [CountryService,AuthModule],
   exports: [CountryService]
 })
 export class CountryModule {}

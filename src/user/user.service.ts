@@ -39,6 +39,22 @@ export class UserService {
         return password;
     }
 
+    async findOneByUserId(userId: string): Promise<User> {
+        try {
+
+            const user = await this.usersRepository.findOne({ where: { id: userId } });
+            if (!user) {
+                throw new UnauthorizedException('User not found');
+            }
+            return user;
+
+        } catch (error) {
+            console.log(error);
+
+        }
+
+    }
+
     async createStudent(createStudentDto: CreateStudentDto): Promise<Student> {
 
         if (!createStudentDto.password) {

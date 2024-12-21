@@ -43,17 +43,18 @@ export class ClassController {
     return this.classService.update(+id, userId, updateClassDto);
   }
   @Delete('/bulk')
-  async bulkDelete(@Body('ids') ids: number[]) {
-    console.log(ids);
+  async bulkDelete(@Body('ids') ids: number[], @Req() req: Request,) {
+    const userId = req.user?.id ?? '';
     if (!Array.isArray(ids) || ids.length === 0) {
       throw new Error('Invalid input: IDs should be a non-empty array.');
     }
-    return this.classService.bulkDelete(ids);
+    return this.classService.bulkDelete(userId,ids);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.classService.remove(+id);
+  remove(@Param('id') id: string, @Req() req: Request) {
+    const userId = req.user?.id ?? '';
+    return this.classService.remove(+id,userId);
   }
 }
 
