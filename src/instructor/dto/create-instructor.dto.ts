@@ -24,7 +24,8 @@ export class CreateInstructorDto {
     @Length(1, 20)
     telNo?: string;
 
-
+ 
+    @IsOptional()
     @IsString()
     @Length(8, 255)
     password: string;

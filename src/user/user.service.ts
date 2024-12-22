@@ -83,6 +83,10 @@ export class UserService {
     }
 
     async createInstructor(createInstructorDto: CreateInstructorDto): Promise<Instructor> {
+
+        if (!createInstructorDto.password) {
+            createInstructorDto.password = this.generateRandomPassword();
+        }
         const user = new User();
         user.name = createInstructorDto.name
         user.email = createInstructorDto.emailID;
