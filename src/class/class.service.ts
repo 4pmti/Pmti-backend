@@ -138,7 +138,16 @@ export class ClassService {
       } = filters;
 
       // Create query builder
-      const queryBuilder = this.classRepository.createQueryBuilder('class');
+      const queryBuilder = this.classRepository.createQueryBuilder('class')
+      .leftJoinAndSelect('class.classType', 'classType')
+      .leftJoinAndSelect('class.category', 'category')
+      .leftJoinAndSelect('class.location', 'location')
+      .leftJoinAndSelect('class.instructor', 'instructor')
+      .leftJoinAndSelect('class.country', 'country')
+      .leftJoinAndSelect('class.addedBy', 'addedBy') // Example for addedBy user relation
+      .leftJoinAndSelect('class.updatedBy', 'updatedBy'); // Example for updatedBy user relation
+
+    // Apply search if provided
 
       // Apply search if provided
       if (search) {

@@ -21,7 +21,11 @@ export class CountryService {
   }
 
   findAll() {
-    return this.countryRepository.find();
+    return this.countryRepository.find(
+      {
+        relations: ['locations']
+      }
+    );
   }
 
   findOne(id: number) {
