@@ -20,8 +20,8 @@ export class CountryService {
     return this.countryRepository.save(createCountryDto);
   }
 
-  findAll() {
-    return this.countryRepository.find(
+  async findAll() {
+    return await this.countryRepository.find(
       {
         relations: ['locations']
       }
