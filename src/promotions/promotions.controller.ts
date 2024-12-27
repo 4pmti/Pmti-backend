@@ -37,8 +37,20 @@ export class PromotionsController {
     return this.promotionsService.update(+id, userId,updatePromotionDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.promotionsService.remove(+id);
+  @Delete("/bulk")
+  removeBulk(@Body('ids') ids: number[], @Req() req: Request){
+    const userId = req.user?.id ?? '';
+    return this.promotionsService.bulkRemove(userId,ids);
   }
+
+  
+  @Delete(':id')
+  remove(
+    @Req() req: Request,
+    @Param('id') id: string) {
+    const userId = req.user?.id ?? '';
+    return this.promotionsService.remove(userId,+id);
+  }
+
+
 }

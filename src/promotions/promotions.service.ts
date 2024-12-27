@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Country } from 'src/country/entities/country.entity';
 import { Instructor } from 'src/instructor/entities/instructor.entity';
 import { User } from 'src/user/entities/user.entity';
@@ -169,61 +169,120 @@ export class PromotionsService {
 
 
   async update(id: number, userId: string, updatePromotionDto: UpdatePromotionDto) {
+    try {
 
-    const user = await this.userRepository.findOne({
-      where: {
-        id: userId
+      const user = await this.userRepository.findOne({
+        where: {
+          id: userId
+        }
+      });
+      if (!user) {
+        throw new NotFoundException("User Not Found");
       }
-    });
-    if (!user) {
-      throw new NotFoundException("User Not Found");
-    }
 
-    if (!isAdmin(userId, this.userRepository)) {
-      throw new UnauthorizedException("You Dont have the permission to do this action");
-    }
-
-    // 1. Find the promotion by ID
-    const promotion = await this.promoRepository
-      .findOne({ where: { id }, relations: ['country', 'category', 'classType', 'addedBy', 'updatedBy'] });
-
-    if (!promotion) {
-      throw new NotFoundException(`Promotion with id ${id} not found`);
-    }
-
-    // 2. Validate if the user has permission to update the promotion
-    if (promotion.addedBy.id !== userId) {
-      throw new BadRequestException('You are not authorized to update this promotion');
-    }
-
-    // 3. Validate the provided countryId if present
-    if (updatePromotionDto.countryId) {
-      const countryExists = await this.countryRepository.findOne({ where: { id: updatePromotionDto.countryId } });
-      if (!countryExists) {
-        throw new BadRequestException('Invalid countryId provided');
+      if (!isAdmin(userId, this.userRepository)) {
+        throw new UnauthorizedException("You Dont have the permission to do this action");
       }
+
+      // 1. Find the promotion by ID
+      const promotion = await this.promoRepository
+        .findOne({ where: { id }, relations: ['country', 'category', 'classType', 'addedBy', 'updatedBy'] });
+
+      if (!promotion) {
+        throw new NotFoundException(`Promotion with id ${id} not found`);
+      }
+
+      // 2. Validate if the user has permission to update the promotion
+      if (promotion.addedBy.id !== userId) {
+        throw new BadRequestException('You are not authorized to update this promotion');
+      }
+
+      // 3. Validate the provided countryId if present
+      if (updatePromotionDto.countryId) {
+        const countryExists = await this.countryRepository.findOne({ where: { id: updatePromotionDto.countryId } });
+        if (!countryExists) {
+          throw new BadRequestException('Invalid countryId provided');
+        }
+      }
+
+      // 4. Validate the other fields (e.g., check for amount and dates)
+      if (updatePromotionDto.amount && updatePromotionDto.amount <= 0) {
+        throw new BadRequestException('Amount should be greater than 0');
+      }
+
+      if (updatePromotionDto.startDate && updatePromotionDto.endDate && updatePromotionDto.startDate > updatePromotionDto.endDate) {
+        throw new BadRequestException('Start date cannot be after the end date');
+      }
+
+      // 5. Use Object.assign to update promotion fields
+      Object.assign(promotion, updatePromotionDto);
+
+      // 6. Optionally update the 'updatedBy' field to the current user
+      promotion.updatedBy = user; // Assuming you have a User entity
+
+      // 7. Save the updated promotion
+      return await this.promoRepository.save(promotion);
+    } catch (error) {
+      console.log(error);
+      throw error;
     }
-
-    // 4. Validate the other fields (e.g., check for amount and dates)
-    if (updatePromotionDto.amount && updatePromotionDto.amount <= 0) {
-      throw new BadRequestException('Amount should be greater than 0');
-    }
-
-    if (updatePromotionDto.startDate && updatePromotionDto.endDate && updatePromotionDto.startDate > updatePromotionDto.endDate) {
-      throw new BadRequestException('Start date cannot be after the end date');
-    }
-
-    // 5. Use Object.assign to update promotion fields
-    Object.assign(promotion, updatePromotionDto);
-
-    // 6. Optionally update the 'updatedBy' field to the current user
-    promotion.updatedBy = user; // Assuming you have a User entity
-
-    // 7. Save the updated promotion
-    return await this.promoRepository.save(promotion);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} promotion`;
+  async remove(userId: string, id: number) {
+    try {
+
+      const user = await this.userRepository.findOne({
+        where: {
+          id: userId
+        }
+      });
+      if (!user) {
+        throw new NotFoundException("User Not Found");
+      }
+
+      if (!isAdmin(userId, this.userRepository)) {
+        throw new UnauthorizedException("You Dont have the permission to do this action");
+      }
+
+      const promo = await this.promoRepository.findOne({
+        where: { id }
+      });
+
+      if (!promo) {
+        throw new NotFoundException("Promo Not Found");
+      }
+      return await this.promoRepository.remove(promo);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+
+  async bulkRemove(userId: string, ids: number[]) {
+    try {
+
+      const user = await this.userRepository.findOne({
+        where: {
+          id: userId
+        }
+      });
+      if (!user) {
+        throw new NotFoundException("User Not Found");
+      }
+
+      if (!isAdmin(userId, this.userRepository)) {
+        throw new UnauthorizedException("You Dont have the permission to do this action");
+      }
+
+      const promotions = await this.promoRepository.findBy({ id: In(ids) });
+      if (promotions.length !== ids.length) {
+        throw new NotFoundException('Some promotions were not found');
+      }
+      await this.promoRepository.remove(promotions);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 }
