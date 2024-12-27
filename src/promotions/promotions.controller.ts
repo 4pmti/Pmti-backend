@@ -1,20 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { PromotionsService } from './promotions.service';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
+import { AuthGuard } from 'src/auth/guard/auth.guard';
+import { Request } from 'express';
+import { FindPromotionsDto } from './dto/find-promotions.dto';
 
+@UseGuards(AuthGuard)
 @Controller('promotions')
 export class PromotionsController {
-  constructor(private readonly promotionsService: PromotionsService) {}
+  constructor(private readonly promotionsService: PromotionsService) { }
 
   @Post()
-  create(@Body() createPromotionDto: CreatePromotionDto) {
-    return this.promotionsService.create(createPromotionDto);
+  create(
+     @Req() req: Request,
+    @Body() createPromotionDto: CreatePromotionDto) {
+    const userId = req.user?.id ?? '';
+    return this.promotionsService.create(userId,createPromotionDto);
   }
 
   @Get()
-  findAll() {
-    return this.promotionsService.findAll();
+  findAll(@Body() filters: FindPromotionsDto) {
+    return this.promotionsService.findAll(filters);
   }
 
   @Get(':id')
@@ -23,8 +30,11 @@ export class PromotionsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePromotionDto: UpdatePromotionDto) {
-    return this.promotionsService.update(+id, updatePromotionDto);
+  update(
+    @Req() req: Request,
+    @Param('id') id: string, @Body() updatePromotionDto: UpdatePromotionDto) {
+      const userId = req.user?.id ?? '';
+    return this.promotionsService.update(+id, userId,updatePromotionDto);
   }
 
   @Delete(':id')

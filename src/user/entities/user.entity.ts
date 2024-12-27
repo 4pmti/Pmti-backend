@@ -1,8 +1,9 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToOne, OneToMany } from 'typeorm';
 import { Role } from '../../common/enums/role';
 import { Student } from 'src/student/entities/student.entity';
 import { Admin } from 'src/admin/entities/admin.entity';
 import { Instructor } from 'src/instructor/entities/instructor.entity';
+import { Promotions } from 'src/promotions/entities/promotion.entity';
 
 
 @Entity('users')
@@ -39,5 +40,11 @@ export class User {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
+
+  @OneToMany(() => Promotions, (promotion) => promotion.addedBy)
+  addedPromotions: Promotions[];
+
+  @OneToMany(() => Promotions, (promotion) => promotion.updatedBy)
+  updatedPromotions: Promotions[];
 }
 

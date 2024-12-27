@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Class } from './class.entity'; // Assuming you have a Class entity
+import { Promotions } from 'src/promotions/entities/promotion.entity';
 
 @Entity('Category')
 export class Category {
@@ -20,4 +21,7 @@ export class Category {
 
   @OneToMany(() => Class, (classEntity) => classEntity.category)
   classes: Class[];  // Represents the relationship with Class entity
+
+  @OneToMany(() => Promotions, (promotion) => promotion.category)
+  promotions: Promotions[];
 }

@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Class } from './class.entity'; // Assuming you have a Class entity
+import { Promotions } from 'src/promotions/entities/promotion.entity';
 
 @Entity('ClassType')
 export class ClassType {
@@ -19,5 +20,8 @@ export class ClassType {
   active: boolean;
 
   @OneToMany(() => Class, (classEntity) => classEntity.classType)
-  classes: Class[];  
+  classes: Class[]; 
+  
+  @OneToMany(() => Promotions, (promotion) => promotion.classType)
+  promotions: Promotions[];
 }
