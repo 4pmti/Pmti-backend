@@ -17,6 +17,7 @@ import { LocationModule } from './location/location.module';
 import { CourseModule } from './course/course.module';
 import { PaymentModule } from './payment/payment.module';
 import { PromotionsModule } from './promotions/promotions.module';
+import { CourseEnrollmentsModule } from './course-enrollments/course-enrollments.module';
 
 
 @Module({
@@ -42,7 +43,8 @@ import { PromotionsModule } from './promotions/promotions.module';
     LocationModule,
     CourseModule,
     PaymentModule,
-    PromotionsModule],
+    PromotionsModule,
+    CourseEnrollmentsModule],
   controllers: [AppController],
   providers: [AppService],
 })
