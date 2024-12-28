@@ -19,7 +19,7 @@ export class CourseEnrollment {
     @Column({ type: 'text', nullable: true })
     Comments: string;
 
-    // Billing Information
+
     @Column()
     BillingName: string;
 
