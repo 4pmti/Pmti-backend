@@ -22,7 +22,7 @@ const config = {
   migrations: ['dist/migrations/*{.ts,.js}'],
   synchronize: true,
   autoLoadEntities: true,
-  ssl: process.env.SSL_MODE == 'false' || false ? false : true,
+  ssl: process.env.SSL_MODE === 'true' ? { rejectUnauthorized: false } : undefined
 };
 
 export default registerAs('typeorm', () => config);
