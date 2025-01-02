@@ -1,17 +1,21 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Promotions } from '../../promotions/entities/promotion.entity';
 import { User } from 'src/user/entities/user.entity';
+import { Course } from 'src/course/entities/course.entity';
+import { Student } from 'src/student/entities/student.entity';
 
 @Entity('course_enrollments')
 export class CourseEnrollment {
     @PrimaryGeneratedColumn()
     ID: number;
 
-    @Column()
-    CID: number;
+    @ManyToOne(() => Course, { nullable: false })
+    @JoinColumn({ name: 'courseId' })
+    course: Course;
 
-    @Column()
-    StudentID: number;
+    // @ManyToOne(() => Student, { nullable: false })
+    // @JoinColumn({ name: 'studentId' })
+    // student: Student;
 
     @CreateDateColumn()
     EnrollmentDate: Date;
@@ -83,10 +87,10 @@ export class CourseEnrollment {
     @Column({ nullable: true })
     POID: string;
 
-    @Column({ nullable: true })
+    @Column({ nullable: true }) //last digit number of credit card - xxxx-xxxx-0123
     CCNo: string;
 
-    @Column({ nullable: true })
+    @Column({ nullable: true }) // card expiry date
     CCExpiry: string;
 
     @Column({ unique: true })
@@ -95,7 +99,7 @@ export class CourseEnrollment {
     @Column({ default: false })
     pmbok: boolean;
 
-    @Column({ nullable: true })
+    @Column({ nullable: true }) //credit card holder name
     CreditCardHolder: string;
 
     @Column({ nullable: true })

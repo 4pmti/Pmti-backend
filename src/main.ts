@@ -11,8 +11,8 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ExcludePasswordInterceptor());
   app.enableCors();
   
-  await app.listen(3000,()=>{
-        console.log("Server Started on Port 3000");
+  await app.listen(25769,()=>{
+        console.log("Server Started on Port 25769");
   });
 }
 bootstrap();

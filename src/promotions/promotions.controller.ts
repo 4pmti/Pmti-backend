@@ -19,15 +19,17 @@ export class PromotionsController {
     return this.promotionsService.create(userId,createPromotionDto);
   }
 
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.promotionsService.findOne(+id);
+  }
+
   @Get()
   findAll(@Body() filters: FindPromotionsDto) {
     return this.promotionsService.findAll(filters);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.promotionsService.findOne(+id);
-  }
+
 
   @Patch(':id')
   update(
