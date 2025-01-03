@@ -121,6 +121,14 @@ export class ClassService {
 
   }
 
+
+  async register(userId: string, registerDto: any) {
+    //TODO: Implement this method
+  }
+
+
+
+
   async findAll(filters: FilterDto) {
     try {
       const {

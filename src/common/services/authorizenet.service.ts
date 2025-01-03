@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { APIContracts, APIControllers ,Constants} from 'authorizenet';
+import { APIContracts, APIControllers, Constants } from 'authorizenet';
+import { AuthorizeNetEnv } from '../enums/authorizenet.env';
 
 
 
@@ -33,9 +34,13 @@ export class AuthorizeNetService {
     console.log(JSON.stringify(createRequest.getJSON(), null, 2));
 
     const ctrl = new APIControllers.CreateTransactionController(createRequest.getJSON());
-   // Defaults to sandbox
-	 //ctrl.setEnvironment(Constants.endpoint.production);
 
+    //Defaults to sandbox
+    //ctrl.setEnvironment(Constants.endpoint.production);
+    if (process.env.AUTHORIZE_ENV === AuthorizeNetEnv.PRODUCTION) {
+      ctrl.setEnvironment(Constants.endpoint.production);
+    }
+    
     return new Promise((resolve, reject) => {
       ctrl.execute(() => {
         const response = ctrl.getResponse();

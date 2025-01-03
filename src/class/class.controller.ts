@@ -11,10 +11,11 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 
 
 @Controller('class')
-@UseGuards(AuthGuard)
+
 export class ClassController {
   constructor(private readonly classService: ClassService) { }
 
+  @UseGuards(AuthGuard)
   @Post()
   create(
     @Req() req: Request,
@@ -23,6 +24,9 @@ export class ClassController {
     return this.classService.create(userId, createClassDto);
   }
 
+
+
+  @UseGuards(AuthGuard)
   @Get()
   findAll(
     @Query() filterDto: FilterDto
@@ -32,16 +36,21 @@ export class ClassController {
 
 
 
+  @UseGuards(AuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.classService.findOne(+id);
   }
 
+
+  @UseGuards(AuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Req() req: Request, @Body() updateClassDto: UpdateClassDto) {
     const userId = req.user?.id ?? '';
     return this.classService.update(+id, userId, updateClassDto);
   }
+
+  @UseGuards(AuthGuard)
   @Delete('/bulk')
   async bulkDelete(@Body('ids') ids: number[], @Req() req: Request,) {
     const userId = req.user?.id ?? '';
@@ -51,6 +60,13 @@ export class ClassController {
     return this.classService.bulkDelete(userId,ids);
   }
 
+  @Post("/register")
+  async register(@Body() registerDto: any, @Req() req: Request) {
+    const userId = req.user?.id ?? '';
+    return this.classService.register(userId, registerDto);
+  }
+
+  @UseGuards(AuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string, @Req() req: Request) {
     const userId = req.user?.id ?? '';
