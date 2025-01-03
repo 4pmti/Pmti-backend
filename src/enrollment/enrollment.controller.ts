@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe } from '@nestjs/common';
 import { EnrollmentService } from './enrollment.service';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
@@ -8,6 +8,7 @@ export class EnrollmentController {
   constructor(private readonly enrollmentService: EnrollmentService) {}
 
   @Post()
+  @UsePipes(new ValidationPipe({ transform: true }))
   create(@Body() createEnrollmentDto: CreateEnrollmentDto) {
     return this.enrollmentService.create(createEnrollmentDto);
   }

@@ -1,5 +1,5 @@
 import { User } from 'src/user/entities/user.entity';
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn, ManyToOne } from 'typeorm';
 
 @Entity('Student')
 export class Student {
@@ -8,7 +8,7 @@ export class Student {
 
   @PrimaryGeneratedColumn('uuid')
   uid: string;
-  
+
   @Column({ type: 'varchar', length: 255 })
   name: string;
 
@@ -51,11 +51,13 @@ export class Student {
   @Column({ type: 'boolean', default: false })
   downloadedInfoPac: boolean;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  addedBy: string;
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'AddedBy' })
+  AddedBy: User;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  updatedBy: string;
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'UpdatedBy' })
+  UpdatedBy: User;
 
   @Column({ type: 'boolean', default: false })
   isDelete: boolean;
