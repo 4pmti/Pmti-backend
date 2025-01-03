@@ -3,19 +3,26 @@ import { Promotions } from '../../promotions/entities/promotion.entity';
 import { User } from 'src/user/entities/user.entity';
 import { Course } from 'src/course/entities/course.entity';
 import { Student } from 'src/student/entities/student.entity';
+import { Class } from 'src/class/entities/class.entity';
 
-@Entity('course_enrollments')
-export class CourseEnrollment {
+@Entity('enrollments')
+export class Enrollment {
     @PrimaryGeneratedColumn()
     ID: number;
 
-    @ManyToOne(() => Course, { nullable: false })
+    @ManyToOne(() => Class, { nullable: true })
+    @JoinColumn({ name: 'classId' })
+    class: Class;
+
+    @ManyToOne(() => Course, { nullable: true })
     @JoinColumn({ name: 'courseId' })
     course: Course;
 
-    // @ManyToOne(() => Student, { nullable: false })
-    // @JoinColumn({ name: 'studentId' })
-    // student: Student;
+    @ManyToOne(() => Student, { nullable: false })
+    student: Student;
+
+    @Column({ type: 'enum', enum: ['Course', 'Class'] })
+    enrollmentType: string;
 
     @CreateDateColumn()
     EnrollmentDate: Date;

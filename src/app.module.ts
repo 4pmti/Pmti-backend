@@ -17,7 +17,7 @@ import { LocationModule } from './location/location.module';
 import { CourseModule } from './course/course.module';
 import { PaymentModule } from './payment/payment.module';
 import { PromotionsModule } from './promotions/promotions.module';
-import { CourseEnrollmentsModule } from './course-enrollments/course-enrollments.module';
+import { EnrollmentModule } from './enrollment/enrollment.module';
 
 
 @Module({
@@ -44,7 +44,7 @@ import { CourseEnrollmentsModule } from './course-enrollments/course-enrollments
     CourseModule,
     PaymentModule,
     PromotionsModule,
-    CourseEnrollmentsModule],
+    EnrollmentModule],
   controllers: [AppController],
   providers: [AppService],
 })
