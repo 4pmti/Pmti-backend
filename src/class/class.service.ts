@@ -362,8 +362,8 @@ export class ClassService {
 
   async createClassType(createCategory: CreateCategoryDto) {
     try {
-      const newClassType = this.classTypeRepository.create(createCategory);
-      return await this.categoryRepository.save(newClassType);
+      const newClassType = await this.classTypeRepository.create(createCategory);
+      return await this.classTypeRepository.save(newClassType);
     } catch (error) {
       console.log(error);
       throw error;

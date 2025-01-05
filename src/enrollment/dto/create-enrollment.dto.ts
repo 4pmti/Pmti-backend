@@ -101,14 +101,17 @@ export class CreateEnrollmentDto {
     @IsNotEmpty()
     MealType: 'Vegetarian' | 'Non-Vegetarian';
 
-    @IsNumber()
     @IsOptional()
-    PromotionID?: number;
+    Promotion?: string;
 
     // Payment Information
     @IsString()
     @IsNotEmpty({ message: 'Credit Card number is required' })
     CCNo: string;
+
+    @IsString()
+    @IsNotEmpty({message: 'CVV  is required'})
+    CVV: string;
 
     @IsString()
     @IsNotEmpty()

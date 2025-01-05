@@ -18,7 +18,7 @@ export class PaymentController {
         body.transactionKey,
         body.transactionName
       );
-      return result
+      return result;
     } catch (error) {
       return { success: false, error };
     }

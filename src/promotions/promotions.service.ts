@@ -108,7 +108,10 @@ export class PromotionsService {
       if (filters.countryId && !(await this.countryRepository.findOne({ where: { id: filters.countryId } }))) {
         throw new BadRequestException('Invalid countryId provided');
       }
-      const queryBuilder = this.promoRepository.createQueryBuilder('promotions').leftJoinAndSelect('promotions.country', 'country')
+      const queryBuilder = this.promoRepository.createQueryBuilder('promotions')
+                                               .leftJoinAndSelect('promotions.country', 'country')
+                                               .leftJoinAndSelect("promotions.category","category")
+                                               .leftJoinAndSelect("promotions.classType","classType");
 
       if (filters.id) {
         queryBuilder.andWhere('promotions.promotionId LIKE :id', { id: `%${filters.id}%` });

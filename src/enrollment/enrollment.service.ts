@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -38,18 +38,20 @@ export class EnrollmentService {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
+    // console.log(createEnrollmentDto);
     try {
-
-      console.log(createEnrollmentDto);
       //validate the class and course
       if (createEnrollmentDto.classId && createEnrollmentDto.courseId) {
         throw new NotFoundException("Either Class or Course is required");
       }
-      let enrollmentTarget;
+      let enrollmentTarget: Class | Course;
       if (createEnrollmentDto.courseId) {
         enrollmentTarget = await queryRunner.manager.findOne(Course, {
           where: {
             id: createEnrollmentDto.courseId
+          },
+          relations: {
+            category: true
           }
         });
         if (!enrollmentTarget) {
@@ -58,7 +60,12 @@ export class EnrollmentService {
       } else if (createEnrollmentDto.classId) {
         enrollmentTarget = await queryRunner.manager.findOne(Class, {
           where: {
-            id: createEnrollmentDto.classId
+            id: createEnrollmentDto.classId,
+
+          },
+          relations: {
+            category: true,
+            location: true
           }
         });
         if (!enrollmentTarget) {
@@ -74,36 +81,119 @@ export class EnrollmentService {
         }
       });
       if (!student) {
-      try{
-       student = await this.userService.createStudent({
-          name: createEnrollmentDto.name,
-          email: createEnrollmentDto.email,
-          address: createEnrollmentDto.address,
-          zipCode: createEnrollmentDto.zipCode,
-          city: createEnrollmentDto.city,
-          phone: createEnrollmentDto.phone,
-          state: createEnrollmentDto.state,
-          country: createEnrollmentDto.country,
-          profession: createEnrollmentDto.profession || null,
-          companyName: createEnrollmentDto.companyName || null,
-          referredBy: '',
-          password: '',
-        });
-      } catch (error) {
-        console.log(error);
-        throw error;
+        try {
+          student = await this.userService.createStudent({
+            name: createEnrollmentDto.name,
+            email: createEnrollmentDto.email,
+            address: createEnrollmentDto.address,
+            zipCode: createEnrollmentDto.zipCode,
+            city: createEnrollmentDto.city,
+            phone: createEnrollmentDto.phone,
+            state: createEnrollmentDto.state,
+            country: createEnrollmentDto.country,
+            profession: createEnrollmentDto.profession || null,
+            companyName: createEnrollmentDto.companyName || null,
+            referredBy: '',
+          });
+        } catch (error) {
+          console.log(error);
+          throw error;
+        }
       }
+      console.log({ enrollmentTarget });
+
+
+      //check for the promotions here and validate them
+      let initialAmount = enrollmentTarget.price;
+      const currentDate = new Date();
+      const promotion = await queryRunner.manager.findOne(Promotions, {
+        where: {
+          promotionId: createEnrollmentDto.Promotion
+        },
+        relations: {
+          category: true,
+        }
+      });
+      if (!promotion) {
+        throw new NotFoundException("Promotion is not valid");
+      }
+      console.log(promotion);
+      //time range validation check
+      if (promotion.startDate && promotion.endDate) {
+        if (currentDate < new Date(promotion.startDate) || currentDate > new Date(promotion.endDate)) {
+          throw new BadRequestException("Promotion is not active");
+        }
       }
 
+      //class & country belonging check
+      if (enrollmentTarget instanceof Class) {
+        console.log(enrollmentTarget.category, promotion.category);
+        if (enrollmentTarget.category != promotion.category) {
+          throw new BadRequestException("This promotion is not valid for this class.");
+        }
+        if (enrollmentTarget.country != promotion.country) {
+          throw new BadRequestException("This promotion is not valid for this location.");
+        }
+        initialAmount -= enrollmentTarget.price;
+        if (initialAmount < 0) {
+          initialAmount = 0;
+        }
+      }
+      if (enrollmentTarget instanceof Course) {
+        console.log(enrollmentTarget.category, promotion.category);
+        if (enrollmentTarget.category != promotion.category) {
+          throw new BadRequestException("This promotion is not valid for this course.");
+        }
+        initialAmount -= enrollmentTarget.price;
+        if (initialAmount < 0) {
+          initialAmount = 0;
+        }
+      }
+
+      //start the payment process
+      const result = await this.authorizeNetService.chargeCreditCard(
+        initialAmount,
+        createEnrollmentDto.CCNo,
+        createEnrollmentDto.CCExpiry,
+        createEnrollmentDto.CVV,
+        createEnrollmentDto.BillMail,
+        '', ''
+      );
 
 
 
 
+      const enrollment = new Enrollment();
+      enrollment.student = student;
+      enrollment.course = !(createEnrollmentDto.courseId && !createEnrollmentDto.classId) ? null : enrollmentTarget as Course;
+      enrollment.class = !(!createEnrollmentDto.courseId && createEnrollmentDto.classId) ? null : enrollmentTarget as Class;
+      enrollment.BillCountry = createEnrollmentDto.BillCountry;
+      enrollment.BillingCity = createEnrollmentDto.zipCode;
+      enrollment.BillingName = createEnrollmentDto.BillingName;
+      enrollment.BillingState = createEnrollmentDto.BillingState;
+      enrollment.BillingAddress = createEnrollmentDto.BillingAddress;
+      enrollment.BillingCity = createEnrollmentDto.BillingCity;
+      enrollment.BillingState = createEnrollmentDto.BillingState;
+      enrollment.BillDate = new Date();
+      enrollment.BillMail = createEnrollmentDto.BillMail;
+      enrollment.CCNo = createEnrollmentDto.CCNo; // mask this
+      enrollment.CCExpiry = createEnrollmentDto.CCExpiry;
+      enrollment.Comments = createEnrollmentDto.Comments;
+      enrollment.MealType = createEnrollmentDto.MealType;
+      enrollment.PaymentMode = "Card";
+      enrollment.Price = enrollmentTarget.price;
+      enrollment.TransactionId = result.transId;
+      enrollment.BillPhone = createEnrollmentDto.BillPhone;
+      enrollment.BillDate = new Date();
+      enrollment.enrollmentType = createEnrollmentDto.courseId ? "Course" : "Class";
+      enrollment.PMPPass = false;
+      enrollment.CreditCardHolder = createEnrollmentDto.CreditCardHolder;
+      enrollment.pmbok = false;
+      enrollment.POID = result.transId;
 
-
-
-
-      return "ok";
+      await queryRunner.manager.save(enrollment);
+      await queryRunner.commitTransaction();
+      return enrollment;
     } catch (error) {
       console.log(error);
       await queryRunner.rollbackTransaction();

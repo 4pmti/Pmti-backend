@@ -37,6 +37,7 @@ export class AuthorizeNetService {
 
     //Defaults to sandbox
     //ctrl.setEnvironment(Constants.endpoint.production);
+  
     if (process.env.AUTHORIZE_ENV === AuthorizeNetEnv.PRODUCTION) {
       ctrl.setEnvironment(Constants.endpoint.production);
     }
