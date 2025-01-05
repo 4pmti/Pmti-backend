@@ -4,6 +4,7 @@ import { User } from 'src/user/entities/user.entity';
 import { Course } from 'src/course/entities/course.entity';
 import { Student } from 'src/student/entities/student.entity';
 import { Class } from 'src/class/entities/class.entity';
+import { enrollmentMeal, enrollmentProgress } from 'src/common/enums/enums';
 
 @Entity('enrollments')
 export class Enrollment {
@@ -74,8 +75,14 @@ export class Enrollment {
     @Column({ nullable: true })
     CourseExpiryDate: Date;
 
-    @Column({ type: 'enum', enum: ['Vegetarian', 'Non-Vegetarian'] })
+    @Column({ type: 'enum', enum: enrollmentMeal })
     MealType: string;
+
+    @Column({ type: 'enum', enum: enrollmentProgress, default: enrollmentProgress.ONGOING })
+    enrollmentProgress: string;
+
+    @Column({ default: true })
+    status: boolean;
 
     @Column({ type: 'decimal', precision: 10, scale: 2 })
     Price: number;
@@ -105,6 +112,8 @@ export class Enrollment {
 
     @Column({ default: false })
     pmbok: boolean;
+
+
 
     @Column({ nullable: true }) //credit card holder name
     CreditCardHolder: string;

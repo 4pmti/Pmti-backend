@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
-import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
+import { BulkUpdateEnrollmentDto, UpdateEnrollmentDto } from './dto/update-enrollment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthorizeNetService } from 'src/common/services/authorizenet.service';
 import { User } from 'src/user/entities/user.entity';
@@ -14,6 +14,7 @@ import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class EnrollmentService {
+
 
   constructor(
     private readonly dataSource: DataSource,
@@ -66,7 +67,7 @@ export class EnrollmentService {
           relations: {
             category: true,
             location: true,
-            country:true
+            country: true
           }
         });
         if (!enrollmentTarget) {
@@ -81,7 +82,7 @@ export class EnrollmentService {
           email: createEnrollmentDto.email
         }
       });
- 
+
       if (!student) {
         try {
           student = await this.userService.createStudent({
@@ -113,7 +114,7 @@ export class EnrollmentService {
           },
           relations: {
             category: true,
-            country:true
+            country: true
           }
         });
         if (!promotion) {
@@ -208,6 +209,16 @@ export class EnrollmentService {
     }
   }
 
+  async bulkUpdate(bulkUpdateEnrollmentDto: BulkUpdateEnrollmentDto) {
+    try {
+      const { ids, changes } = bulkUpdateEnrollmentDto;
+      return await this.enrollmentRepository.update(ids, changes);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
   findAll() {
     return `This action returns all enrollment`;
   }
@@ -216,8 +227,19 @@ export class EnrollmentService {
     return `This action returns a #${id} enrollment`;
   }
 
-  update(id: number, updateEnrollmentDto: UpdateEnrollmentDto) {
-    return `This action updates a #${id} enrollment`;
+  async update(id: number, updateEnrollmentDto: UpdateEnrollmentDto) {
+    try {
+      console.log(updateEnrollmentDto);
+      await this.enrollmentRepository.update(id, updateEnrollmentDto);
+      return await this.enrollmentRepository.findOne({
+        where: {
+          ID: id
+        }
+      });
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
   }
 
   remove(id: number) {

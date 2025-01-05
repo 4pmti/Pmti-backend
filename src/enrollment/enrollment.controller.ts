@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe } from '@nestjs/common';
 import { EnrollmentService } from './enrollment.service';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
-import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
+import { BulkUpdateEnrollmentDto, UpdateEnrollmentDto } from './dto/update-enrollment.dto';
 
 @Controller('enrollment')
 export class EnrollmentController {
@@ -22,6 +22,12 @@ export class EnrollmentController {
   findOne(@Param('id') id: string) {
     return this.enrollmentService.findOne(+id);
   }
+
+  @Patch('bulk')
+  bulkUpdate(@Body() bulkUpdateEnrollmentDto: BulkUpdateEnrollmentDto) {
+    return this.enrollmentService.bulkUpdate(bulkUpdateEnrollmentDto);
+  }
+
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateEnrollmentDto: UpdateEnrollmentDto) {
