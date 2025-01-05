@@ -65,7 +65,8 @@ export class EnrollmentService {
           },
           relations: {
             category: true,
-            location: true
+            location: true,
+            country:true
           }
         });
         if (!enrollmentTarget) {
@@ -100,53 +101,55 @@ export class EnrollmentService {
           throw error;
         }
       }
-      console.log({ enrollmentTarget });
-
 
       //check for the promotions here and validate them
       let initialAmount = enrollmentTarget.price;
       const currentDate = new Date();
-      const promotion = await queryRunner.manager.findOne(Promotions, {
-        where: {
-          promotionId: createEnrollmentDto.Promotion
-        },
-        relations: {
-          category: true,
+      if (createEnrollmentDto.Promotion) {
+        const promotion = await queryRunner.manager.findOne(Promotions, {
+          where: {
+            promotionId: createEnrollmentDto.Promotion
+          },
+          relations: {
+            category: true,
+            country:true
+          }
+        });
+        if (!promotion) {
+          throw new NotFoundException("Promotion is not valid");
         }
-      });
-      if (!promotion) {
-        throw new NotFoundException("Promotion is not valid");
-      }
-      console.log(promotion);
-      //time range validation check
-      if (promotion.startDate && promotion.endDate) {
-        if (currentDate < new Date(promotion.startDate) || currentDate > new Date(promotion.endDate)) {
-          throw new BadRequestException("Promotion is not active");
-        }
-      }
 
-      //class & country belonging check
-      if (enrollmentTarget instanceof Class) {
-        console.log(enrollmentTarget.category, promotion.category);
-        if (enrollmentTarget.category != promotion.category) {
-          throw new BadRequestException("This promotion is not valid for this class.");
+        //time range validation check
+        if (promotion.startDate && promotion.endDate) {
+          if (currentDate < new Date(promotion.startDate) || currentDate > new Date(promotion.endDate)) {
+            throw new BadRequestException("Promotion is not active");
+          }
         }
-        if (enrollmentTarget.country != promotion.country) {
-          throw new BadRequestException("This promotion is not valid for this location.");
+
+        //class & country belonging check
+        if (enrollmentTarget instanceof Class) {
+          // console.log(enrollmentTarget.category, promotion.category);
+          if (enrollmentTarget.category.id != promotion.category.id) {
+            throw new BadRequestException("This promotion is not valid for this class.");
+          }
+          
+          if (enrollmentTarget.country.id != promotion.country.id) {
+            throw new BadRequestException("This promotion is not valid for this location.");
+          }
+          initialAmount -= promotion.amount;
+          if (initialAmount < 0) {
+            initialAmount = 0;
+          }
         }
-        initialAmount -= enrollmentTarget.price;
-        if (initialAmount < 0) {
-          initialAmount = 0;
-        }
-      }
-      if (enrollmentTarget instanceof Course) {
-        console.log(enrollmentTarget.category, promotion.category);
-        if (enrollmentTarget.category != promotion.category) {
-          throw new BadRequestException("This promotion is not valid for this course.");
-        }
-        initialAmount -= enrollmentTarget.price;
-        if (initialAmount < 0) {
-          initialAmount = 0;
+        if (enrollmentTarget instanceof Course) {
+          if (enrollmentTarget.category.id != promotion.category.id) {
+            throw new BadRequestException("This promotion is not valid for this course.");
+          }
+          console.log(initialAmount, promotion.amount);
+          initialAmount -= promotion.amount;
+          if (initialAmount < 0) {
+            initialAmount = 0;
+          }
         }
       }
 
@@ -181,7 +184,7 @@ export class EnrollmentService {
       enrollment.Comments = createEnrollmentDto.Comments;
       enrollment.MealType = createEnrollmentDto.MealType;
       enrollment.PaymentMode = "Card";
-      enrollment.Price = enrollmentTarget.price;
+      enrollment.Price = initialAmount;
       enrollment.TransactionId = result.transId;
       enrollment.BillPhone = createEnrollmentDto.BillPhone;
       enrollment.BillDate = new Date();
@@ -190,6 +193,7 @@ export class EnrollmentService {
       enrollment.CreditCardHolder = createEnrollmentDto.CreditCardHolder;
       enrollment.pmbok = false;
       enrollment.POID = result.transId;
+      enrollment.Discount = enrollmentTarget.price - initialAmount;
 
       await queryRunner.manager.save(enrollment);
       await queryRunner.commitTransaction();
