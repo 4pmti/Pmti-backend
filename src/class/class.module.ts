@@ -12,10 +12,11 @@ import { Category } from './entities/category.entity';
 import { Country } from 'src/country/entities/country.entity';
 import { AuthModule } from 'src/auth/auth.module';
 import { Class } from './entities/class.entity';
+import { Enrollment } from 'src/enrollment/entities/enrollment.entity';
 
 @Module({
   controllers: [ClassController,CategoryController,ClassTypeController],
   providers: [ClassService,AuthModule],
-  imports: [TypeOrmModule.forFeature([Student,User,Admin,ClassType,Location,Instructor,Category,Country,Class]),AuthModule]
+  imports: [TypeOrmModule.forFeature([Student,User,Admin,ClassType,Location,Instructor,Category,Country,Class,Enrollment]),AuthModule]
 })
 export class ClassModule {}

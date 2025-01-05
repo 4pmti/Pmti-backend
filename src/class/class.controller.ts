@@ -34,6 +34,12 @@ export class ClassController {
     return this.classService.findAll(filterDto);
   }
 
+  @UseGuards(AuthGuard)
+  @Get(":id/detail")
+  findClassDetails(@Param('id') id:string){
+       return this.classService.findClassDetails(+id);
+  }
+
 
 
   @UseGuards(AuthGuard)
@@ -60,11 +66,7 @@ export class ClassController {
     return this.classService.bulkDelete(userId,ids);
   }
 
-  @Post("/register")
-  async register(@Body() registerDto: any, @Req() req: Request) {
-    const userId = req.user?.id ?? '';
-    return this.classService.register(userId, registerDto);
-  }
+
 
   @UseGuards(AuthGuard)
   @Delete(':id')

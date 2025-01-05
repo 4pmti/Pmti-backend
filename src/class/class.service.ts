@@ -15,6 +15,7 @@ import { Role } from 'src/common/enums/role';
 import { Class } from './entities/class.entity';
 import { FilterDto } from './dto/filter.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
+import { Enrollment } from 'src/enrollment/entities/enrollment.entity';
 
 @Injectable()
 export class ClassService {
@@ -38,6 +39,8 @@ export class ClassService {
     private readonly instructorRepository: Repository<Instructor>,
     @InjectRepository(Country)
     private readonly countryRepository: Repository<Country>,
+    @InjectRepository(Enrollment)
+    private readonly enrollmentRepository: Repository<Enrollment>
   ) { }
 
 
@@ -122,8 +125,59 @@ export class ClassService {
   }
 
 
-  async register(userId: string, registerDto: any) {
-    //TODO: Implement this method
+  async findClassDetails(classId: number) {
+    try {
+      //class 
+      const cls = await this.classRepository.findOne({
+        where: {
+          id: classId
+        },
+      });
+      if (!cls) {
+        throw new NotFoundException("Class Not Found!");
+      }
+      console.log(cls);
+      return await this.enrollmentRepository.find({
+        where: {
+          class: { id: cls.id },
+          enrollmentType: 'Class',
+        },
+        relations: {
+          student: true,
+        },
+        select: {
+          // Select all other fields except credit card details
+          enrollmentType: true,
+          EnrollmentDate: true,
+          Comments: true,
+          BillingName: true,
+          BillingAddress: true,
+          BillingCity: true,
+          BillingState: true,
+          BillCountry: true,
+          BillPhone: true,
+          BillMail: true,
+          BillDate: true,
+          isDelete: true,
+          PMPPass: true,
+          CourseExpiryDate: true,
+          MealType: true,
+          Price: true,
+          Discount: true,
+          PaymentMode: true,
+          POID: true,
+          TransactionId: true,
+          pmbok: true,
+          // Exclude fields like CCNo, CCExpiry, CreditCardHolder, etc.
+        },
+      });
+      
+
+
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 
 
@@ -147,15 +201,15 @@ export class ClassService {
 
       // Create query builder
       const queryBuilder = this.classRepository.createQueryBuilder('class')
-      .leftJoinAndSelect('class.classType', 'classType')
-      .leftJoinAndSelect('class.category', 'category')
-      .leftJoinAndSelect('class.location', 'location')
-      .leftJoinAndSelect('class.instructor', 'instructor')
-      .leftJoinAndSelect('class.country', 'country')
-      .leftJoinAndSelect('class.addedBy', 'addedBy') // Example for addedBy user relation
-      .leftJoinAndSelect('class.updatedBy', 'updatedBy'); // Example for updatedBy user relation
+        .leftJoinAndSelect('class.classType', 'classType')
+        .leftJoinAndSelect('class.category', 'category')
+        .leftJoinAndSelect('class.location', 'location')
+        .leftJoinAndSelect('class.instructor', 'instructor')
+        .leftJoinAndSelect('class.country', 'country')
+        .leftJoinAndSelect('class.addedBy', 'addedBy') // Example for addedBy user relation
+        .leftJoinAndSelect('class.updatedBy', 'updatedBy'); // Example for updatedBy user relation
 
-    // Apply search if provided
+      // Apply search if provided
 
       // Apply search if provided
       if (search) {

@@ -81,6 +81,7 @@ export class EnrollmentService {
           email: createEnrollmentDto.email
         }
       });
+ 
       if (!student) {
         try {
           student = await this.userService.createStudent({
@@ -132,7 +133,7 @@ export class EnrollmentService {
           if (enrollmentTarget.category.id != promotion.category.id) {
             throw new BadRequestException("This promotion is not valid for this class.");
           }
-          
+
           if (enrollmentTarget.country.id != promotion.country.id) {
             throw new BadRequestException("This promotion is not valid for this location.");
           }
