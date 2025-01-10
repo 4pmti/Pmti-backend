@@ -34,6 +34,10 @@ export class EnrollmentService {
     private courseRepository: Repository<Course>,
   ) { }
 
+  private maskCardNumber(cardNumber: string): string {
+    return cardNumber.replace(/\d(?=\d{4})/g, 'X'); // Masks all but the last 4 digits
+  }
+
 
   async create(createEnrollmentDto: CreateEnrollmentDto) {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -181,7 +185,7 @@ export class EnrollmentService {
       enrollment.BillingState = createEnrollmentDto.BillingState;
       enrollment.BillDate = new Date();
       enrollment.BillMail = createEnrollmentDto.BillMail;
-      enrollment.CCNo = createEnrollmentDto.CCNo; // mask this
+      enrollment.CCNo =  this.maskCardNumber(createEnrollmentDto.CCNo); // mask this
       enrollment.CCExpiry = createEnrollmentDto.CCExpiry;
       enrollment.Comments = createEnrollmentDto.Comments;
       enrollment.MealType = createEnrollmentDto.MealType;

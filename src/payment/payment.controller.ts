@@ -1,26 +1,20 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Req, UseGuards } from '@nestjs/common';
 import { AuthorizeNetService } from 'src/common/services/authorizenet.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
+import { PaymentService } from './payment.service';
+import { Request } from 'express';
+import { AuthGuard } from 'src/auth/guard/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('payment')
 export class PaymentController {
-  constructor(private readonly authorizeNetService: AuthorizeNetService) {}
+  constructor(private readonly paymentService: PaymentService) { }
 
   @Post('charge')
-  async chargeCard(@Body() body:CreatePaymentDto) {
-    try {
-      const result = await this.authorizeNetService.chargeCreditCard(
-        body.amount,
-        body.cardNumber,
-        body.expirationDate,
-        body.cvv,
-        body.customerEmail,
-        body.transactionKey,
-        body.transactionName
-      );
-      return result;
-    } catch (error) {
-      return { success: false, error };
-    }
+  async chargeCard(
+    @Req() req: Request,
+    @Body() body: CreatePaymentDto) {
+    const userId = req.user?.id ?? '';
+    return await this.paymentService.create(userId,body);
   }
 }
