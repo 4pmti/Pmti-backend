@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { EmailTemplate, StudentRegistrationData } from '../templates/types';
 import { registrationTemplates } from '../templates/registration_template';
+import { EmailTemplates } from '../templates/cc_transaction_template';
 
 @Injectable()
 export class EmailService {
@@ -11,6 +12,7 @@ export class EmailService {
     constructor() {
         // Initialize the transporter with SMTP configuration
         this.transporter = nodemailer.createTransport({
+            service :"gmail",
             host: process.env.MAIL_HOST,
             port: Number(process.env.MAIL_PORT),
             auth: {
@@ -44,6 +46,43 @@ export class EmailService {
             return false;
         }
     }
+
+    async sendTransactionEmail(data: {
+        adminName: string;
+        invoiceNumber: string;
+        transactionAmount: number;
+        transactionDate: string;
+        description: string;
+        referenceNumber: string;
+        studentEmail: string;
+    }): Promise<boolean> {
+        try {
+            const emailBody = EmailTemplates.generateTransactionEmailBody({
+                adminName: data.adminName,
+                invoiceNumber: data.invoiceNumber,
+                transactionAmount: data.transactionAmount,
+                transactionDate: data.transactionDate,
+                description: data.description,
+                referenceNumber: data.referenceNumber,
+            });
+
+            const mailOptions = {
+                from: process.env.MAIL_FROM, // Sender address
+                to: [data.studentEmail, process.env.ADMIN_EMAIL], // Recipients
+                subject: `Successful Credit Card Transaction <${data.adminName}> <${data.transactionDate}>`,
+                html: emailBody,
+            };
+
+            const result = await this.transporter.sendMail(mailOptions);
+            console.log('Transaction email sent successfully:', result.messageId);
+            return true;
+        } catch (error) {
+            console.error('Failed to send transaction email:', error);
+            return false;
+        }
+    }
+
+
     private async sendEmail(options: {
         to: string | string[];
         template: EmailTemplate;

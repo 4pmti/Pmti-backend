@@ -14,6 +14,7 @@ import { BcryptService } from 'src/common/util/bcrypt.service';
 import { Country } from 'src/country/entities/country.entity';
 import { Instructor } from 'src/instructor/entities/instructor.entity';
 import { Admin } from 'src/admin/entities/admin.entity';
+import { EmailService } from 'src/common/services/email.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -33,7 +34,8 @@ import { Admin } from 'src/admin/entities/admin.entity';
     EnrollmentService,
     AuthorizeNetService,
     UserService,
-    BcryptService
+    BcryptService,
+    EmailService
   ],
   exports: [EnrollmentService]
 })

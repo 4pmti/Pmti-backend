@@ -11,6 +11,7 @@ import { Student } from 'src/student/entities/student.entity';
 import { Class } from 'src/class/entities/class.entity';
 import { Course } from 'src/course/entities/course.entity';
 import { UserService } from 'src/user/user.service';
+import { EmailService } from 'src/common/services/email.service';
 
 @Injectable()
 export class EnrollmentService {
@@ -20,6 +21,7 @@ export class EnrollmentService {
     private readonly dataSource: DataSource,
     private authorizeNetService: AuthorizeNetService,
     private readonly userService: UserService,
+    private readonly emailService: EmailService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(Enrollment)
@@ -203,6 +205,33 @@ export class EnrollmentService {
 
       await queryRunner.manager.save(enrollment);
       await queryRunner.commitTransaction();
+
+      this.emailService.sendRegistrationEmails({
+         studentPhone : createEnrollmentDto.phone,
+         startDate: enrollmentTarget instanceof Class ? new Date(enrollmentTarget.startDate) : new Date(),
+         endDate: enrollmentTarget instanceof Class ? new Date(enrollmentTarget.endDate) : new Date(),
+         studentEmail: createEnrollmentDto.email,
+         studentName : createEnrollmentDto.name,
+         studentAddress : createEnrollmentDto.address,
+         className: enrollmentTarget instanceof Class ? enrollmentTarget.title : "",
+         location : createEnrollmentDto.city,
+         paymentInfo : {
+          method : enrollment.PaymentMode,
+          cardLastFour : enrollment.CCNo,
+          amount :initialAmount
+         },
+         billing :{
+          name : createEnrollmentDto.BillingName,
+          address: createEnrollmentDto.BillingAddress,
+          city: createEnrollmentDto.BillingCity,
+          state: createEnrollmentDto.BillingState,
+          country: createEnrollmentDto.BillCountry,
+          zip: createEnrollmentDto.zipCode,
+          phone: createEnrollmentDto.BillPhone,
+          email: createEnrollmentDto.BillMail,
+         }
+
+      });
       return enrollment;
     } catch (error) {
       console.log(error);

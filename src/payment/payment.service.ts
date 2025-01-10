@@ -7,6 +7,7 @@ import { User } from 'src/user/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Payments } from './entities/payment.entity';
+import { EmailService } from 'src/common/services/email.service';
 
 @Injectable()
 export class PaymentService {
@@ -14,8 +15,10 @@ export class PaymentService {
   constructor(
     private readonly dataSource: DataSource,
     private readonly authorizeNetService: AuthorizeNetService,
+    private readonly emailService: EmailService,
     @InjectRepository(Payments)
     private readonly paymentRepository: Repository<Payments>,
+
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
 
@@ -51,7 +54,7 @@ export class PaymentService {
       } catch (error) {
         throw new BadRequestException('Payment processing failed.', error);
       }
-      
+
       createPaymentDto.transactionId = paymentResponse.transId;
       // Save payment details
       const paymentEntity = queryRunner.manager.create(Payments, createPaymentDto);
@@ -61,6 +64,15 @@ export class PaymentService {
       // Commit transaction
       await queryRunner.commitTransaction();
       console.log(paymentResponse);
+      await this.emailService.sendTransactionEmail({
+        adminName: user.name,
+        invoiceNumber: createPaymentDto.invoiceNumber,
+        transactionAmount: createPaymentDto.amount,
+        transactionDate: paymentEntity.createdAt.toLocaleString(),
+        description: createPaymentDto.description,
+        referenceNumber: createPaymentDto.transactionId,
+        studentEmail: createPaymentDto.email
+      });
       return paymentEntity;
     } catch (error) {
       // Rollback transaction on error

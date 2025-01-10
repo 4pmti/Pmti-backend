@@ -1,88 +1,232 @@
 import { EmailTemplate, StudentRegistrationData } from "./types";
 
 export const registrationTemplates = {
-    formatDate(date: Date): string {
-      return date.toLocaleDateString('en-US', {
-        month: 'numeric',
-        day: 'numeric',
-        year: 'numeric',
-      });
-    },
-  
-    getConfirmationEmailSubject(data: StudentRegistrationData): string {
-      return `Registration Receipt for ${data.className} - ${data.location} - ${this.formatDate(data.startDate)}`;
-    },
-  
-    generateRegistrationConfirmation(data: StudentRegistrationData): EmailTemplate {
-      const subject = this.getConfirmationEmailSubject(data);
-      const html = `
-        <p>Hello ${data.studentName}! Thank you for choosing Project Management Training Institute(TM)(PMTI) for your PMP exam preparation. Your registration for the following class is confirmed.</p>
+  formatDate(date: Date): string {
+    return date.toLocaleDateString('en-US', {
+      month: 'numeric',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  },
+
+  getConfirmationEmailSubject(data: StudentRegistrationData): string {
+    return `Registration Receipt for ${data.className} - ${data.location} - ${this.formatDate(data.startDate)}`;
+  },
+
+  generateRegistrationConfirmation(data: StudentRegistrationData): EmailTemplate {
+    const subject = this.getConfirmationEmailSubject(data);
+    const html = `
+      <style>
+        body {
+          font-family: 'Helvetica Neue', Arial, sans-serif;
+          color: #333;
+          background-color:rgb(12, 88, 220);
+          margin: 0;
+          padding: 0;
+        }
+        .container {
+          max-width: 700px;
+          margin: 0 auto;
+          background-color: #ffffff;
+          padding: 30px;
+          border-radius: 12px;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+        }
+        h2 {
+          color: #2a7ae2;
+          font-size: 24px;
+          margin-bottom: 10px;
+        }
+        p {
+          line-height: 1.8;
+          color: #555;
+        }
+        .section {
+          margin-bottom: 25px;
+        }
+        .section strong {
+          color: #2a7ae2;
+          font-weight: 600;
+        }
+        .order-info, .class-info, .student-info, .billing-info {
+          background-color: #f2f6fc;
+          padding: 15px;
+          border-radius: 8px;
+          margin-top: 10px;
+          border: 1px solid #e0e0e0;
+        }
+        .order-info {
+          background: linear-gradient(135deg,rgb(157, 25, 25), #3e54d3);
+          color: white;
+        }
+        .order-info strong, .order-info p {
+          color: white;
+        }
+        .class-info, .student-info, .billing-info {
+          background-color: #f9f9f9;
+        }
+        .cta-btn {
+          display: inline-block;
+          padding: 12px 25px;
+          font-size: 16px;
+          font-weight: bold;
+          text-align: center;
+          text-decoration: none;
+          background-color: #2a7ae2;
+          color: white;
+          border-radius: 5px;
+          margin-top: 20px;
+          box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+          transition: background-color 0.3s ease;
+        }
+        .cta-btn:hover {
+          background-color: #1f5bbf;
+        }
+        .footer {
+          text-align: center;
+          font-size: 14px;
+          margin-top: 40px;
+          color: #888;
+        }
+        .footer a {
+          color: #2a7ae2;
+          text-decoration: none;
+        }
+        .footer a:hover {
+          text-decoration: underline;
+        }
+      </style>
+      <div class="container">
+        <h2>Hello ${data.studentName}!</h2>
+        <p>Thank you for choosing Project Management Training Institute(TM)(PMTI) for your PMP exam preparation. Your registration for the following class is confirmed.</p>
         
-        <p><strong>Date:</strong><br>
-        ${this.formatDate(new Date())}</p>
+        <div class="section">
+          <strong>Date:</strong> ${this.formatDate(new Date())}
+        </div>
+
+        <div class="section">
+          <strong>Service Provider:</strong><br>
+          Project Management Training Institute<br>
+          4835 LBJ Freeway, Suite 220<br>
+          Dallas TX, 75244-6004<br>
+          Ph: 734-786-0104<br>
+          Fax: 248-809-4060
+        </div>
         
-        <p><strong>Service Provider:</strong><br>
-        Project Management Training Institute<br>
-        4835 LBJ Freeway, Suite 220<br>
-        Dallas TX, 75244-6004<br>
-        Ph:734-786-0104<br>
-        Fax:248-809-4060</p>
+        <div class="section order-info">
+          <strong>Order Information:</strong><br>
+          <strong>Payment Method:</strong> ${data.paymentInfo.method}<br>
+          <strong>Credit Card Number:</strong> ${data.paymentInfo.cardLastFour}<br>
+          <strong>Payment Received:</strong> ${data.paymentInfo.amount}
+        </div>
         
-        <p><strong>Order Information:</strong><br>
-        <strong>Payment Method:</strong><br>
-        ${data.paymentInfo.method}<br>
-        <strong>Credit Card Number:</strong><br>
-        XXXXXX${data.paymentInfo.cardLastFour}<br>
-        <strong>Payment Received:</strong><br>
-        ${data.paymentInfo.amount}</p>
+        <div class="section class-info">
+          <strong>Class Information:</strong><br>
+          <strong>Course Name:</strong> ${data.className}<br>
+          <strong>Course Dates:</strong> ${this.formatDate(data.startDate)} - ${this.formatDate(data.endDate)}<br>
+          <strong>Class Time:</strong> 8:00 AM - 5:30 PM<br>
+          <strong>Location:</strong> ${data.location}
+        </div>
         
-        <p><strong>Class Information</strong><br>
-        <strong>Course Name:</strong><br>
-        ${data.className}<br>
-        <strong>Course Dates:</strong><br>
-        ${this.formatDate(data.startDate)} - ${this.formatDate(data.endDate)}<br>
-        <strong>Class Time:</strong><br>
-        8.00 AM - 5.30 PM<br>
-        <strong>Location:</strong><br>
-        ${data.location}</p>
+        <div class="section student-info">
+          <strong>Student Information:</strong><br>
+          <strong>Name:</strong> ${data.studentName}<br>
+          <strong>Address:</strong> ${data.studentAddress}<br>
+          <strong>Phone:</strong> ${data.studentPhone}<br>
+          <strong>Email:</strong> ${data.studentEmail}
+        </div>
+
+        <div class="section billing-info">
+          <strong>Billing Information:</strong><br>
+          <strong>Credit Card Holder Name:</strong> ${data.billing.name}<br>
+          <strong>Address:</strong> ${data.billing.address}<br>
+          <strong>City:</strong> ${data.billing.city}<br>
+          <strong>State:</strong> ${data.billing.state}<br>
+          <strong>Country:</strong> ${data.billing.country}<br>
+          <strong>Zip:</strong> ${data.billing.zip}<br>
+          <strong>Bill Phone:</strong> ${data.billing.phone}<br>
+          <strong>Bill Email:</strong> ${data.billing.email}
+        </div>
         
-        <p><strong>Student Information</strong><br>
-        <strong>Name:</strong><br>
-        ${data.studentName}<br>
-        <strong>Address:</strong><br>
-        ${data.studentAddress}<br>
-        <strong>Phone:</strong><br>
-        ${data.studentPhone}<br>
-        <strong>Email:</strong><br>
-        ${data.studentEmail}</p>
-        
-        <p><strong>Billing Information</strong><br>
-        <strong>Credit Card Holder Name</strong><br>
-        ${data.billing.name}<br>
-        <strong>Address:</strong><br>
-        ${data.billing.address}<br>
-        <strong>City:</strong><br>
-        ${data.billing.city}<br>
-        <strong>State:</strong><br>
-        ${data.billing.state}<br>
-        <strong>Country:</strong><br>
-        ${data.billing.country}<br>
-        <strong>Zip:</strong><br>
-        ${data.billing.zip}<br>
-        <strong>Bill Phone:</strong><br>
-        ${data.billing.phone}<br>
-        <strong>Bill Email:</strong><br>
-        ${data.billing.email}</p>
-      `;
-  
-      return { subject, html };
-    },
-  
-    generateWelcomeEmail(data: StudentRegistrationData): EmailTemplate {
-      const subject = `Welcome to PMTI - ${data.className}`;
-      const html = `
-        <p>Dear ${data.studentName},</p>
-        
+        <a href="#" class="cta-btn">View Your Course Details</a>
+
+        <div class="footer">
+          <p>For any questions, feel free to <a href="mailto:support@pmtinstitute.com">contact our support team</a>.</p>
+          <p>&copy; 2025 Project Management Training Institute, All Rights Reserved.</p>
+        </div>
+      </div>
+    `;
+
+    return { subject, html };
+  },
+
+  generateWelcomeEmail(data: StudentRegistrationData): EmailTemplate {
+    const subject = `Welcome to PMTI - ${data.className}`;
+    const html = `
+      <style>
+        body {
+          font-family: 'Helvetica Neue', Arial, sans-serif;
+          color: #333;
+          background-color: #f4f7fc;
+          margin: 0;
+          padding: 0;
+        }
+        .container {
+          max-width: 700px;
+          margin: 0 auto;
+          background-color: #ffffff;
+          padding: 30px;
+          border-radius: 12px;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+        }
+        h2 {
+          color: #2a7ae2;
+          font-size: 24px;
+          margin-bottom: 10px;
+        }
+        p {
+          line-height: 1.8;
+          color: #555;
+        }
+        ul {
+          list-style-type: square;
+          padding-left: 20px;
+        }
+        .cta-btn {
+          display: inline-block;
+          padding: 12px 25px;
+          font-size: 16px;
+          font-weight: bold;
+          text-align: center;
+          text-decoration: none;
+          background-color: #2a7ae2;
+          color: white;
+          border-radius: 5px;
+          margin-top: 20px;
+          box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+          transition: background-color 0.3s ease;
+        }
+        .cta-btn:hover {
+          background-color: #1f5bbf;
+        }
+        .footer {
+          text-align: center;
+          font-size: 14px;
+          margin-top: 40px;
+          color: #888;
+        }
+        .footer a {
+          color: #2a7ae2;
+          text-decoration: none;
+        }
+        .footer a:hover {
+          text-decoration: underline;
+        }
+      </style>
+      <div class="container">
+        <h2>Dear ${data.studentName},</h2>
         <p>Welcome to PMTI! We're excited to have you join us for the ${data.className}.</p>
         
         <p>In the coming days, you'll receive additional information about your upcoming training, including:</p>
@@ -94,10 +238,17 @@ export const registrationTemplates = {
         
         <p>If you have any questions in the meantime, please don't hesitate to reach out.</p>
         
-        <p>Best regards,<br>
-        The PMTI Team</p>
-      `;
-  
-      return { subject, html };
-    }
-  };
+        <p>Best regards,<br>The PMTI Team</p>
+
+        <a href="#" class="cta-btn">Access Your Pre-Course Materials</a>
+
+        <div class="footer">
+          <p>For inquiries, please <a href="mailto:support@pmtinstitute.com">contact us</a>.</p>
+          <p>&copy; 2025 Project Management Training Institute, All Rights Reserved.</p>
+        </div>
+      </div>
+    `;
+
+    return { subject, html };
+  }
+};

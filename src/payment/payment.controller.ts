@@ -4,11 +4,14 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { PaymentService } from './payment.service';
 import { Request } from 'express';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
+import { EmailService } from 'src/common/services/email.service';
 
 @UseGuards(AuthGuard)
 @Controller('payment')
 export class PaymentController {
-  constructor(private readonly paymentService: PaymentService) { }
+  constructor(private readonly paymentService: PaymentService,
+ 
+  ) { }
 
   @Post('charge')
   async chargeCard(
