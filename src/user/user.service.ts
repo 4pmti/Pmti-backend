@@ -11,6 +11,7 @@ import { Admin } from 'src/admin/entities/admin.entity';
 import { Country } from 'src/country/entities/country.entity';
 import { CreateInstructorDto } from 'src/instructor/dto/create-instructor.dto';
 import { Instructor } from 'src/instructor/entities/instructor.entity';
+import { isAdmin } from 'src/common/util/utilities';
 
 @Injectable()
 export class UserService {
@@ -82,8 +83,11 @@ export class UserService {
         return this.studentsRepository.save(student);
     }
 
-    async createInstructor(createInstructorDto: CreateInstructorDto): Promise<Instructor> {
-
+    async createInstructor(userId:string,createInstructorDto: CreateInstructorDto): Promise<Instructor> {
+           
+        if(!isAdmin(userId,this.usersRepository)){
+            throw new UnauthorizedException("You don't have permission to perform this action.");
+        }
         if (!createInstructorDto.password) {
             createInstructorDto.password = this.generateRandomPassword();
         }
@@ -103,8 +107,13 @@ export class UserService {
         return this.instructorRepository.save(instructor);
     }
 
-    async createAdmin(createAdminDto: CreateAdminDto) {
+    async createAdmin(userId:string,createAdminDto: CreateAdminDto) {
         console.log(createAdminDto);
+
+        if(!isAdmin(userId,this.usersRepository)){
+            throw new UnauthorizedException("You don't have permission to perform this action.");
+        }
+
         const country = await this.countryRepository.findOne({ where: { id: createAdminDto.countryId } });
         if (!country) {
             throw new UnauthorizedException('Country not found');

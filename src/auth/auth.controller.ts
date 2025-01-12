@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from 'src/user/user.service';
 import { Role } from 'src/common/enums/role';
@@ -7,6 +7,8 @@ import { ResponseDto } from 'src/common/dto/response.dto';
 import { LoginDto } from './dto/login.dto';
 import { CreateStudentDto } from 'src/student/dto/create-student.dto';
 import { CreateInstructorDto } from 'src/instructor/dto/create-instructor.dto';
+import { AuthGuard } from './guard/auth.guard';
+import { Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -20,15 +22,25 @@ export class AuthController {
     return this.userService.createStudent(createStudentDto);
   }
 
+  @UseGuards(AuthGuard)
   @Post('signup/instructor')
-  async teacherSignup(@Body() createTeacherDto: CreateInstructorDto) {
-    return this.userService.createInstructor(createTeacherDto);
+  async teacherSignup(
+    @Req() req: Request,
+    @Body() createTeacherDto: CreateInstructorDto) {
+    const userId = req.user.id;
+    return this.userService.createInstructor(userId,createTeacherDto);
   }
 
+  @UseGuards(AuthGuard)
   @Post('signup/admin')
-  async adminSignup(@Body() createAdminDto: CreateAdminDto) {
-    return this.userService.createAdmin(createAdminDto);
+  async adminSignup(
+    @Req() req: Request,
+    @Body() createAdminDto: CreateAdminDto) {
+    const userId = req.user.id;
+    return this.userService.createAdmin(userId ,createAdminDto);
   }
+
+
   @HttpCode(HttpStatus.OK)
   @Post('login')
   signIn(@Body() signInDto: LoginDto) {
