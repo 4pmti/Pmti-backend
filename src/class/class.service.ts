@@ -128,18 +128,25 @@ export class ClassService {
   async findClassDetails(classId: number) {
     try {
       //class 
-      const cls = await this.classRepository.findOne({
+      const classs = await this.classRepository.findOne({
         where: {
           id: classId
         },
+        relations:{
+          instructor : true,
+          location:true,
+          country:true,
+          classType:true,
+          category:true
+        }
       });
-      if (!cls) {
-        throw new NotFoundException("Class Not Found!");
+      if (!classs) {
+        throw new NotFoundException("Class not Found");
       }
-      console.log(cls);
-      return await this.enrollmentRepository.find({
+      console.log(classs);
+      const enrollments =         await this.enrollmentRepository.find({
         where: {
-          class: { id: cls.id },
+          class: { id: classs.id },
           enrollmentType: 'Class',
         },
         relations: {
@@ -169,9 +176,16 @@ export class ClassService {
           TransactionId: true,
           pmbok: true,
           // Exclude fields like CCNo, CCExpiry, CreditCardHolder, etc.
-        },
+        }
       });
       
+
+      const data =  {
+        classs, 
+        enrollments,
+    }
+    
+    return data;
 
 
     } catch (error) {
@@ -294,6 +308,13 @@ export class ClassService {
       const classs = await this.classRepository.findOne({
         where: {
           id: id
+        },
+        relations:{
+          instructor : true,
+          location:true,
+          country:true,
+          classType:true,
+          category:true
         }
       });
       if (!classs) {
