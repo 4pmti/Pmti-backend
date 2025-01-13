@@ -15,6 +15,7 @@ import { Country } from 'src/country/entities/country.entity';
 import { Instructor } from 'src/instructor/entities/instructor.entity';
 import { Admin } from 'src/admin/entities/admin.entity';
 import { EmailService } from 'src/common/services/email.service';
+import { AuthModule } from 'src/auth/auth.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -27,7 +28,8 @@ import { EmailService } from 'src/common/services/email.service';
       Instructor,
       Admin,
       Country
-    ])
+    ]),
+    AuthModule
   ],
   controllers: [EnrollmentController],
   providers: [

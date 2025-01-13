@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { BulkUpdateEnrollmentDto, UpdateEnrollmentDto } from './dto/update-enrollment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,6 +12,8 @@ import { Class } from 'src/class/entities/class.entity';
 import { Course } from 'src/course/entities/course.entity';
 import { UserService } from 'src/user/user.service';
 import { EmailService } from 'src/common/services/email.service';
+import { RescheduleDto } from './dto/reschedule.dto';
+import { isAdmin } from 'src/common/util/utilities';
 
 @Injectable()
 export class EnrollmentService {
@@ -38,6 +40,50 @@ export class EnrollmentService {
 
   private maskCardNumber(cardNumber: string): string {
     return cardNumber.replace(/\d(?=\d{4})/g, 'X'); // Masks all but the last 4 digits
+  }
+
+
+  async rescheduleClass(userId: string, rescheduleDto: RescheduleDto) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      if (!isAdmin(userId, this.userRepository)) {
+        throw new UnauthorizedException("You dont have permission to perform this action!!!");
+      }
+      console.log(rescheduleDto);
+      const student = await queryRunner.manager.findOne(Student, {
+        where: {
+          id: rescheduleDto.studentId
+        }
+      });
+
+      if (!student) {
+        throw new NotFoundException('Student not found');
+      }
+
+      const classs = await queryRunner.manager.findOne(Class, {
+        where: {
+          id: rescheduleDto.studentId
+        }
+      });
+
+      if (!classs) {
+        throw new NotFoundException('Class not found');
+      }
+
+     //TODO : implement this
+
+
+
+
+
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
 
@@ -187,7 +233,7 @@ export class EnrollmentService {
       enrollment.BillingState = createEnrollmentDto.BillingState;
       enrollment.BillDate = new Date();
       enrollment.BillMail = createEnrollmentDto.BillMail;
-      enrollment.CCNo =  this.maskCardNumber(createEnrollmentDto.CCNo); // mask this
+      enrollment.CCNo = this.maskCardNumber(createEnrollmentDto.CCNo); // mask this
       enrollment.CCExpiry = createEnrollmentDto.CCExpiry;
       enrollment.Comments = createEnrollmentDto.Comments;
       enrollment.MealType = createEnrollmentDto.MealType;
@@ -207,21 +253,21 @@ export class EnrollmentService {
       await queryRunner.commitTransaction();
 
       this.emailService.sendRegistrationEmails({
-         studentPhone : createEnrollmentDto.phone,
-         startDate: enrollmentTarget instanceof Class ? new Date(enrollmentTarget.startDate) : new Date(),
-         endDate: enrollmentTarget instanceof Class ? new Date(enrollmentTarget.endDate) : new Date(),
-         studentEmail: createEnrollmentDto.email,
-         studentName : createEnrollmentDto.name,
-         studentAddress : createEnrollmentDto.address,
-         className: enrollmentTarget instanceof Class ? enrollmentTarget.title : "",
-         location : createEnrollmentDto.city,
-         paymentInfo : {
-          method : enrollment.PaymentMode,
-          cardLastFour : enrollment.CCNo,
-          amount :initialAmount
-         },
-         billing :{
-          name : createEnrollmentDto.BillingName,
+        studentPhone: createEnrollmentDto.phone,
+        startDate: enrollmentTarget instanceof Class ? new Date(enrollmentTarget.startDate) : new Date(),
+        endDate: enrollmentTarget instanceof Class ? new Date(enrollmentTarget.endDate) : new Date(),
+        studentEmail: createEnrollmentDto.email,
+        studentName: createEnrollmentDto.name,
+        studentAddress: createEnrollmentDto.address,
+        className: enrollmentTarget instanceof Class ? enrollmentTarget.title : "",
+        location: createEnrollmentDto.city,
+        paymentInfo: {
+          method: enrollment.PaymentMode,
+          cardLastFour: enrollment.CCNo,
+          amount: initialAmount
+        },
+        billing: {
+          name: createEnrollmentDto.BillingName,
           address: createEnrollmentDto.BillingAddress,
           city: createEnrollmentDto.BillingCity,
           state: createEnrollmentDto.BillingState,
@@ -229,7 +275,7 @@ export class EnrollmentService {
           zip: createEnrollmentDto.zipCode,
           phone: createEnrollmentDto.BillPhone,
           email: createEnrollmentDto.BillMail,
-         }
+        }
 
       });
       return enrollment;

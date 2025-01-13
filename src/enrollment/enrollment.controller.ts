@@ -1,16 +1,32 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe, UseGuards, Req } from '@nestjs/common';
 import { EnrollmentService } from './enrollment.service';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { BulkUpdateEnrollmentDto, UpdateEnrollmentDto } from './dto/update-enrollment.dto';
+import { RescheduleDto } from './dto/reschedule.dto';
+import { AuthGuard } from 'src/auth/guard/auth.guard';
+import { Request } from 'express';
 
 @Controller('enrollment')
 export class EnrollmentController {
-  constructor(private readonly enrollmentService: EnrollmentService) {}
+  constructor(private readonly enrollmentService: EnrollmentService) { }
 
   @Post()
   @UsePipes(new ValidationPipe({ transform: true }))
   create(@Body() createEnrollmentDto: CreateEnrollmentDto) {
     return this.enrollmentService.create(createEnrollmentDto);
+  }
+
+
+  @UseGuards(AuthGuard)
+  @Post('/reschedule')
+  reschedule(
+    @Req() req: Request,
+    @Body() rescheduleDto: RescheduleDto) {
+    const userId = req.user.id;
+    return this.enrollmentService.rescheduleClass(
+      userId,
+      rescheduleDto
+    )
   }
 
   @Get()
