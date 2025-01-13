@@ -8,6 +8,8 @@ import typeorm from '../../config/typeorm';
 import { Logger } from '@nestjs/common';
 import { CategorySeeder } from './course.category.seeder';
 import { Category } from 'src/class/entities/category.entity';
+import { StatesSeederService } from './state.seeder';
+import { State } from 'src/state/entities/state.entity';
 
 @Module({
   imports: [
@@ -20,8 +22,8 @@ import { Category } from 'src/class/entities/category.entity';
           configService.get('typeorm'),
         inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([Country, Category])
+    TypeOrmModule.forFeature([Country, Category,State])
   ],
-  providers: [Logger, Seeder, CountriesSeederService, CategorySeeder],
+  providers: [Logger, Seeder, CountriesSeederService, CategorySeeder,StatesSeederService],
 })
 export class SeederModule {}

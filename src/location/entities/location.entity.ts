@@ -1,6 +1,7 @@
 import { BaseEntity } from 'src/common/dto/base.dto';
 import { Country } from 'src/country/entities/country.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { State } from 'src/state/entities/state.entity';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 
 @Entity('Location')
 export class Location extends BaseEntity {
@@ -21,4 +22,8 @@ export class Location extends BaseEntity {
 
   @Column({ type: 'boolean', default: false })
   isDelete: boolean;
+
+  @ManyToOne(() => State, (state) => state.locations, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'state_id' })
+  state: State;
 }

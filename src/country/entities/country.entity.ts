@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Location } from 'src/location/entities/location.entity';
 import { Promotions } from 'src/promotions/entities/promotion.entity';
+import { State } from 'src/state/entities/state.entity';
 
 @Entity('Country')
 export class Country {
@@ -28,5 +29,9 @@ export class Country {
 
   @Column({ type: 'int', nullable: true })
   updatedBy: number;
+
+
+  @OneToMany(() => State, (state) => state.country)
+  states: State[];
 }
   
