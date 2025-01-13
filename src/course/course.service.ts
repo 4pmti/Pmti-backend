@@ -39,8 +39,8 @@ export class CourseService {
 
 
       );
-      if (user.role != Role.ADMIN) {
-        throw new UnauthorizedException("You dont have access to do this operation");
+      if (!user.roles.includes(Role.ADMIN)) {
+        throw new ForbiddenException("You don't have this permission!");
       }
       const category = await this.categoryRepository.findOne({
         where: {
@@ -50,19 +50,10 @@ export class CourseService {
       if (!category) {
         throw new NotFoundException("Category not found");
       }
-      const classtype = await this.classTypeRepository.findOne({
-        where: {
-          id: createCourseDto.classType
-        }
-      });
-      if (!classtype) {
-        throw new NotFoundException("ClassType not found");
-      }
 
       const course = new Course();
       Object.assign(course, createCourseDto);
       course.category = category;
-      course.classType = classtype;
       course.createdBy = user;
       course.updatedBy = user;
       return await this.courseRepository.save(course);
@@ -135,7 +126,6 @@ export class CourseService {
           updatedBy: true,
           createdBy: true,
           category: true,
-          classType: true
         }
       });
       return course;
@@ -155,7 +145,7 @@ export class CourseService {
       if (!user) {
         throw new UnauthorizedException("Invalid User");
       }
-      if (user.role != Role.ADMIN) {
+      if (!user.roles.includes(Role.ADMIN)) {
         throw new ForbiddenException("You don't have this permission!");
       }
       const course = await this.courseRepository.findOne({

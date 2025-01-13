@@ -55,7 +55,7 @@ export class ClassService {
       if (!user) {
         throw new UnauthorizedException("Invalid User");
       }
-      if (user.role != Role.ADMIN) {
+      if (!user.roles.includes(Role.ADMIN)) {
         throw new ForbiddenException("You don't have this permission!");
       }
 
@@ -347,7 +347,7 @@ export class ClassService {
       if (!user) {
         throw new UnauthorizedException("Invalid User");
       }
-      if (user.role != Role.ADMIN) {
+      if (!user.roles.includes(Role.ADMIN)) {
         throw new ForbiddenException("You don't have this permission!");
       }
 
@@ -383,7 +383,7 @@ export class ClassService {
       if (!user) {
         throw new UnauthorizedException("Invalid User");
       }
-      if (user.role != Role.ADMIN) {
+      if (!user.roles.includes(Role.ADMIN)) {
         throw new ForbiddenException("You don't have this permission!");
       }
       const classes = await this.classRepository.findBy({ id: In(ids) });
@@ -408,7 +408,7 @@ export class ClassService {
       if (!user) {
         throw new UnauthorizedException("Invalid User");
       }
-      if (user.role != Role.ADMIN) {
+      if (!user.roles.includes(Role.ADMIN)) {
         throw new ForbiddenException("You don't have this permission!");
       }
       const classs = await this.classRepository.findOne({

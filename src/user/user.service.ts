@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Student } from 'src/student/entities/student.entity';
@@ -56,6 +56,8 @@ export class UserService {
 
     }
 
+
+
     async createStudent(createStudentDto: CreateStudentDto): Promise<Student> {
 
         if (!createStudentDto.password) {
@@ -69,7 +71,7 @@ export class UserService {
         const user = new User();
         user.name = createStudentDto.name;
         user.email = createStudentDto.email;
-        user.role = Role.STUDENT;
+        user.roles = [Role.STUDENT];
         user.password = await this.bcryptService.hashPassword(createStudentDto.password);
 
         const savedUser = await this.usersRepository.save(user);
@@ -83,18 +85,27 @@ export class UserService {
         return this.studentsRepository.save(student);
     }
 
-    async createInstructor(userId:string,createInstructorDto: CreateInstructorDto): Promise<Instructor> {
-           
-        if(!isAdmin(userId,this.usersRepository)){
+    async createInstructor(userId: string, createInstructorDto: CreateInstructorDto): Promise<Instructor | string> {
+
+        if (!isAdmin(userId, this.usersRepository)) {
             throw new UnauthorizedException("You don't have permission to perform this action.");
         }
+
+        const adminUser = await this.usersRepository.findOne({
+            where: {
+                id: userId
+            }
+        });
+        
         if (!createInstructorDto.password) {
             createInstructorDto.password = this.generateRandomPassword();
         }
+
+
         const user = new User();
         user.name = createInstructorDto.name
         user.email = createInstructorDto.emailID;
-        user.role = Role.INSTRUCTOR;
+        user.roles = [Role.INSTRUCTOR];
         user.password = await this.bcryptService.hashPassword(createInstructorDto.password);
 
         const savedUser = await this.usersRepository.save(user);
@@ -103,14 +114,17 @@ export class UserService {
         Object.assign(instructor, createInstructorDto);
         instructor.uid = `INS-${Date.now()}`;
         instructor.user = savedUser;
+        instructor.addedBy = adminUser;
+        instructor.updatedBy = adminUser;
+
 
         return this.instructorRepository.save(instructor);
     }
 
-    async createAdmin(userId:string,createAdminDto: CreateAdminDto) {
+    async createAdmin(userId: string, createAdminDto: CreateAdminDto) {
         console.log(createAdminDto);
 
-        if(!isAdmin(userId,this.usersRepository)){
+        if (!isAdmin(userId, this.usersRepository)) {
             throw new UnauthorizedException("You don't have permission to perform this action.");
         }
 
@@ -128,7 +142,7 @@ export class UserService {
         user.name = createAdminDto.name;
 
         user.email = createAdminDto.email;
-        user.role = Role.ADMIN;
+        user.roles = [Role.ADMIN];
         user.password = await this.bcryptService.hashPassword(createAdminDto.password);
 
         const savedUser = await this.usersRepository.save(user);

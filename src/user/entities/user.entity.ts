@@ -21,10 +21,9 @@ export class User {
   password: string;
 
   @Column({
-    type: 'enum',
-    enum: Role,
+    type: 'simple-array',
   })
-  role: Role;
+  roles: Role[]; 
 
   @OneToOne(() => Student, student => student.user)
   student: Student;

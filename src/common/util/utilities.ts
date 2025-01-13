@@ -10,5 +10,5 @@ export async function isAdmin(userId: string, userRepository: Repository<User>):
     if(!user){ 
         return false;
      }
-    return user.role === Role.ADMIN;
+    return user.roles.includes(Role.ADMIN);
   }

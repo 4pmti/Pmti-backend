@@ -11,8 +11,11 @@ export class InstructorController {
   constructor(private readonly instructorService: InstructorService) { }
 
   @Post()
-  create(@Body() createInstructorDto: CreateInstructorDto) {
-    return this.instructorService.create(createInstructorDto);
+  create(
+    @Req() req : Request,
+    @Body() createInstructorDto: CreateInstructorDto) {
+    const userId = req.user?.id ?? '';
+    return this.instructorService.create(userId,createInstructorDto);
   }
 
   @Get()

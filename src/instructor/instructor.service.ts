@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateInstructorDto } from './dto/create-instructor.dto';
 import { UpdateInstructorDto } from './dto/update-instructor.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { Instructor } from './entities/instructor.entity';
 import { InstructorFilterDto, InstructorStatus } from './dto/intructorfilter.dto';
 import { isAdmin } from 'src/common/util/utilities';
+import { Role } from 'src/common/enums/role';
 
 @Injectable()
 export class InstructorService {
@@ -20,8 +21,43 @@ export class InstructorService {
     private readonly instructorRepository: Repository<Instructor>,
   ) { }
 
-  create(createInstructorDto: CreateInstructorDto) {
-    return 'This action adds a new instructor';
+  async create(userId:string,createInstructorDto: CreateInstructorDto) {
+    try {
+      const user = await this.userRepository.findOne({
+        where : {
+           id : userId
+        }
+      });
+      console.log("admin user",user);
+
+      const existingUser = await this.userRepository.findOne({
+        where: {
+          email: createInstructorDto.emailID
+        }
+      });
+      if (!existingUser) {
+        throw new NotFoundException('User not found');
+      }
+
+      if (existingUser.roles.includes(Role.INSTRUCTOR)) {
+        throw new BadRequestException("This user is already an instructor");
+      }
+
+      existingUser.roles.push(Role.INSTRUCTOR)
+      await this.userRepository.save(existingUser);
+      // now create an instructor table
+      const instructor = new Instructor();
+      Object.assign(instructor, createInstructorDto);
+      instructor.uid = `INS-${Date.now()}`;
+      instructor.user = existingUser;
+      instructor.addedBy = user;
+      instructor.updatedBy = user;
+      return this.instructorRepository.save(instructor);
+      
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 
   async findAll(

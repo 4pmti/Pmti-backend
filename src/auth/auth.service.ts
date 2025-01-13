@@ -42,19 +42,19 @@ export class AuthService {
 
 
     let realuser: any;
-    if (user.role == Role.ADMIN) {
-      realuser = await this.adminRepository.findOne({
-        where: {
-          email: email,
-        }
-      });
-    } else if (user.role == Role.STUDENT) {
-      realuser = await this.studentRepository.findOne({
-        where: {
-          email: email,
-        }
-      });
-    }
+    // if (user.roles.includes(Role.ADMIN))
+    //   realuser = await this.adminRepository.findOne({
+    //     where: {
+    //       email: email,
+    //     }
+    //   });
+    // } else if (ser.role == Roule.STUDENT) {
+    //   realuser = await this.studentRepository.findOne({
+    //     where: {
+    //       email: email,
+    //     }
+    //   });
+    // }
     // TODO: add other roles
 
     const payload = { id: user.id, email: user.email };
