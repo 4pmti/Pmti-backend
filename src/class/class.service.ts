@@ -233,12 +233,20 @@ export class ClassService {
         );
       }
 
+      console.log('Filters:', filters);
+      console.log('startFrom:', startFrom);
+      console.log('dateTo:', dateTo);
+      
+
       // Apply date range filter
       if (startFrom) {
-        queryBuilder.andWhere('class.startDate >= :startFrom', { startFrom });
+        const formattedStartFrom = new Date(startFrom).toISOString().split('T')[0];
+        queryBuilder.andWhere('class.startDate >= :startFrom', { startFrom: formattedStartFrom });
+      
       }
       if (dateTo) {
-        queryBuilder.andWhere('class.endDate <= :dateTo', { dateTo });
+        const formattedDateTo = new Date(dateTo).toISOString().split('T')[0];
+        queryBuilder.andWhere('class.endDate <= :dateTo', { dateTo: formattedDateTo });
       }
 
       // Apply class type filter
@@ -275,6 +283,8 @@ export class ClassService {
       // Apply pagination
       const skip = (page - 1) * limit;
       queryBuilder.skip(skip).take(limit);
+
+      console.log(queryBuilder.getSql());
 
       // Execute query and get total count
       const [classes, total] = await queryBuilder.getManyAndCount();
