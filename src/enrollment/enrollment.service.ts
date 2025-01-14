@@ -57,6 +57,7 @@ export class EnrollmentService {
           id: rescheduleDto.studentId
         }
       });
+      console.log(student);
 
       if (!student) {
         throw new NotFoundException('Student not found');
@@ -67,17 +68,29 @@ export class EnrollmentService {
           id: rescheduleDto.studentId
         }
       });
+      console.log(classs);
 
       if (!classs) {
         throw new NotFoundException('Class not found');
       }
 
-     //TODO : implement this
-
-
-
-
-
+      const enrollment = await queryRunner.manager.findOne(Enrollment, {
+        where: {
+          ID: rescheduleDto.enrollmentId,
+          student:{
+            id : student.id
+          },
+        },
+        relations :{
+          student : true,
+          class : true
+        }
+      });
+      console.log(enrollment);
+      if (!enrollment) {
+        throw new NotFoundException('Enrollment not found');
+      }
+     
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
@@ -91,7 +104,7 @@ export class EnrollmentService {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-    // console.log(createEnrollmentDto);
+    console.log(createEnrollmentDto);
     try {
       //validate the class and course
       if (createEnrollmentDto.classId && createEnrollmentDto.courseId) {
@@ -111,6 +124,7 @@ export class EnrollmentService {
           throw new NotFoundException("Course not found");
         }
       } else if (createEnrollmentDto.classId) {
+
         enrollmentTarget = await queryRunner.manager.findOne(Class, {
           where: {
             id: createEnrollmentDto.classId,

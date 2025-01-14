@@ -12,6 +12,10 @@ export class RescheduleDto {
     @IsNotEmpty({ message: 'Strundet ID is required' })
     studentId?: number;
 
+    @IsNumber()
+    @IsNotEmpty({message : "Enrollment Id is required"})
+    enrollmentId? : number
+
     @IsString()
     @IsOptional()
     @MaxLength(500)
