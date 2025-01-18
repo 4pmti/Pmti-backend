@@ -48,7 +48,14 @@ export class LocationService {
 
   async findAll() {
     try {
-      return await this.locationRepository.find();
+      return await this.locationRepository.find(
+        {
+          relations : {
+            country : true,
+            state : true
+          }
+        }
+      );
     } catch (error) {
       console.log(error);
       throw error;
