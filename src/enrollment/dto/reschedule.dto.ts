@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength,ValidateIf } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength,ValidateIf } from 'class-validator';
 
 
 export class RescheduleDto {
@@ -14,12 +14,20 @@ export class RescheduleDto {
 
     @IsNumber()
     @IsNotEmpty({message : "Enrollment Id is required"})
-    enrollmentId? : number
+    enrollmentId? : number 
+
+    @IsBoolean()
+    @IsOptional()
+    isPaid? : boolean;
+
+    @IsNumber()
+    @IsOptional()
+    amount:number;
 
     @IsString()
     @IsOptional()
     @MaxLength(500)
-    Comments?: string;
+    comments?: string;
 
     @IsString()
     @IsNotEmpty()

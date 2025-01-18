@@ -79,7 +79,7 @@ export class EnrollmentService {
         throw new NotFoundException('Class not found');
       }
 
-      const enrollment = await queryRunner.manager.findOne(Enrollment, {
+      let enrollment = await queryRunner.manager.findOne(Enrollment, {
         where: {
           ID: rescheduleDto.enrollmentId,
           student: {
@@ -96,6 +96,31 @@ export class EnrollmentService {
         throw new NotFoundException('Enrollment not found');
       }
 
+      if (rescheduleDto.isPaid) {
+        const result = await this.authorizeNetService.chargeCreditCard(
+          rescheduleDto.amount,
+          rescheduleDto.ccNo,
+          rescheduleDto.CCExpiry,
+          rescheduleDto.CVV,
+          student.name,
+          '', ''
+        );
+        await queryRunner.manager.update(Enrollment, enrollment.ID, {
+          class: classs,
+          Comments: `reschedule paid amount ${rescheduleDto.amount} on ${Date.now()}`
+        });
+      }
+      await queryRunner.manager.update(Enrollment, enrollment.ID, {
+        class: classs,
+        Comments: `reschedule class on ${Date.now()}`
+      });
+      const updatedEnrollment = await queryRunner.manager.findOne(Enrollment, {
+        where: {
+          ID: enrollment.ID
+        }
+      });
+      await queryRunner.commitTransaction();
+      return updatedEnrollment;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
@@ -234,7 +259,7 @@ export class EnrollmentService {
     }
   }
 
-  async createOfflineCourseEnrollment(userId:string,offlineEnrollment:OfflineCourseEnrollmentDto){
+  async createOfflineCourseEnrollment(userId: string, offlineEnrollment: OfflineCourseEnrollmentDto) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -360,7 +385,7 @@ export class EnrollmentService {
     } finally {
       await queryRunner.release();
     }
-  
+
   }
 
 
