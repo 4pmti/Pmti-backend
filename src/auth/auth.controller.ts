@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from 'src/user/user.service';
 import { Role } from 'src/common/enums/role';
@@ -15,6 +15,17 @@ export class AuthController {
   constructor(private readonly authService: AuthService,
     private readonly userService: UserService
   ) { }
+
+
+  @UseGuards(AuthGuard)
+  @Get('user')
+  async getUser(
+    @Req() req: Request,
+  ){
+    const userId = req.user.id;
+    console.log(userId);
+    return this.userService.findOneByUserId(userId);
+  }
 
   @Post('signup/student')
   async studentSignup(@Body() createStudentDto: CreateStudentDto) {
