@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query } from '@nestjs/common';
 import { StateService } from './state.service';
 import { CreateStateDto } from './dto/create-state.dto';
 import { UpdateStateDto } from './dto/update-state.dto';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { Request } from 'express';
+import { StateFilterDto } from './dto/state-filter.dto';
 
 @Controller('state')
 export class StateController {
@@ -19,8 +20,10 @@ export class StateController {
   }
 
   @Get()
-  findAll() {
-    return this.stateService.findAll();
+  findAll(
+    @Query() filterDto: StateFilterDto
+  ) {
+    return this.stateService.findAll(filterDto);
   }
 
   @Get(':id')

@@ -24,4 +24,6 @@ export class CreateLocationDto {
     @IsNotEmpty()
     country: number;  
 
+    @IsNotEmpty()
+    state: number;  
 }

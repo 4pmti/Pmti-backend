@@ -8,6 +8,7 @@ import { User } from 'src/user/entities/user.entity';
 import { isAdmin } from 'src/common/util/utilities';
 import { Country } from 'src/country/entities/country.entity';
 import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
+import { StateFilterDto } from './dto/state-filter.dto';
 
 @Injectable()
 export class StateService {
@@ -44,8 +45,23 @@ export class StateService {
     }
   }
 
-  async findAll() {
-    return await this.stateRepository.find();
+  async findAll(filterDto: StateFilterDto): Promise<State[]> {
+    const { countryId, stateId } = filterDto;
+
+    const query = this.stateRepository
+      .createQueryBuilder('state')
+      .leftJoinAndSelect('state.locations', 'location')
+      .leftJoinAndSelect('state.country', 'country');
+
+    if (countryId) {
+      query.andWhere('state.country_id = :countryId', { countryId });
+    }
+
+    if (stateId) {
+      query.andWhere('state.id = :stateId', { stateId });
+    }
+
+    return await query.getMany();
   }
 
   async findOne(id: number) {

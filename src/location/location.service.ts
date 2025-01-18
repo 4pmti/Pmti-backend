@@ -7,6 +7,7 @@ import { CountryService } from '../country/country.service';
 import { CreateLocationDto } from './dto/create-location.dto';
 import { UpdateLocationDto } from './dto/update-location.dto';
 import { Role } from 'src/common/enums/role';
+import { State } from 'src/state/entities/state.entity';
 
 @Injectable()
 export class LocationService {
@@ -15,6 +16,8 @@ export class LocationService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Location)
     private readonly locationRepository: Repository<Location>,
+    @InjectRepository(State)
+    private readonly stateRepository: Repository<State>,
     private readonly countryService: CountryService,
   ) { }
 
@@ -34,11 +37,25 @@ export class LocationService {
         throw new NotFoundException('Country not found');
       }
 
+      const state = await this.stateRepository.findOne({
+        where : {
+          id : createLocationDto.state
+        }
+      });
+
+      if (!state) {
+        throw new NotFoundException('State not found');
+      }
+
+
+      
+
       const location = new Location();
       location.location = createLocationDto.location;
       location.country = Promise.resolve(country);
       location.addedBy = userId;
       location.updatedBy = userId;
+      location.state = state;
       return await this.locationRepository.save(location);
     } catch (error) {
       console.log(error);

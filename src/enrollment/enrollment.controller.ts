@@ -5,6 +5,7 @@ import { BulkUpdateEnrollmentDto, UpdateEnrollmentDto } from './dto/update-enrol
 import { RescheduleDto } from './dto/reschedule.dto';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { Request } from 'express';
+import { OfflineClassEnrollmentDto } from './dto/class-offline-enrollment.dto';
 
 @Controller('enrollment')
 export class EnrollmentController {
@@ -15,6 +16,30 @@ export class EnrollmentController {
   create(@Body() createEnrollmentDto: CreateEnrollmentDto) {
     return this.enrollmentService.create(createEnrollmentDto);
   }
+
+  @UseGuards(AuthGuard)
+  @Post('/course')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  createOfflineEnrollmentForCourse(
+    @Req() req: Request,
+    @Body() rescheduleDto: CreateEnrollmentDto
+  ){
+    const userId = req.user.id;
+
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('/class')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  createOfflineEnrollmentForClass(
+    @Req() req: Request,
+    @Body() offlineClassDto: OfflineClassEnrollmentDto
+  ){
+    const userId = req.user.id;
+    return this.enrollmentService.createOfflineClassEnrollment(userId,offlineClassDto);
+
+  }
+
 
 
   @UseGuards(AuthGuard)

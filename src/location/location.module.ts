@@ -6,10 +6,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Location } from './entities/location.entity';
 import { CountryModule } from 'src/country/country.module';
+import { State } from 'src/state/entities/state.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Location, User]),
+    TypeOrmModule.forFeature([Location, User,State]),
     AuthModule,
     forwardRef(() => CountryModule)
   ],
