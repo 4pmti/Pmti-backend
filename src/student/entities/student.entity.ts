@@ -20,7 +20,7 @@ export class Student {
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   state: string;
-
+  
   @Column({ type: 'varchar', length: 100, nullable: true })
   country: string;
 
