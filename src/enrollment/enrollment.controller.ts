@@ -19,7 +19,7 @@ export class EnrollmentController {
 
   @UseGuards(AuthGuard)
   @Post('/course')
-  @UsePipes(new ValidationPipe({ transform: true }))
+ // @UsePipes(new ValidationPipe({ transform: true }))
   createOfflineEnrollmentForCourse(
     @Req() req: Request,
     @Body() rescheduleDto: CreateEnrollmentDto
@@ -30,7 +30,7 @@ export class EnrollmentController {
 
   @UseGuards(AuthGuard)
   @Post('/class')
-  @UsePipes(new ValidationPipe({ transform: true }))
+  //@UsePipes(new ValidationPipe({ transform: true }))
   createOfflineEnrollmentForClass(
     @Req() req: Request,
     @Body() offlineClassDto: OfflineClassEnrollmentDto
