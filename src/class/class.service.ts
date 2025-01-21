@@ -220,10 +220,8 @@ export class ClassService {
         .leftJoinAndSelect('class.location', 'location')
         .leftJoinAndSelect('class.instructor', 'instructor')
         .leftJoinAndSelect('class.country', 'country')
-        .leftJoinAndSelect('class.addedBy', 'addedBy') // Example for addedBy user relation
-        .leftJoinAndSelect('class.updatedBy', 'updatedBy'); // Example for updatedBy user relation
-
-      // Apply search if provided
+        .leftJoinAndSelect('class.addedBy', 'addedBy') 
+        .leftJoinAndSelect('class.updatedBy', 'updatedBy');
 
       // Apply search if provided
       if (search) {

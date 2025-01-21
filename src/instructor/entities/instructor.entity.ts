@@ -45,10 +45,10 @@ export class Instructor {
   @Column({ type: 'boolean', default: true })
   active: boolean;
 
-  @OneToOne(() => User, user => user.instructor)
+  @OneToOne(() => User, user => user.instructor,{ cascade: true, onDelete: 'CASCADE' })
   @JoinColumn()
   user: User;
 
-  @OneToMany(() => Class, classEntity => classEntity.instructor)
+  @OneToMany(() => Class, classEntity => classEntity.instructor,{ cascade: true, onDelete: 'CASCADE' })
   classes: Class[];
 }

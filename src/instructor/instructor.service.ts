@@ -128,8 +128,13 @@ export class InstructorService {
       if (!isAdmin(userId, this.userRepository)) {
         throw new UnauthorizedException('You are not authorized to perform this action');
       }
-      return await this.instructorRepository.delete(id);
-
+      const instructor = await this.instructorRepository.findOne({ where: { id } });
+      if (!instructor) {
+        throw new NotFoundException('Instructor not found');
+      }
+      return await this.instructorRepository.update(id,{
+        isDelete: true
+      });
     } catch (error) {
       console.error(error);
       throw error;
