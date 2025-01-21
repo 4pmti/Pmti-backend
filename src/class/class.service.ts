@@ -221,7 +221,8 @@ export class ClassService {
         .leftJoinAndSelect('class.instructor', 'instructor')
         .leftJoinAndSelect('class.country', 'country')
         .leftJoinAndSelect('class.addedBy', 'addedBy') 
-        .leftJoinAndSelect('class.updatedBy', 'updatedBy');
+        .leftJoinAndSelect('class.updatedBy', 'updatedBy')
+        .loadRelationCountAndMap('class.enrollmentCount', 'class.enrollments');
 
       // Apply search if provided
       if (search) {
@@ -292,6 +293,7 @@ export class ClassService {
       const currentPage = page;
       const hasNext = currentPage < totalPages;
       const hasPrevious = currentPage > 1;
+      console.log('Classes:', classes);
 
       return {
         data: classes,

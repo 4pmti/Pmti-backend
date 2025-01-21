@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Location } from 'src/location/entities/location.entity';
 import { Country } from 'src/country/entities/country.entity';
 import { Instructor } from 'src/instructor/entities/instructor.entity';
@@ -6,6 +6,7 @@ import { Category } from './category.entity';
 import { ClassType } from './classtype.entity';
 import { User } from 'src/user/entities/user.entity';
 import { BaseEntity } from 'src/common/dto/base.dto';
+import { Enrollment } from 'src/enrollment/entities/enrollment.entity';
 
 @Entity('Class')
 export class Class extends BaseEntity {
@@ -100,6 +101,10 @@ export class Class extends BaseEntity {
   hotelConfirmation: string;
 
   @ManyToOne(() => Instructor, instructor => instructor.classes)
-  @JoinColumn() 
+  @JoinColumn()
   instructor: Instructor;
+
+  @OneToMany(() => Enrollment, enrollment => enrollment.class)
+  enrollments: Enrollment[];
+
 }
