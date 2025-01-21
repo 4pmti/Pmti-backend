@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateInstructorDto } from './dto/create-instructor.dto';
 import { UpdateInstructorDto } from './dto/update-instructor.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -142,13 +142,22 @@ export class InstructorService {
   }
   async removeBulk(ids: number[], userId: string) {
     try {
+      // Check if the user has admin privileges
       if (!isAdmin(userId, this.userRepository)) {
         throw new UnauthorizedException('You are not authorized to perform this action');
       }
-      return await this.instructorRepository.delete(ids);
-
+  
+      // Bulk update isDelete to true for the given IDs
+      await this.instructorRepository.update(ids, { isDelete: true });
+  
+      return {
+        message: 'Instructors marked as deleted successfully',
+        success: true,
+      };
     } catch (error) {
-
+      console.error(error);
+      throw new InternalServerErrorException('Failed to mark instructors as deleted');
     }
   }
+  
 }
