@@ -7,7 +7,7 @@ export class Instructor {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @PrimaryGeneratedColumn('uuid')
+  @Column({ type: 'uuid', generated: 'uuid' })
   uid: string;
 
   @Column({ type: 'varchar', length: 255 })
