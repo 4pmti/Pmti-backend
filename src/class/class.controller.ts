@@ -25,8 +25,6 @@ export class ClassController {
   }
 
 
-
-  @UseGuards(AuthGuard)
   @Get()
   findAll(
     @Query() filterDto: FilterDto
