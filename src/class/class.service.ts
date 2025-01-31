@@ -13,9 +13,10 @@ import { Instructor } from 'src/instructor/entities/instructor.entity';
 import { Country } from 'src/country/entities/country.entity';
 import { Role } from 'src/common/enums/role';
 import { Class } from './entities/class.entity';
-import { FilterDto } from './dto/filter.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { Enrollment } from 'src/enrollment/entities/enrollment.entity';
+import { State } from 'src/state/entities/state.entity';
+import { FilterDto } from './dto/filter.dto';
 
 @Injectable()
 export class ClassService {
@@ -40,13 +41,17 @@ export class ClassService {
     @InjectRepository(Country)
     private readonly countryRepository: Repository<Country>,
     @InjectRepository(Enrollment)
-    private readonly enrollmentRepository: Repository<Enrollment>
+    private readonly enrollmentRepository: Repository<Enrollment>,
+    @InjectRepository(State)
+    private readonly stateRepository: Repository<State>
   ) { }
 
 
   async create(userId: string, createClassDto: CreateClassDto) {
 
     try {
+
+      console.log(createClassDto);
       const user = await this.userRepository.findOne({
         where: {
           id: userId
@@ -106,7 +111,17 @@ export class ClassService {
       });
       if (!location) {
         throw new BadRequestException('Location Not Found');
+      }     
+      const state = await this.stateRepository.findOne({
+        where: {
+          id: +createClassDto.stateId
+        }
+      });
+      
+      if (!state) {
+        throw new NotFoundException("State not found");
       }
+
       const newClass = new Class();
       Object.assign(newClass, createClassDto);;
       newClass.category = classCategory;
@@ -116,6 +131,7 @@ export class ClassService {
       newClass.classType = classType;
       newClass.location = location;
       newClass.country = country;
+      newClass.state = state;
       return await this.classRepository.save(newClass);
     } catch (error) {
       console.log(error);
@@ -132,19 +148,20 @@ export class ClassService {
         where: {
           id: classId
         },
-        relations:{
-          instructor : true,
-          location:true,
-          country:true,
-          classType:true,
-          category:true
+        relations: {
+          instructor: true,
+          location: true,
+          country: true,
+          classType: true,
+          category: true,
+          state : true
         }
       });
       if (!classs) {
         throw new NotFoundException("Class not Found");
       }
       console.log(classs);
-      const enrollments =         await this.enrollmentRepository.find({
+      const enrollments = await this.enrollmentRepository.find({
         where: {
           class: { id: classs.id },
           enrollmentType: 'Class',
@@ -178,14 +195,14 @@ export class ClassService {
           // Exclude fields like CCNo, CCExpiry, CreditCardHolder, etc.
         }
       });
-      
 
-      const data =  {
-        classs, 
+
+      const data = {
+        classs,
         enrollments,
-    }
-    
-    return data;
+      }
+
+      return data;
 
 
     } catch (error) {
@@ -197,8 +214,9 @@ export class ClassService {
 
 
 
-  async findAll(filters: FilterDto) {
+  async findAll(filters:FilterDto) {
     try {
+      console.log(filters);
       const {
         page = 1,
         limit = 10,
@@ -210,8 +228,10 @@ export class ClassService {
         courseCategory,
         locationId,
         instructorId,
-        countryId
+        countryId,
+        stateId
       } = filters;
+      console.log(filters);
 
       // Create query builder
       const queryBuilder = this.classRepository.createQueryBuilder('class')
@@ -220,8 +240,9 @@ export class ClassService {
         .leftJoinAndSelect('class.location', 'location')
         .leftJoinAndSelect('class.instructor', 'instructor')
         .leftJoinAndSelect('class.country', 'country')
-        .leftJoinAndSelect('class.addedBy', 'addedBy') 
+        .leftJoinAndSelect('class.addedBy', 'addedBy')
         .leftJoinAndSelect('class.updatedBy', 'updatedBy')
+        .leftJoinAndSelect('class.state','state')
         .loadRelationCountAndMap('class.enrollmentCount', 'class.enrollments');
 
       // Apply search if provided
@@ -235,14 +256,16 @@ export class ClassService {
       console.log('Filters:', filters);
       console.log('startFrom:', startFrom);
       console.log('dateTo:', dateTo);
-      
+
 
       // Apply date range filter
       if (startFrom) {
         const formattedStartFrom = new Date(startFrom).toISOString().split('T')[0];
         queryBuilder.andWhere('class.startDate >= :startFrom', { startFrom: formattedStartFrom });
-      
+
       }
+
+    
       if (dateTo) {
         const formattedDateTo = new Date(dateTo).toISOString().split('T')[0];
         queryBuilder.andWhere('class.endDate <= :dateTo', { dateTo: formattedDateTo });
@@ -261,6 +284,10 @@ export class ClassService {
       // Apply location filter
       if (locationId) {
         queryBuilder.andWhere('class.locationID = :locationId', { locationId });
+      }
+
+      if(stateId){
+        queryBuilder.andWhere('class.stateId = :stateId', { stateId });
       }
 
       // Apply instructor filter
@@ -319,12 +346,12 @@ export class ClassService {
         where: {
           id: id
         },
-        relations:{
-          instructor : true,
-          location:true,
-          country:true,
-          classType:true,
-          category:true
+        relations: {
+          instructor: true,
+          location: true,
+          country: true,
+          classType: true,
+          category: true
         }
       });
       if (!classs) {
@@ -361,11 +388,9 @@ export class ClassService {
       }
       Object.assign(classs, updateClassDto);
 
-
       const updatedClass = await this.classRepository.save(classs);
 
       return updatedClass;
-
 
     } catch (error) {
       console.log(error);

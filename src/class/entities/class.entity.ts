@@ -7,6 +7,7 @@ import { ClassType } from './classtype.entity';
 import { User } from 'src/user/entities/user.entity';
 import { BaseEntity } from 'src/common/dto/base.dto';
 import { Enrollment } from 'src/enrollment/entities/enrollment.entity';
+import { State } from 'src/state/entities/state.entity';
 
 @Entity('Class')
 export class Class extends BaseEntity {
@@ -24,6 +25,10 @@ export class Class extends BaseEntity {
   @ManyToOne(() => Country)
   @JoinColumn({ name: 'countryID' })
   country: Country;
+
+  @ManyToOne(()=>State)
+  @JoinColumn({name : 'stateId'})
+  state:State;
 
   @ManyToOne(() => Location)
   @JoinColumn({ name: 'locationID' })

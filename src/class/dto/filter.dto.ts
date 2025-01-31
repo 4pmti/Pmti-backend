@@ -34,6 +34,9 @@ export class FilterDto {
 
     @ApiPropertyOptional({ description: 'The ID of the country' })
     countryId?: number;
+
+    @ApiPropertyOptional({ description: 'The ID of the state' })
+    stateId?: number;
 }
 
 

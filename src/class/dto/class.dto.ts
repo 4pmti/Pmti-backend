@@ -31,6 +31,9 @@ export class ClassDto {
   @IsDate()
   startDate: Date; 
 
+  @IsNumber()
+  stateId?:number;
+
   @IsNotEmpty()
   @IsDate()
   endDate: Date;  

@@ -34,8 +34,8 @@ export class ClassController {
 
   @UseGuards(AuthGuard)
   @Get(":id/detail")
-  findClassDetails(@Param('id') id:string){
-       return this.classService.findClassDetails(+id);
+  findClassDetails(@Param('id') id: string) {
+    return this.classService.findClassDetails(+id);
   }
 
 
@@ -61,7 +61,7 @@ export class ClassController {
     if (!Array.isArray(ids) || ids.length === 0) {
       throw new Error('Invalid input: IDs should be a non-empty array.');
     }
-    return this.classService.bulkDelete(userId,ids);
+    return this.classService.bulkDelete(userId, ids);
   }
 
 
@@ -70,7 +70,7 @@ export class ClassController {
   @Delete(':id')
   remove(@Param('id') id: string, @Req() req: Request) {
     const userId = req.user?.id ?? '';
-    return this.classService.remove(+id,userId);
+    return this.classService.remove(+id, userId);
   }
 }
 
