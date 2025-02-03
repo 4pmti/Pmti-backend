@@ -106,7 +106,7 @@ export class ClassService {
 
       const location = await this.locationRepository.findOne({
         where: {
-          id: createClassDto.countryId
+          id: createClassDto.locationId
         }
       });
       if (!location) {
@@ -231,8 +231,7 @@ export class ClassService {
         countryId,
         stateId
       } = filters;
-      console.log(filters);
-
+     
       // Create query builder
       const queryBuilder = this.classRepository.createQueryBuilder('class')
         .leftJoinAndSelect('class.classType', 'classType')
