@@ -51,8 +51,7 @@ export class StateService {
     const query = this.stateRepository
       .createQueryBuilder('state')
       .leftJoinAndSelect('state.locations', 'location')
-      .leftJoinAndSelect('state.country', 'country');
-
+      
     if (countryId) {
       query.andWhere('state.country_id = :countryId', { countryId });
     }

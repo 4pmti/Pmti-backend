@@ -21,12 +21,17 @@ export class CountryService {
   }
 
   async findAll() {
-    return await this.countryRepository.find(
-      {
-        relations: ['locations']
-      }
-    );
+    const countries = await this.countryRepository.find({
+     relations : {
+      locations : true,
+      states : true
+     }
+    });
+    console.log(countries);
+  
+   return countries;
   }
+  
 
   findOne(id: number) {
     return this.countryRepository.findOne({ where: { id } });
