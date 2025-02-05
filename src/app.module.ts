@@ -19,6 +19,8 @@ import { PaymentModule } from './payment/payment.module';
 import { PromotionsModule } from './promotions/promotions.module';
 import { EnrollmentModule } from './enrollment/enrollment.module';
 import { StateModule } from './state/state.module';
+import { UploadModule } from './upload/upload.module';
+import { BlogModule } from './blog/blog.module';
 
 
 @Module({
@@ -46,7 +48,9 @@ import { StateModule } from './state/state.module';
     PaymentModule,
     PromotionsModule,
     EnrollmentModule,
-    StateModule],
+    StateModule,
+    UploadModule,
+    BlogModule],
   controllers: [AppController],
   providers: [AppService],
 })
