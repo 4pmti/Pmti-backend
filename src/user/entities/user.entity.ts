@@ -4,6 +4,7 @@ import { Student } from 'src/student/entities/student.entity';
 import { Admin } from 'src/admin/entities/admin.entity';
 import { Instructor } from 'src/instructor/entities/instructor.entity';
 import { Promotions } from 'src/promotions/entities/promotion.entity';
+import { Blog } from 'src/blog/entities/blog.entity';
 
 
 @Entity('users')
@@ -45,5 +46,8 @@ export class User {
 
   @OneToMany(() => Promotions, (promotion) => promotion.updatedBy)
   updatedPromotions: Promotions[];
+
+  @OneToMany(() => Blog, (blog) => blog.user)
+  blogs: Blog[];
 }
 
