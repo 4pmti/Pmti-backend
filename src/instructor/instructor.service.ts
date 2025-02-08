@@ -107,7 +107,7 @@ export class InstructorService {
 
   async update(id: number, updateInstructorDto: UpdateInstructorDto, userId: string) {
     try {
-      if (!isAdmin(userId, this.userRepository)) {
+      if (!await isAdmin(userId, this.userRepository)) {
         throw new UnauthorizedException('You are not authorized to perform this action');
       }
       const instructor = await this.instructorRepository.findOne({ where: { id } });
@@ -125,7 +125,7 @@ export class InstructorService {
 
   async remove(userId: string, id: number) {
     try {
-      if (!isAdmin(userId, this.userRepository)) {
+      if (!await isAdmin(userId, this.userRepository)) {
         throw new UnauthorizedException('You are not authorized to perform this action');
       }
       const instructor = await this.instructorRepository.findOne({ where: { id } });
@@ -143,7 +143,7 @@ export class InstructorService {
   async removeBulk(ids: number[], userId: string) {
     try {
       // Check if the user has admin privileges
-      if (!isAdmin(userId, this.userRepository)) {
+      if (!await isAdmin(userId, this.userRepository)) {
         throw new UnauthorizedException('You are not authorized to perform this action');
       }
   

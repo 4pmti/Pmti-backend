@@ -9,6 +9,7 @@ import { Blog } from './entities/blog.entity';
 import { Role } from 'src/common/enums/role';
 import { Tag } from './entities/tag.entity';
 import { FilterBlogDto } from './dto/filter-blog.dto';
+import { isAdmin } from 'src/common/util/utilities';
 
 
 @Injectable()
@@ -19,11 +20,8 @@ export class BlogService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Blog)
     private readonly blogRepository: Repository<Blog>,
-
     @InjectRepository(Tag)
     private readonly tagRepo: Repository<Tag>,
-
-
   ) { }
 
   async create(userId: string, createBlogDto: CreateBlogDto) {
@@ -66,36 +64,41 @@ export class BlogService {
   }
 
   async findAll(filter: FilterBlogDto) {
-    const { page = 1, limit = 10, search, tags, userId } = filter;
+    try {
+      const { page = 1, limit = 10, search, tags, userId } = filter;
 
-    const query = this.blogRepository.createQueryBuilder('blog')
-      .leftJoinAndSelect('blog.tags', 'tag')
-      .leftJoinAndSelect('blog.user', 'user')
-      .skip((page - 1) * limit)
-      .take(limit);
+      const query = this.blogRepository.createQueryBuilder('blog')
+        .leftJoinAndSelect('blog.tags', 'tag')
+        .leftJoinAndSelect('blog.user', 'user')
+        .skip((page - 1) * limit)
+        .take(limit);
 
-    if (search) {
-      query.andWhere('(blog.title ILIKE :search OR blog.content ILIKE :search)', { search: `%${search}%` });
-    }
+      if (search) {
+        query.andWhere('(LOWER(blog.title) LIKE LOWER(:search) OR LOWER(blog.content) LIKE LOWER(:search))', { search: `%${search}%` });
+      }
 
-    if (tags && tags.length > 0) {
-      query.andWhere('tag.name IN (:...tags)', { tags });
-    }
+      if (tags && tags.length > 0) {
+        query.andWhere('tag.name IN (:...tags)', { tags });
+      }
 
-    if (userId) {
-      query.andWhere('user.id = :userId', { userId });
-    }
+      if (userId) {
+        query.andWhere('user.id = :userId', { userId });
+      }
 
-    const [blogs, total] = await query.getManyAndCount();
+      const [blogs, total] = await query.getManyAndCount();
 
-    return {
-      data: blogs,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
+      return {
+        data: blogs,
+        meta: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      }
+    } catch (e) {
+      console.log(e);
+      throw e;
     }
 
   }
@@ -113,8 +116,51 @@ export class BlogService {
     }
   }
 
-  async update(id: number, updateBlogDto: UpdateBlogDto) {
-    return `This action updates a #${id} blog`;
+  async update(userId: string, id: number, updateBlogDto: UpdateBlogDto) {
+    try {
+
+      if (!await isAdmin(userId, this.userRepository)) {
+        throw new UnauthorizedException("You dont have enough permission to do this");
+      }
+
+      const user = await this.userRepository.findOne({
+        where: {
+          id: userId
+        }
+      });
+
+      if (!user) {
+        throw new UnauthorizedException("User not found!");
+      }
+      const blog = await this.blogRepository.findOne({
+        where: {
+          id
+        },
+        relations: {
+          user: true
+        }
+      });
+      console.log(blog);
+      if (!blog) {
+        throw new NotFoundException('Blog not found!');
+      }
+      console.log(user);
+      if (blog.user.id != user.id) {
+        throw new UnauthorizedException("This action is not allowed!");
+      }
+      console.log(id);
+
+      // Update the blog
+      await this.blogRepository.update(id, updateBlogDto);
+
+      // Fetch updated blog
+      const updatedBlog = await this.blogRepository.findOne({ where: { id } });
+
+      return updatedBlog;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 
   async remove(id: number) {

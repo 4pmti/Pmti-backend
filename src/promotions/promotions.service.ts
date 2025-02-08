@@ -71,7 +71,7 @@ export class PromotionsService {
         throw new NotFoundException("User Not Found");
       }
 
-      if (!isAdmin(userId, this.userRepository)) {
+      if (!await isAdmin(userId, this.userRepository)) {
         throw new UnauthorizedException("You Dont Have permission to perform this action");
       }
       console.log(createPromotionDto);
@@ -183,7 +183,7 @@ export class PromotionsService {
         throw new NotFoundException("User Not Found");
       }
 
-      if (!isAdmin(userId, this.userRepository)) {
+      if (!await isAdmin(userId, this.userRepository)) {
         throw new UnauthorizedException("You Dont have the permission to do this action");
       }
 
@@ -243,7 +243,7 @@ export class PromotionsService {
         throw new NotFoundException("User Not Found");
       }
 
-      if (!isAdmin(userId, this.userRepository)) {
+      if (!await isAdmin(userId, this.userRepository)) {
         throw new UnauthorizedException("You Dont have the permission to do this action");
       }
 
@@ -274,7 +274,7 @@ export class PromotionsService {
         throw new NotFoundException("User Not Found");
       }
 
-      if (!isAdmin(userId, this.userRepository)) {
+      if (!await isAdmin(userId, this.userRepository)) {
         throw new UnauthorizedException("You Dont have the permission to do this action");
       }
 

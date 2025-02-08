@@ -12,12 +12,12 @@ export class CreateBlogDto {
   @IsOptional()
   @IsArray()
   @ArrayUnique() 
-  @IsString({ each: true }) // Validates each element in the array as a string
+  @IsString({ each: true })
   tagNames?: string[];
 
   @IsOptional()
   @IsArray()
-  @ArrayUnique() // Ensures unique article IDs
-  @IsInt({ each: true }) // Validates each element as an integer
+  @ArrayUnique() 
+  @IsInt({ each: true }) 
   relatedArticleIds?: number[];
 }

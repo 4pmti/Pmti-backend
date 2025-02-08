@@ -24,7 +24,7 @@ export class FilterBlogDto {
   tags?: string[]; // Filter by tags
 
   @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  userId?: number; // Filter by user
+  @Type(() => String)
+  @IsString()
+  userId?: string; // Filter by user
 }

@@ -39,7 +39,7 @@ export class CountryService {
 
   async removeBulk(ids: number[], userId: string) {
     try {
-      if (!isAdmin(userId, this.userRepository)) {
+      if (!await isAdmin(userId, this.userRepository)) {
         throw new UnauthorizedException('You Dont have permission to perform this action');
       }
       return await this.countryRepository.delete(ids);

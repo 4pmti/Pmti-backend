@@ -91,7 +91,7 @@ export class UserService {
 
     async createInstructor(userId: string, createInstructorDto: CreateInstructorDto): Promise<Instructor | string> {
 
-        if (!isAdmin(userId, this.usersRepository)) {
+        if (!await isAdmin(userId, this.usersRepository)) {
             throw new UnauthorizedException("You don't have permission to perform this action.");
         }
 
@@ -128,7 +128,7 @@ export class UserService {
     async createAdmin(userId: string, createAdminDto: CreateAdminDto) {
         console.log(createAdminDto);
 
-        if (!isAdmin(userId, this.usersRepository)) {
+        if (!await isAdmin(userId, this.usersRepository)) {
             throw new UnauthorizedException("You don't have permission to perform this action.");
         }
 

@@ -7,6 +7,7 @@ import { User } from 'src/user/entities/user.entity';
 
 export async function isAdmin(userId: string, userRepository: Repository<User>): Promise<boolean> {
     const user = await userRepository.findOne({ where: { id: userId } });
+    console.log(user);
     if(!user){ 
         return false;
      }

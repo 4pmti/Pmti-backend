@@ -53,7 +53,7 @@ export class EnrollmentService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      if (!isAdmin(userId, this.userRepository)) {
+      if (!await isAdmin(userId, this.userRepository)) {
         throw new UnauthorizedException("You dont have permission to perform this action!!!");
       }
       console.log(rescheduleDto);

@@ -25,7 +25,7 @@ export class StateService {
 
   async create(userId: string, createStateDto: CreateStateDto) {
     try {
-      if (!isAdmin(userId, this.userRepository)) {
+      if (!await isAdmin(userId, this.userRepository)) {
         throw new UnauthorizedException("You dont have permission to perform this.");
       }
       const country = await this.countryRepository.findOne({
@@ -120,7 +120,7 @@ export class StateService {
 
 
   async remove(userId:string,id: number) {
-    if (!isAdmin(userId, this.userRepository)) {
+    if (!await isAdmin(userId, this.userRepository)) {
       throw new UnauthorizedException("You dont have permission to perform this.");
     }
 

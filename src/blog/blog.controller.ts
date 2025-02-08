@@ -30,8 +30,13 @@ export class BlogController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
-    return this.blogService.update(+id, updateBlogDto);
+  @UseGuards(AuthGuard)
+  update(
+    @Req() req: Request,
+    @Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
+    const userId = req.user?.id ?? '';
+    console.log({userId});
+    return this.blogService.update(userId,+id, updateBlogDto);
   }
 
   @Delete(':id')
