@@ -7,8 +7,12 @@ import { createHash } from 'crypto';
 import {
   S3Client,
   PutObjectCommand,
-  GetObjectCommand,
   DeleteObjectCommand,
+  ObjectCannedACL,
+  ListObjectsV2CommandOutput,
+  ListObjectsV2Command,
+  GetObjectCommand,
+  _Object as S3Object
 } from '@aws-sdk/client-s3';
 
 
@@ -17,6 +21,7 @@ import {
 export class UploadService implements OnModuleInit {
   private readonly logger = new Logger(UploadService.name);
   private s3Client: S3Client;
+  bucketName: string;
 
   constructor(private configService: ConfigService) { }
 
@@ -29,6 +34,67 @@ export class UploadService implements OnModuleInit {
       },
     });
   }
+
+  // async listObjects(options: ListObjectsOptions = {}): Promise<ListObjectsResponse> {
+  //   try {
+  //     const command = new ListObjectsV2Command({
+  //       Bucket: this.bucketName,
+  //       Prefix: options.prefix,
+  //       MaxKeys: options.maxKeys || 1000,
+  //       ContinuationToken: options.continuationToken,
+  //     });
+
+  //     const response: ListObjectsV2CommandOutput = await this.s3Client.send(command);
+      
+  //     const objects = await Promise.all((response.Contents || []).map(async (object) => {
+  //       const url = await this.getObjectUrl(object);
+  //       return {
+  //         key: object.Key,
+  //         url,
+  //         size: object.Size,
+  //         lastModified: object.LastModified,
+  //         isPublic: await this.isObjectPublic(object.Key)
+  //       };
+  //     }));
+
+  //     return {
+  //       objects,
+  //       nextContinuationToken: response.NextContinuationToken,
+  //       isTruncated: response.IsTruncated
+  //     };
+  //   } catch (error) {
+  //     this.logger.error(`Failed to list objects: ${error}`, error);
+  //     throw new Error('Failed to list objects from S3');
+  //   }
+  // }
+  // private async getObjectUrl(object: S3Object): Promise<string> {
+  //   const isPublic = await this.isObjectPublic(object.Key);
+  //   return isPublic ? 
+  //     this.getPublicUrl(object.Key) : 
+  //     await this.getSignedUrl(object.Key);
+  // }
+
+  // private async isObjectPublic(key: string): Promise<boolean> {
+  //   try {
+  //     const command = new GetObjectCommand({
+  //       Bucket: this.bucketName,
+  //       Key: key,
+  //     });
+  //     const response = await this.s3Client.send(command);
+  //     return true;
+  //   } catch {
+  //     return false;
+  //   }
+  // }
+
+
+    /**
+   * Get public URL for an object
+   */
+    private getPublicUrl(key: string): string {
+      return `https://${this.configService.get<string>('s3.bucket')}.s3.${this.configService.get<string>('s3.region')}.amazonaws.com/${key}`;
+    }
+  
 
   private generateKey(filename: string): string {
     const timestamp = Date.now();
@@ -43,6 +109,8 @@ export class UploadService implements OnModuleInit {
     file: Buffer,
     filename: string,
     contentType: string,
+    isPublic? : boolean
+
   ): Promise<{ key: string; url: string }> {
     try {
       const key = this.generateKey(filename);
@@ -51,11 +119,14 @@ export class UploadService implements OnModuleInit {
         Key: key,
         Body: file,
         ContentType: contentType,
+        ACL: isPublic ? ObjectCannedACL.public_read : ObjectCannedACL.private,
       });
 
       await this.s3Client.send(command);
 
-      const url = await this.getSignedUrl(key);
+      const url  = isPublic 
+      ? this.getPublicUrl(key)
+      : await this.getSignedUrl(key);
       return { key, url };
     } catch (error) {
       this.logger.error(`Failed to upload file: ${error}`, error);

@@ -30,7 +30,8 @@ export class UploadController {
       const { key, url } = await this.uploadService.uploadFile(
         file.buffer,
         file.originalname, 
-        file.mimetype
+        file.mimetype,
+        true
       );
 
       return {
@@ -60,6 +61,8 @@ export class UploadController {
     ];
     return validTypes.includes(mimeType);
   }
+
+  
 
   @Delete(':id')
   remove(@Param('id') id: string) {

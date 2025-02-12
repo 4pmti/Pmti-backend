@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEnum, MaxLength, IsNumber, Max, Min } from 'class-validator';
+import { IsString, IsOptional, IsEnum, MaxLength, IsNumber, Max, Min, IsBoolean } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Express } from 'express';
 
@@ -20,6 +20,10 @@ export class FileUploadDto {
   @IsOptional()
   @IsEnum(AllowedFileTypes)
   fileType: AllowedFileTypes;
+
+  @IsOptional()
+  @IsBoolean()
+  isPublic?: boolean;
 
   @ApiProperty({
     description: 'Original filename'
