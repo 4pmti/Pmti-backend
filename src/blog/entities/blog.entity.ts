@@ -14,6 +14,9 @@ import { User } from 'src/user/entities/user.entity';
   export class Blog {
     @PrimaryGeneratedColumn()
     id: number;
+
+    @Column()
+    cover_image:string
   
     @Column()
     title: string;

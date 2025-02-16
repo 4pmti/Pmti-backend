@@ -54,6 +54,7 @@ export class BlogService {
         tags: tags,
         title: createBlogDto.title,
         content: createBlogDto.content,
+        cover_image: createBlogDto.coverImage,
         user: user,
       });
       return this.blogRepository.save(blog);
@@ -105,11 +106,23 @@ export class BlogService {
 
   async findOne(id: number) {
     try {
-      return await this.blogRepository.findOne({
+
+
+      const blog = await this.blogRepository.findOne({
         where: {
           id
+        },
+        relations: {
+          tags: true,
+          user: true
         }
       });
+
+      if (!blog) {
+        throw new NotFoundException("Blog Not Found"
+        );
+      }
+      return blog;
     } catch (error) {
       console.log(error);
       throw error;

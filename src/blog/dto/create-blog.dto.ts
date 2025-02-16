@@ -9,6 +9,10 @@ export class CreateBlogDto {
   @IsString()
   content: string;
 
+  @IsNotEmpty()
+  @IsString()
+  coverImage:string
+
   @IsOptional()
   @IsArray()
   @ArrayUnique() 
