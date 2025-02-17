@@ -21,6 +21,7 @@ import { EnrollmentModule } from './enrollment/enrollment.module';
 import { StateModule } from './state/state.module';
 import { UploadModule } from './upload/upload.module';
 import { BlogModule } from './blog/blog.module';
+import { MiscModule } from './misc/misc.module';
 
 
 @Module({
@@ -50,7 +51,8 @@ import { BlogModule } from './blog/blog.module';
     EnrollmentModule,
     StateModule,
     UploadModule,
-    BlogModule],
+    BlogModule,
+    MiscModule],
   controllers: [AppController],
   providers: [AppService],
 })
