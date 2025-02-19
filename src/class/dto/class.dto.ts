@@ -18,6 +18,9 @@ export class ClassDto {
   @IsNotEmpty()
   @IsNumber()
   classTypeId: number;  
+ 
+  @IsOptional()
+  coverImage: string;
 
   @IsOptional()
   @IsNumber()

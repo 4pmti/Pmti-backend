@@ -42,6 +42,10 @@ export class CreateCourseDto {
   @IsDecimal()
   price?: number;
 
+
+  @IsOptional()
+  coverImage: string;
+
   @IsOptional()
   @IsDecimal()
   extPrice?: number;

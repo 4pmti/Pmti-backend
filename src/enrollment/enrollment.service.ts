@@ -20,8 +20,7 @@ import { OfflineCourseEnrollmentDto } from './dto/course-offline-enrollment.dto'
 
 @Injectable()
 export class EnrollmentService {
-
-
+  
   constructor(
     private readonly dataSource: DataSource,
     private authorizeNetService: AuthorizeNetService,
@@ -73,6 +72,7 @@ export class EnrollmentService {
           id: rescheduleDto.studentId
         }
       });
+
       console.log(classs);
 
       if (!classs) {

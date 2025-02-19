@@ -23,12 +23,16 @@ import {
   
     @Column({ type: 'varchar', length: 255, nullable: false })
     courseName: string;
+
   
     @Column({ type: 'varchar', length: 100, nullable: false })
     shortName: string;
   
     @Column({ type: 'text', nullable: true })
     description: string;
+
+    @Column({ type: 'text', nullable: true })
+    coverImage: string;
   
     @Column({ type: 'boolean', default: false })
     isGuestAccess: boolean;
