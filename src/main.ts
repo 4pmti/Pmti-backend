@@ -10,8 +10,9 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ResponseInterceptor());
 
   app.useGlobalInterceptors(new ExcludePasswordInterceptor());
-  app.useGlobalPipes(new ValidationPipe(
-
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true
+  }
   ));
   app.useGlobalFilters(new AllExceptionsFilter());
   app.enableCors();

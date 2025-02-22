@@ -1,4 +1,6 @@
 import { IsString, IsNotEmpty, IsNumber, IsOptional, IsDate, IsBoolean } from 'class-validator';
+import { Transform, Type } from "class-transformer";
+
 
 export class ClassDto {
   @IsNotEmpty()
@@ -32,6 +34,7 @@ export class ClassDto {
 
   @IsNotEmpty()
   @IsDate()
+  @Transform(({ value }) => new Date(value))
   startDate: Date; 
 
   @IsNumber()
@@ -39,7 +42,9 @@ export class ClassDto {
 
   @IsNotEmpty()
   @IsDate()
+  @Transform(({ value }) => new Date(value))
   endDate: Date;  
+  
   @IsNotEmpty()
   @IsNumber()
   maxStudent: number;  // Maximum number of students
@@ -56,7 +61,7 @@ export class ClassDto {
   @IsBoolean()
   status: boolean;  // Status (active or inactive)
 
-  @IsString()
+  @IsNumber()
   instructorId?: number; 
 
   @IsOptional()
@@ -68,11 +73,9 @@ export class ClassDto {
   isCancel?: boolean;  // Optional: Cancellation flag
 
   @IsOptional()
-  @IsString()
   addedBy?: string;  
 
   @IsOptional()
-  @IsString()
   updatedBy?: string;  
 
   @IsOptional()
