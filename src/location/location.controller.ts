@@ -6,10 +6,11 @@ import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { Request } from 'express';
 
 @Controller('location')
-@UseGuards(AuthGuard)
+
 export class LocationController {
   constructor(private readonly locationService: LocationService) {}
 
+  @UseGuards(AuthGuard)
   @Post()
   create(@Body() createLocationDto: CreateLocationDto, @Req() req: Request) {
     const userId = req.user.id
@@ -26,6 +27,7 @@ export class LocationController {
   //   return this.locationService.findOne(+id);
   // }
 
+  @UseGuards(AuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Req() req: Request,@Body() updateLocationDto: UpdateLocationDto) {
     const userId = req.user.id
