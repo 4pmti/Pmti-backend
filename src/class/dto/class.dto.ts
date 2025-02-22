@@ -26,6 +26,7 @@ export class ClassDto {
 
   @IsOptional()
   @IsNumber()
+  @Transform(({ value }) => Number(value))
   countryId?: number;  // Optional: Country ID (Foreign Key)
 
   @IsOptional()
