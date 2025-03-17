@@ -231,6 +231,7 @@ export class ClassService {
         countryId,
         stateId
       } = filters;
+
      
       // Create query builder
       const queryBuilder = this.classRepository.createQueryBuilder('class')
@@ -307,6 +308,9 @@ export class ClassService {
 
       // Apply pagination
       const skip = (page - 1) * limit;
+      console.log("page",page);
+      console.log("limit",limit);
+      console.log("skip",skip);
       queryBuilder.skip(skip).take(limit);
 
       console.log(queryBuilder.getSql());

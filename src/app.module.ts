@@ -10,7 +10,7 @@ import typeorm from './config/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
-import { BcryptService } from './common/util/bcrypt.service';
+// import { BcryptService } from './common/util/bcrypt.service';
 import { ClassModule } from './class/class.module';
 import { InstructorModule } from './instructor/instructor.module';
 import { LocationModule } from './location/location.module';
