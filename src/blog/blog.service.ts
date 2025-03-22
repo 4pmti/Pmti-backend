@@ -56,6 +56,7 @@ export class BlogService {
         content: createBlogDto.content,
         cover_image: createBlogDto.coverImage,
         user: user,
+        slug: createBlogDto.slug
       });
       return this.blogRepository.save(blog);
     } catch (error) {

@@ -19,6 +19,11 @@ export class CreateBlogDto {
   @IsString({ each: true })
   tagNames?: string[];
 
+
+  @IsOptional()
+  @IsString()
+  slug?:string
+
   @IsOptional()
   @IsArray()
   @ArrayUnique() 
