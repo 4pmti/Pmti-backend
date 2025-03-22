@@ -23,6 +23,9 @@ import { User } from 'src/user/entities/user.entity';
   
     @Column('text')
     content: string;
+
+    @Column({unique:true})
+    slug:string
   
     @ManyToOne(() => User, (user) => user.blogs, { onDelete: 'CASCADE' })
     user: User;
