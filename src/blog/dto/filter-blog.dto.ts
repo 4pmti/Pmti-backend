@@ -27,4 +27,8 @@ export class FilterBlogDto {
   @Type(() => String)
   @IsString()
   userId?: string; // Filter by user
+
+  @IsOptional()
+  @IsString()
+  slug?: string; // Filter by slug
 }

@@ -57,6 +57,7 @@ export class BlogService {
         content: createBlogDto.content,
         cover_image: createBlogDto.coverImage,
         user: user,
+        slug: createBlogDto.slug
       });
       return this.blogRepository.save(blog);
     } catch (error) {
@@ -67,7 +68,7 @@ export class BlogService {
 
   async findAll(filter: FilterBlogDto) {
     try {
-      const { page = 1, limit = 10, search, tags, userId } = filter;
+      const { page = 1, limit = 10, search, tags, userId, slug } = filter;
 
       const query = this.blogRepository.createQueryBuilder('blog')
         .leftJoinAndSelect('blog.tags', 'tag')
@@ -85,6 +86,10 @@ export class BlogService {
 
       if (userId) {
         query.andWhere('user.id = :userId', { userId });
+      }
+
+      if (slug) {
+        query.andWhere('blog.slug = :slug', { slug });
       }
 
       const [blogs, total] = await query.getManyAndCount();
