@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Student } from 'src/student/entities/student.entity';
@@ -43,11 +43,13 @@ export class UserService {
     async findOneByUserId(userId: string): Promise<User> {
         try {
 
-            const user = await this.usersRepository.findOne({ where: { id: userId } ,relations:{
-                admin : true,
-                student : true,
-                instructor : true
-            }});
+            const user = await this.usersRepository.findOne({
+                where: { id: userId }, relations: {
+                    admin: true,
+                    student: true,
+                    instructor: true
+                }
+            });
             if (!user) {
                 throw new UnauthorizedException('User not found');
             }
@@ -100,7 +102,7 @@ export class UserService {
                 id: userId
             }
         });
-        
+
         if (!createInstructorDto.password) {
             createInstructorDto.password = this.generateRandomPassword();
         }
@@ -128,40 +130,47 @@ export class UserService {
     async createAdmin(userId: string, createAdminDto: CreateAdminDto) {
         console.log(createAdminDto);
 
-        if (!await isAdmin(userId, this.usersRepository)) {
-            throw new UnauthorizedException("You don't have permission to perform this action.");
+        try {
+            if (!await isAdmin(userId, this.usersRepository)) {
+                throw new UnauthorizedException("You don't have permission to perform this action.");
+            }
+
+            const country = await this.countryRepository.findOne({ where: { id: createAdminDto.countryId } });
+            if (!country) {
+                throw new UnauthorizedException('Country not found');
+            }
+
+            const checkExistinguser = await this.usersRepository.findOne({ where: { email: createAdminDto.email } });
+            if (checkExistinguser) {
+                if (checkExistinguser.roles.includes(Role.ADMIN)) {
+                    throw new UnauthorizedException('User already has admin role');
+                }
+                return await this.usersRepository.update({ email: createAdminDto.email }, { roles: [...checkExistinguser.roles, Role.ADMIN] });
+            }
+
+            const user = new User();
+            user.name = createAdminDto.name;
+
+            user.email = createAdminDto.email;
+            user.roles = [Role.ADMIN];
+            user.password = await this.bcryptService.hashPassword(createAdminDto.password);
+
+            const savedUser = await this.usersRepository.save(user);
+            const admin = new Admin();
+            admin.name = createAdminDto.name;
+            admin.designation = createAdminDto.designation;
+            admin.country = country;
+            admin.email = createAdminDto.email,
+                admin.phone = createAdminDto.phone,
+                admin.password = savedUser.password,
+                admin.isActive = true;
+            admin.uid = `ADM-${Date.now()}`;
+            admin.user = savedUser;
+            return await this.adminsRepository.save(admin);
+        } catch (error) {
+            console.log(error);
+            throw new InternalServerErrorException(error);
         }
-
-        const country = await this.countryRepository.findOne({ where: { id: createAdminDto.countryId } });
-        if (!country) {
-            throw new UnauthorizedException('Country not found');
-        }
-
-        const checkExistinguser = await this.usersRepository.findOne({ where: { email: createAdminDto.email } });
-        if (checkExistinguser) {
-            throw new Error("This Email Already Exists");
-        }
-
-        const user = new User();
-        user.name = createAdminDto.name;
-
-        user.email = createAdminDto.email;
-        user.roles = [Role.ADMIN];
-        user.password = await this.bcryptService.hashPassword(createAdminDto.password);
-
-        const savedUser = await this.usersRepository.save(user);
-        const admin = new Admin();
-        admin.name = createAdminDto.name;
-        admin.designation = createAdminDto.designation;
-        admin.country = country;
-        admin.email = createAdminDto.email,
-            admin.phone = createAdminDto.phone,
-            admin.password = savedUser.password,
-            admin.isActive = true;
-        admin.uid = `ADM-${Date.now()}`;
-        admin.user = savedUser;
-        return await this.adminsRepository.save(admin);
     }
 }
-
 
