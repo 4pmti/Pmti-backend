@@ -76,7 +76,15 @@ export class PromotionsService {
       }
       console.log(createPromotionDto);
 
+      const checkPromotion = await this.promoRepository.findOne({
+        where: {
+          promotionId: createPromotionDto.promotionId
+        }
+      });
 
+      if (checkPromotion) {
+        throw new BadRequestException("Promotion ID Already Exists");
+      }
       const promotion = new Promotions();
       promotion.active = createPromotionDto.active;
       promotion.addedBy = user;
@@ -109,9 +117,9 @@ export class PromotionsService {
         throw new BadRequestException('Invalid countryId provided');
       }
       const queryBuilder = this.promoRepository.createQueryBuilder('promotions')
-                                               .leftJoinAndSelect('promotions.country', 'country')
-                                               .leftJoinAndSelect("promotions.category","category")
-                                               .leftJoinAndSelect("promotions.classType","classType");
+        .leftJoinAndSelect('promotions.country', 'country')
+        .leftJoinAndSelect("promotions.category", "category")
+        .leftJoinAndSelect("promotions.classType", "classType");
 
       if (filters.id) {
         queryBuilder.andWhere('promotions.promotionId LIKE :id', { id: `%${filters.id}%` });
