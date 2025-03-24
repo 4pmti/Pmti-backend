@@ -1,5 +1,5 @@
-import { IsString, IsNotEmpty, IsNumber, IsOptional, IsDateString } from 'class-validator';
-
+import { IsString, IsNotEmpty, IsNumber, IsOptional, IsDateString, IsBoolean } from 'class-validator';
+import { Type } from 'class-transformer';
 export class CreatePromotionDto {
   @IsNumber()
   @IsNotEmpty()
@@ -50,11 +50,13 @@ export class CreatePromotionDto {
   updatedBy: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsBoolean()
+  @Type(() => Boolean)
   isDelete?: boolean;
 
   @IsOptional()
-  @IsNumber()
+  @IsBoolean()
+  @Type(() => Boolean)
   active?: boolean;
 
   @IsNumber()

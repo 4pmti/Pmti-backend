@@ -24,9 +24,6 @@ export class Blog {
   @Column('text')
   content: string;
 
-  @Column({})
-  slug: string
-
   @ManyToOne(() => User, (user) => user.blogs, { onDelete: 'CASCADE' })
   user: User;
 

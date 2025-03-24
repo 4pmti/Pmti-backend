@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
@@ -32,13 +32,14 @@ export class BlogService {
           id: userId
         }
       });
+     
       if (!user) throw new NotFoundException('User not found');
       if (!user.roles.includes(Role.ADMIN)
         && !user.roles.includes(Role.INSTRUCTOR)
       ) {
         throw new UnauthorizedException("You dont have enough permission to do this");
       }
-
+      console.log({createBlogDto});
       const tags = await Promise.all(
         createBlogDto.tagNames.map(async (name) => {
           let tag = await this.tagRepo.findOne({ where: { name } });
@@ -56,12 +57,11 @@ export class BlogService {
         content: createBlogDto.content,
         cover_image: createBlogDto.coverImage,
         user: user,
-        slug: createBlogDto.slug
       });
       return this.blogRepository.save(blog);
     } catch (error) {
       console.log(error);
-      throw error;
+      throw new InternalServerErrorException(error);
     }
   }
 

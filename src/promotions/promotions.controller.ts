@@ -13,10 +13,10 @@ export class PromotionsController {
 
   @Post()
   create(
-     @Req() req: Request,
+    @Req() req: Request,
     @Body() createPromotionDto: CreatePromotionDto) {
     const userId = req.user?.id ?? '';
-    return this.promotionsService.create(userId,createPromotionDto);
+    return this.promotionsService.create(userId, createPromotionDto);
   }
 
   @Get(':id')
@@ -35,23 +35,23 @@ export class PromotionsController {
   update(
     @Req() req: Request,
     @Param('id') id: string, @Body() updatePromotionDto: UpdatePromotionDto) {
-      const userId = req.user?.id ?? '';
-    return this.promotionsService.update(+id, userId,updatePromotionDto);
+    const userId = req.user?.id ?? '';
+    return this.promotionsService.update(+id, userId, updatePromotionDto);
   }
 
   @Delete("/bulk")
-  removeBulk(@Body('ids') ids: number[], @Req() req: Request){
+  removeBulk(@Body('ids') ids: number[], @Req() req: Request) {
     const userId = req.user?.id ?? '';
-    return this.promotionsService.bulkRemove(userId,ids);
+    return this.promotionsService.bulkRemove(userId, ids);
   }
 
-  
+
   @Delete(':id')
   remove(
     @Req() req: Request,
     @Param('id') id: string) {
     const userId = req.user?.id ?? '';
-    return this.promotionsService.remove(userId,+id);
+    return this.promotionsService.remove(userId, +id);
   }
 
 
