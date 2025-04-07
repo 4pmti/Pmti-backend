@@ -189,6 +189,7 @@ export class ClassService {
           Price: true,
           Discount: true,
           PaymentMode: true,
+          ID: true,
           POID: true,
           TransactionId: true,
           pmbok: true,

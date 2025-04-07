@@ -472,6 +472,8 @@ export class EnrollmentService {
             country: true
           }
         });
+        console.log(promotion);
+        
         if (!promotion) {
           throw new NotFoundException("Promotion is not valid");
         }
