@@ -55,6 +55,7 @@ export class UploadController {
     const validTypes = [
       'image/jpeg',
       'image/png',
+      'image/webp',
       'image/gif',
       'application/pdf',
       // Add more as needed
