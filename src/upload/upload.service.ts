@@ -45,7 +45,7 @@ export class UploadService implements OnModuleInit {
   //     });
 
   //     const response: ListObjectsV2CommandOutput = await this.s3Client.send(command);
-      
+
   //     const objects = await Promise.all((response.Contents || []).map(async (object) => {
   //       const url = await this.getObjectUrl(object);
   //       return {
@@ -88,13 +88,13 @@ export class UploadService implements OnModuleInit {
   // }
 
 
-    /**
-   * Get public URL for an object
-   */
-    private getPublicUrl(key: string): string {
-      return `https://${this.configService.get<string>('s3.bucket')}.s3.${this.configService.get<string>('s3.region')}.amazonaws.com/${key}`;
-    }
-  
+  /**
+ * Get public URL for an object
+ */
+  private getPublicUrl(key: string): string {
+    return `https://${this.configService.get<string>('s3.bucket')}.s3.${this.configService.get<string>('s3.region')}.amazonaws.com/${key}`;
+  }
+
 
   private generateKey(filename: string): string {
     const timestamp = Date.now();
@@ -109,11 +109,15 @@ export class UploadService implements OnModuleInit {
     file: Buffer,
     filename: string,
     contentType: string,
-    isPublic? : boolean
-
+    isPublic?: boolean,
+    unique?: boolean
   ): Promise<{ key: string; url: string }> {
     try {
-      const key = this.generateKey(filename);
+
+      let key = filename;
+      if (unique) {
+        key = this.generateKey(filename);
+      }
       const command = new PutObjectCommand({
         Bucket: this.configService.get<string>('s3.bucket'),
         Key: key,
@@ -124,9 +128,9 @@ export class UploadService implements OnModuleInit {
 
       await this.s3Client.send(command);
 
-      const url  = isPublic 
-      ? this.getPublicUrl(key)
-      : await this.getSignedUrl(key);
+      const url = isPublic
+        ? this.getPublicUrl(key)
+        : await this.getSignedUrl(key);
       return { key, url };
     } catch (error) {
       this.logger.error(`Failed to upload file: ${error}`, error);

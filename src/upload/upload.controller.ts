@@ -22,16 +22,20 @@ export class UploadController {
         throw new BadRequestException('File is required');
       }
 
+
       // Validate file type based on mime type
       if (!this.isValidFileType(file.mimetype)) {
         throw new BadRequestException(`Invalid file type: ${file.mimetype}`);
       }
+      const unique = uploadDto.unique === 'true';
+      console.log(unique);
 
       const { key, url } = await this.uploadService.uploadFile(
         file.buffer,
-        file.originalname, 
+        file.originalname,
         file.mimetype,
-        true
+        true,
+        unique
       );
 
       return {
@@ -49,7 +53,7 @@ export class UploadController {
 
   @Get()
   findAll() {
-   // return this.uploadService.findAll();
+    // return this.uploadService.findAll();
   }
   private isValidFileType(mimeType: string): boolean {
     const validTypes = [
@@ -63,10 +67,10 @@ export class UploadController {
     return validTypes.includes(mimeType);
   }
 
-  
+
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-  //  return this.uploadService.remove(+id);
+    //  return this.uploadService.remove(+id);
   }
 }

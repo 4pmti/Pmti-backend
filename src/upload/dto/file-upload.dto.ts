@@ -1,6 +1,7 @@
 import { IsString, IsOptional, IsEnum, MaxLength, IsNumber, Max, Min, IsBoolean } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Express } from 'express';
+import { Type } from 'class-transformer';
 
 export enum AllowedFileTypes {
   IMAGE = 'image',
@@ -48,4 +49,10 @@ export class FileUploadDto {
   @IsString()
   @MaxLength(500)
   path?: string;
+
+
+ // @Type(() => Boolean)
+  @IsOptional()
+  //@IsBoolean()
+  unique : string = 'true';
 }
