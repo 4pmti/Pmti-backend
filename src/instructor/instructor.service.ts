@@ -132,9 +132,7 @@ export class InstructorService {
       if (!instructor) {
         throw new NotFoundException('Instructor not found');
       }
-      return await this.instructorRepository.update(id,{
-        isDelete: true
-      });
+      return await this.instructorRepository.remove(instructor);
     } catch (error) {
       console.error(error);
       throw error;
@@ -148,7 +146,7 @@ export class InstructorService {
       }
   
       // Bulk update isDelete to true for the given IDs
-      await this.instructorRepository.update(ids, { isDelete: true });
+      await this.instructorRepository.delete(ids);
   
       return {
         message: 'Instructors marked as deleted successfully',
