@@ -222,7 +222,7 @@ export class ClassService {
         page = 1,
         limit = 10,
         search = '',
-        sort = 'startDate:DESC',
+        sort = 'startDate:ASC',
         startFrom,
         dateTo,
         classType,
