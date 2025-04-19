@@ -21,14 +21,14 @@ export class InstructorService {
     private readonly instructorRepository: Repository<Instructor>,
   ) { }
 
-  async create(userId:string,createInstructorDto: CreateInstructorDto) {
+  async create(userId: string, createInstructorDto: CreateInstructorDto) {
     try {
       const user = await this.userRepository.findOne({
-        where : {
-           id : userId
+        where: {
+          id: userId
         }
       });
-      console.log("admin user",user);
+      console.log("admin user", user);
 
       const existingUser = await this.userRepository.findOne({
         where: {
@@ -52,11 +52,12 @@ export class InstructorService {
       instructor.user = existingUser;
       instructor.addedBy = user;
       instructor.updatedBy = user;
-      return this.instructorRepository.save(instructor);
-      
+      const savedInstructor = await this.instructorRepository.save(instructor);
+      return savedInstructor;
+
     } catch (error) {
       console.log(error);
-      throw error;
+      throw new InternalServerErrorException(error);
     }
   }
 
@@ -144,10 +145,10 @@ export class InstructorService {
       if (!await isAdmin(userId, this.userRepository)) {
         throw new UnauthorizedException('You are not authorized to perform this action');
       }
-  
+
       // Bulk update isDelete to true for the given IDs
       await this.instructorRepository.delete(ids);
-  
+
       return {
         message: 'Instructors marked as deleted successfully',
         success: true,
@@ -157,5 +158,5 @@ export class InstructorService {
       throw new InternalServerErrorException('Failed to mark instructors as deleted');
     }
   }
-  
+
 }
