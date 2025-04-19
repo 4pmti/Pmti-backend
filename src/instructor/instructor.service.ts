@@ -36,7 +36,7 @@ export class InstructorService {
         }
       });
       if (!existingUser) {
-        throw new NotFoundException('User not found');
+        throw new NotFoundException('User not found with email: ' + createInstructorDto.emailID);
       }
 
       if (existingUser.roles.includes(Role.INSTRUCTOR)) {
