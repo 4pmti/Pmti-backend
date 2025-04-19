@@ -92,39 +92,45 @@ export class UserService {
     }
 
     async createInstructor(userId: string, createInstructorDto: CreateInstructorDto): Promise<Instructor | string> {
+        try {
 
-        if (!await isAdmin(userId, this.usersRepository)) {
-            throw new UnauthorizedException("You don't have permission to perform this action.");
-        }
-
-        const adminUser = await this.usersRepository.findOne({
-            where: {
-                id: userId
+            if (!await isAdmin(userId, this.usersRepository)) {
+                throw new UnauthorizedException("You don't have permission to perform this action.");
             }
-        });
 
-        if (!createInstructorDto.password) {
-            createInstructorDto.password = this.generateRandomPassword();
+            const adminUser = await this.usersRepository.findOne({
+                where: {
+                    id: userId
+                }
+            });
+
+            if (!createInstructorDto.password) {
+                createInstructorDto.password = this.generateRandomPassword();
+            }
+
+
+            const user = new User();
+            user.name = createInstructorDto.name
+            user.email = createInstructorDto.emailID;
+            user.roles = [Role.INSTRUCTOR];
+            user.password = await this.bcryptService.hashPassword(createInstructorDto.password);
+
+            const savedUser = await this.usersRepository.save(user);
+
+            const instructor = new Instructor();
+            Object.assign(instructor, createInstructorDto);
+            instructor.uid = `INS-${Date.now()}`;
+            instructor.user = savedUser;
+            instructor.addedBy = adminUser;
+            instructor.updatedBy = adminUser;
+
+
+            return this.instructorRepository.save(instructor);
+
+        } catch (error) {
+            console.log(error);
+            throw new InternalServerErrorException(error);
         }
-
-
-        const user = new User();
-        user.name = createInstructorDto.name
-        user.email = createInstructorDto.emailID;
-        user.roles = [Role.INSTRUCTOR];
-        user.password = await this.bcryptService.hashPassword(createInstructorDto.password);
-
-        const savedUser = await this.usersRepository.save(user);
-
-        const instructor = new Instructor();
-        Object.assign(instructor, createInstructorDto);
-        instructor.uid = `INS-${Date.now()}`;
-        instructor.user = savedUser;
-        instructor.addedBy = adminUser;
-        instructor.updatedBy = adminUser;
-
-
-        return this.instructorRepository.save(instructor);
     }
 
     async createAdmin(userId: string, createAdminDto: CreateAdminDto) {
