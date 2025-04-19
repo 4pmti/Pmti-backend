@@ -35,7 +35,7 @@ export class ClassController {
   @Get(":id/detail")
   findClassDetails(@Param('id') id: string) {
     return this.classService.findClassDetails(+id);
-  }
+  }    
 
 
 
