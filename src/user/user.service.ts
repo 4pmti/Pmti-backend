@@ -104,29 +104,36 @@ export class UserService {
                 }
             });
 
+
+
+
+
             if (!createInstructorDto.password) {
                 createInstructorDto.password = this.generateRandomPassword();
             }
 
-
-            const user = new User();
-            user.name = createInstructorDto.name
-            user.email = createInstructorDto.emailID;
-            user.roles = [Role.INSTRUCTOR];
-            user.password = await this.bcryptService.hashPassword(createInstructorDto.password);
-
-            const savedUser = await this.usersRepository.save(user);
-
             const instructor = new Instructor();
             Object.assign(instructor, createInstructorDto);
             instructor.uid = `INS-${Date.now()}`;
-            instructor.user = savedUser;
             instructor.addedBy = adminUser;
             instructor.updatedBy = adminUser;
 
-
+            //search for existing user with email
+            const existingUser = await this.usersRepository.findOne({ where: { email: createInstructorDto.emailID } });
+            if (existingUser) {
+                instructor.user = existingUser;
+                existingUser.roles = [...existingUser.roles, Role.INSTRUCTOR];
+                await this.usersRepository.save(existingUser);
+            } else {
+                const user = new User();
+                user.name = createInstructorDto.name;
+                user.email = createInstructorDto.emailID;
+                user.roles = [Role.INSTRUCTOR];
+                user.password = await this.bcryptService.hashPassword(createInstructorDto.password);
+                const savedUser = await this.usersRepository.save(user);
+                instructor.user = savedUser;
+            }
             return this.instructorRepository.save(instructor);
-
         } catch (error) {
             console.log(error);
             throw new InternalServerErrorException(error);
