@@ -1,6 +1,6 @@
-import { IsString, IsNotEmpty, IsNumber, IsOptional, IsDate, IsBoolean } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsOptional, IsDate, IsBoolean, IsEnum } from 'class-validator';
 import { Transform, Type } from "class-transformer";
-
+import { classStatus } from 'src/common/enums/enums';
 
 export class ClassDto {
   @IsNotEmpty()
@@ -59,8 +59,9 @@ export class ClassDto {
   price: number;  // Price of the class
 
   @IsNotEmpty()
-  @IsBoolean()
-  status: boolean;  // Status (active or inactive)
+  @IsOptional()
+  @IsEnum(classStatus)
+  status: classStatus = classStatus.ACTIVE;  // Status (active or inactive)
 
   @IsNumber()
   instructorId?: number; 
