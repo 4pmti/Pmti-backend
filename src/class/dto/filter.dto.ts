@@ -1,42 +1,63 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+
+import { IsBoolean, IsEnum } from "class-validator";
+import { IsOptional } from "class-validator";
+import { classStatus } from "src/common/enums/enums";
 
 export class FilterDto {
 
-    @ApiPropertyOptional()
+
     page?: number;
 
-    @ApiPropertyOptional()
+
     limit?: number;
 
-    @ApiPropertyOptional()
+
     search?: string;
 
-    @ApiPropertyOptional()
+
     sort?: string;
 
-    @ApiPropertyOptional({ description: 'The start date for filtering' })
+
     startFrom?: Date;
 
-    @ApiPropertyOptional({ description: 'The end date for filtering' })
+
     dateTo?: Date;
 
-    @ApiPropertyOptional({ description: 'The ID of the class type' })
+
     classType?: number;
 
-    @ApiPropertyOptional({ description: 'The ID of the course category' })
+
     courseCategory?: number;
 
-    @ApiPropertyOptional({ description: 'The ID of the location' })
+
     locationId?: number;
 
-    @ApiPropertyOptional({ description: 'The ID of the instructor' })
+
     instructorId?: number;
 
-    @ApiPropertyOptional({ description: 'The ID of the country' })
+
     countryId?: number;
 
-    @ApiPropertyOptional({ description: 'The ID of the state' })
+
     stateId?: number;
+
+
+    @IsEnum(classStatus)
+    @IsOptional()
+    status?: classStatus;
+
+
+    @IsBoolean()
+    @IsOptional()
+    isCancel?: boolean;
+
+
+    @IsBoolean()
+    @IsOptional()
+    isCorpClass?: boolean;
+
+
+    
 }
 
 

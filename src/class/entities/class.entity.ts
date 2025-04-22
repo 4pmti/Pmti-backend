@@ -8,6 +8,7 @@ import { BaseEntity } from 'src/common/dto/base.dto';
 import { Enrollment } from 'src/enrollment/entities/enrollment.entity';
 import { State } from 'src/state/entities/state.entity';
 import { Country } from 'src/course/country/entities/country.entity';
+import { classStatus } from 'src/common/enums/enums';
 
 @Entity('Class')
 export class Class extends BaseEntity {
@@ -54,9 +55,9 @@ export class Class extends BaseEntity {
 
   @Column({ type: 'decimal' })
   price: number;
-
-  @Column({ type: 'varchar', length: 50 })
-  status: string;
+  
+  @Column({ type: 'varchar', length: 50, enum: classStatus , default: classStatus.ACTIVE })
+  status: classStatus;
 
   @Column({ type: 'varchar', length: 255 })
   title: string;

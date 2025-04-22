@@ -230,7 +230,10 @@ export class ClassService {
         locationId,
         instructorId,
         countryId,
-        stateId
+        stateId,
+        status,
+        isCancel,
+        isCorpClass
       } = filters;
 
      
@@ -266,7 +269,18 @@ export class ClassService {
 
       }
 
-    
+      if(isCancel){
+        queryBuilder.andWhere('class.isCancel = :isCancel', { isCancel });
+      }
+
+      if(isCorpClass){
+        queryBuilder.andWhere('class.isCorpClass = :isCorpClass', { isCorpClass });
+      }
+
+      if(status){
+        queryBuilder.andWhere('class.status = :status', { status });
+      }
+
       if (dateTo) {
         const formattedDateTo = new Date(dateTo).toISOString().split('T')[0];
         queryBuilder.andWhere('class.endDate <= :dateTo', { dateTo: formattedDateTo });
