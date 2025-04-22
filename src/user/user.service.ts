@@ -65,30 +65,35 @@ export class UserService {
 
 
     async createStudent(createStudentDto: CreateStudentDto): Promise<Student> {
+        try {
 
-        if (!createStudentDto.password) {
-            createStudentDto.password = this.generateRandomPassword();
+            if (!createStudentDto.password) {
+                createStudentDto.password = this.generateRandomPassword();
+            }
+            console.log(createStudentDto);
+            const checkExistinguser = await this.usersRepository.findOne({ where: { email: createStudentDto.email } });
+            if (checkExistinguser) {
+                throw new BadRequestException("This Email Already Exists");
+            }
+            const user = new User();
+            user.name = createStudentDto.name;
+            user.email = createStudentDto.email;
+            user.roles = [Role.STUDENT];
+            user.password = await this.bcryptService.hashPassword(createStudentDto.password);
+
+            const savedUser = await this.usersRepository.save(user);
+
+            const student = new Student();
+            Object.assign(student, createStudentDto); // Copy all properties from DTO to student
+            student.uid = `STU-${Date.now()}`;
+            student.user = savedUser;
+            student.password = savedUser.password;
+
+            return this.studentsRepository.save(student);
+        } catch (error) {
+            console.log(error);
+            throw new InternalServerErrorException(error);
         }
-        console.log(createStudentDto);
-        const checkExistinguser = await this.usersRepository.findOne({ where: { email: createStudentDto.email } });
-        if (checkExistinguser) {
-            throw new Error("This Email Already Exists");
-        }
-        const user = new User();
-        user.name = createStudentDto.name;
-        user.email = createStudentDto.email;
-        user.roles = [Role.STUDENT];
-        user.password = await this.bcryptService.hashPassword(createStudentDto.password);
-
-        const savedUser = await this.usersRepository.save(user);
-
-        const student = new Student();
-        Object.assign(student, createStudentDto); // Copy all properties from DTO to student
-        student.uid = `STU-${Date.now()}`;
-        student.user = savedUser;
-        student.password = savedUser.password;
-
-        return this.studentsRepository.save(student);
     }
 
     async createInstructor(userId: string, createInstructorDto: CreateInstructorDto): Promise<Instructor | string> {
@@ -103,10 +108,6 @@ export class UserService {
                     id: userId
                 }
             });
-
-
-
-
 
             if (!createInstructorDto.password) {
                 createInstructorDto.password = this.generateRandomPassword();
