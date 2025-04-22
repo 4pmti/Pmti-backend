@@ -1,4 +1,4 @@
-
+import { Type, Transform } from "class-transformer";
 import { IsBoolean, IsEnum } from "class-validator";
 import { IsOptional } from "class-validator";
 import { classStatus } from "src/common/enums/enums";
@@ -49,11 +49,13 @@ export class FilterDto {
 
     @IsBoolean()
     @IsOptional()
+    @Transform(({ value }) => value === 'true')
     isCancel?: boolean;
 
 
     @IsBoolean()
     @IsOptional()
+    @Transform(({ value }) => value === 'true')
     isCorpClass?: boolean;
 
 
