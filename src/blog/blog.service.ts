@@ -55,6 +55,7 @@ export class BlogService {
         tags: tags,
         title: createBlogDto.title,
         content: createBlogDto.content,
+        metadata: createBlogDto.metadata,
         cover_image: createBlogDto.coverImage,
         user: user,
         slug: createBlogDto.slug

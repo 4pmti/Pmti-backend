@@ -27,6 +27,8 @@ export class Blog {
   @Column({})
   slug: string
 
+  @Column('json', { nullable: true })
+  metadata: Record<string, any>;
 
   @ManyToOne(() => User, (user) => user.blogs, { onDelete: 'CASCADE' })
   user: User;

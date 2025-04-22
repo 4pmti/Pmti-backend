@@ -1,4 +1,4 @@
-import { IsArray, IsNotEmpty, IsOptional, IsString, IsInt, ArrayUnique } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString, IsInt, ArrayUnique, IsObject } from 'class-validator';
 
 export class CreateBlogDto {
   @IsNotEmpty()
@@ -23,6 +23,11 @@ export class CreateBlogDto {
   @IsOptional()
   @IsString()
   slug?:string
+
+  @IsOptional()
+  @IsObject()
+  metadata?: Record<string, any>;
+
 
   @IsOptional()
   @IsArray()
