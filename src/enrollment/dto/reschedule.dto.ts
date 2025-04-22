@@ -30,7 +30,7 @@ export class RescheduleDto {
     comments?: string;
 
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     billingName: string;
 
     @IsOptional()
@@ -38,14 +38,17 @@ export class RescheduleDto {
 
     // Payment Information
     @IsString()
+    @IsOptional()
     @IsNotEmpty({ message: 'Credit Card number is required' })
     ccNo: string;
 
     @IsString()
+    @IsOptional()
     @IsNotEmpty({message: 'CVV  is required'})
     CVV: string;
 
     @IsString()
+    @IsOptional()
     @IsNotEmpty()
     CCExpiry?: string;
 }
