@@ -69,7 +69,7 @@ export class EnrollmentService {
 
       const classs = await queryRunner.manager.findOne(Class, {
         where: {
-          id: rescheduleDto.studentId
+          id: rescheduleDto.classId
         }
       });
 
