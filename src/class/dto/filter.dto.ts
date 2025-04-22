@@ -66,3 +66,4 @@ export class FilterDto {
 export enum SortTypes {
 
 }
+// sort by startDate:ASC, endDate:DESC, price:ASC, price:DESC, status:ASC, status:DESC, isCancel:ASC, isCancel:DESC, isCorpClass:ASC, isCorpClass:DESC
