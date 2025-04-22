@@ -56,7 +56,7 @@ export class Class extends BaseEntity {
   @Column({ type: 'decimal' })
   price: number;
   
-  @Column({ type: 'varchar', length: 50, enum: classStatus , default: classStatus.ACTIVE })
+  @Column({ type: 'enum', enum: classStatus, default: classStatus.ACTIVE })
   status: classStatus;
 
   @Column({ type: 'varchar', length: 255 })
