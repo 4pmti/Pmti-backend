@@ -29,6 +29,11 @@ export class OfflineClassEnrollmentDto {
     @IsPositive()
     amount:number;
 
+
+    @IsBoolean()
+    @IsOptional()
+    isPaid:boolean = false;
+
     // Billing Information
     @IsString()
     @IsNotEmpty()
