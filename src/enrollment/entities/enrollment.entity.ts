@@ -107,13 +107,11 @@ export class Enrollment {
     @Column({ nullable: true }) // card expiry date
     CCExpiry: string;
 
-    @Column({ unique: true })
+    @Column({ unique: true, nullable: true })
     TransactionId: string;
 
     @Column({ default: false })
     pmbok: boolean;
-
-
 
     @Column({ nullable: true }) //credit card holder name
     CreditCardHolder: string;

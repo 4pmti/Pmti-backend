@@ -208,7 +208,7 @@ export class EnrollmentService {
         }
       }
 
-      let result:any;
+      let result: any;
       if (initialAmount > 0) {
         //start the payment process
         result = await this.authorizeNetService.chargeCreditCard(
@@ -240,7 +240,7 @@ export class EnrollmentService {
       enrollment.MealType = offlineEnrollment.MealType;
       enrollment.PaymentMode = offlineEnrollment.cardType;
       enrollment.Price = initialAmount;
-      enrollment.TransactionId = result.transId;
+      enrollment.TransactionId = result?.transId ?? Date.now().toString();;
       enrollment.BillPhone = offlineEnrollment.BillPhone;
       enrollment.BillDate = new Date();
       enrollment.enrollmentType = "Class";
@@ -368,7 +368,8 @@ export class EnrollmentService {
       enrollment.MealType = offlineEnrollment.MealType;
       enrollment.PaymentMode = offlineEnrollment.cardType;
       enrollment.Price = initialAmount;
-      enrollment.TransactionId = result.transId;
+      // if the result is not found, then generate a timestamp
+      enrollment.TransactionId = result?.transId ?? Date.now().toString();
       enrollment.BillPhone = offlineEnrollment.BillPhone;
       enrollment.BillDate = new Date();
       enrollment.enrollmentType = "Course";
