@@ -20,7 +20,7 @@ import { OfflineCourseEnrollmentDto } from './dto/course-offline-enrollment.dto'
 
 @Injectable()
 export class EnrollmentService {
-  
+
   constructor(
     private readonly dataSource: DataSource,
     private authorizeNetService: AuthorizeNetService,
@@ -208,15 +208,18 @@ export class EnrollmentService {
         }
       }
 
-      //start the payment process
-      const result = await this.authorizeNetService.chargeCreditCard(
-        initialAmount,
-        offlineEnrollment.CCNo,
-        offlineEnrollment.CCExpiry,
-        offlineEnrollment.CVV,
-        offlineEnrollment.BillMail,
-        '', ''
-      );
+      let result:any;
+      if (initialAmount > 0) {
+        //start the payment process
+        result = await this.authorizeNetService.chargeCreditCard(
+          initialAmount,
+          offlineEnrollment.CCNo,
+          offlineEnrollment.CCExpiry,
+          offlineEnrollment.CVV,
+          offlineEnrollment.BillMail,
+          '', ''
+        );
+      }
       const enrollment = new Enrollment();
       enrollment.student = student;
       enrollment.course = null;
@@ -473,7 +476,7 @@ export class EnrollmentService {
           }
         });
         console.log(promotion);
-        
+
         if (!promotion) {
           throw new NotFoundException("Promotion is not valid");
         }
