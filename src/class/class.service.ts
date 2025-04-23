@@ -17,6 +17,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { Enrollment } from 'src/enrollment/entities/enrollment.entity';
 import { State } from 'src/state/entities/state.entity';
 import { FilterDto } from './dto/filter.dto';
+import { classStatus } from 'src/common/enums/enums';
 
 @Injectable()
 export class ClassService {
@@ -132,6 +133,7 @@ export class ClassService {
       newClass.location = location;
       newClass.country = country;
       newClass.state = state;
+      newClass.status = classStatus.ACTIVE;
       return await this.classRepository.save(newClass);
     } catch (error) {
       console.log(error);
