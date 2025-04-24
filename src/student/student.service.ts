@@ -12,8 +12,14 @@ export class StudentService {
     private readonly studentRepository: Repository<Student>,
   ) { }
 
-  findAll(): Promise<Student[]> {
-    return this.studentRepository.find();
+  async findAll(): Promise<Student[]> {
+    return await this.studentRepository.find({
+      relations: {
+        state: true,
+        country: true,
+        city: true,
+      }
+    });
   }
 
   async findOne(id: number): Promise<Student> {
@@ -23,6 +29,7 @@ export class StudentService {
       country: true,
       city: true,
     }});
+
     if (!student) {
       throw new Error('Student not found');
     }
