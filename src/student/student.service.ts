@@ -18,7 +18,11 @@ export class StudentService {
 
   async findOne(id: number): Promise<Student> {
 
-    const student = await this.studentRepository.findOne({ where: { id } });
+    const student = await this.studentRepository.findOne({ where: { id }, relations: {
+      state: true,
+      country: true,
+      city: true,
+    }});
     if (!student) {
       throw new Error('Student not found');
     }

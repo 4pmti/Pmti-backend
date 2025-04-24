@@ -12,7 +12,8 @@ import { Country } from 'src/country/entities/country.entity';
 import { CreateInstructorDto } from 'src/instructor/dto/create-instructor.dto';
 import { Instructor } from 'src/instructor/entities/instructor.entity';
 import { isAdmin } from 'src/common/util/utilities';
-
+import { State } from 'src/state/entities/state.entity';
+import { Location } from 'src/location/entities/location.entity';
 @Injectable()
 export class UserService {
     constructor(
@@ -24,6 +25,12 @@ export class UserService {
         private instructorRepository: Repository<Instructor>,
         @InjectRepository(Admin)
         private adminsRepository: Repository<Admin>,
+
+        @InjectRepository(State)
+        private stateRepository: Repository<State>,
+
+        @InjectRepository(Location)
+        private locationRepository: Repository<Location>,
 
         @InjectRepository(Country)
         private countryRepository: Repository<Country>,
@@ -75,6 +82,23 @@ export class UserService {
             if (checkExistinguser) {
                 throw new BadRequestException("This Email Already Exists");
             }
+
+
+            const country = await this.countryRepository.findOne({ where: { id: createStudentDto.country } });
+            if (!country) {
+                throw new BadRequestException("Country not found");
+            }
+
+            const state = await this.stateRepository.findOne({ where: { id: createStudentDto.state } });
+            if (!state) {
+                throw new BadRequestException("State not found");
+            }
+
+            const city = await this.locationRepository.findOne({ where: { id: createStudentDto.city } });
+            if (!city) {
+                throw new BadRequestException("City not found");
+            }
+
             const user = new User();
             user.name = createStudentDto.name;
             user.email = createStudentDto.email;

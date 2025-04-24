@@ -13,9 +13,12 @@ export class StudentDto {
   @IsString()
   city: string;
 
+  // add the state join
+
   @IsString()
   state: string;
 
+  // add the country join
   @IsString()
   country: string;
 

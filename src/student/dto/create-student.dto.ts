@@ -1,4 +1,4 @@
-import { IsBoolean, IsEmail, IsOptional, IsString, Length } from 'class-validator';
+import { IsBoolean, IsEmail, IsNumber, IsOptional, IsString, Length } from 'class-validator';
 
 export class CreateStudentDto {
   @IsString()
@@ -10,20 +10,20 @@ export class CreateStudentDto {
   @IsOptional()
   address?: string;
 
-  @IsString()
+  @IsNumber()
   @Length(0, 100)
   @IsOptional()
-  city?: string;
+  city?: number;
 
-  @IsString()
+  @IsNumber()
   @Length(0, 100)
   @IsOptional()
-  state?: string;
+  state?: number;
 
-  @IsString()
+  @IsNumber()
   @Length(0, 100)
   @IsOptional()
-  country?: string;
+  country?: number;
 
   @IsString()
   @Length(0, 20)

@@ -1,3 +1,5 @@
+import { Country } from 'src/country/entities/country.entity';
+import { State } from 'src/state/entities/state.entity';
 import { User } from 'src/user/entities/user.entity';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn, ManyToOne } from 'typeorm';
 
@@ -14,15 +16,20 @@ export class Student {
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   address: string;
-
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  city: string;
-
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  state: string;
   
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  country: string;
+  @ManyToOne(() => Location)
+  @JoinColumn({ name: 'locationID' })
+  city: Location;
+
+  @ManyToOne(()=>State)
+  @JoinColumn({name : 'stateId'})
+  state:State;
+
+  
+  @ManyToOne(() => Country)
+  @JoinColumn({ name: 'countryID' })
+  country: Country;
+
 
   @Column({ type: 'varchar', length: 20, nullable: true })
   zipCode: string;
