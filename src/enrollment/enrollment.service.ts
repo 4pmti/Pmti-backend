@@ -359,7 +359,7 @@ export class EnrollmentService {
         }
 
         if (course.category.id != promotion.category.id) {
-          throw new BadRequestException("This promotion is not valid for this class.");
+          throw new BadRequestException("This promotion is not valid for this course.");
         }
         console.log(initialAmount, promotion.amount);
         initialAmount -= promotion.amount;
@@ -368,15 +368,38 @@ export class EnrollmentService {
         }
       }
 
-      //start the payment process
-      const result = await this.authorizeNetService.chargeCreditCard(
-        initialAmount,
-        offlineEnrollment.CCNo,
-        offlineEnrollment.CCExpiry,
-        offlineEnrollment.CVV,
-        offlineEnrollment.BillMail,
-        '', ''
-      );
+      let result: any = null;
+      if (offlineEnrollment.isPaid) {
+        // Only process payment if isPaid is true
+        if (initialAmount > 0) {
+          // Validate payment-related fields when payment is required
+          const paymentFields = {
+            'Credit Card Number': offlineEnrollment.CCNo,
+            'Credit Card Expiry': offlineEnrollment.CCExpiry,
+            'Credit Card CVV': offlineEnrollment.CVV,
+            'Credit Card Holder': offlineEnrollment.CreditCardHolder,
+            'Billing Email': offlineEnrollment.BillMail
+          };
+
+          const missingPaymentFields = Object.entries(paymentFields)
+            .filter(([_, value]) => !value || value.toString().trim() === '')
+            .map(([key]) => key);
+
+          if (missingPaymentFields.length > 0) {
+            throw new BadRequestException(`Missing required payment fields: ${missingPaymentFields.join(', ')}`);
+          }
+
+          result = await this.authorizeNetService.chargeCreditCard(
+            initialAmount,
+            offlineEnrollment.CCNo,
+            offlineEnrollment.CCExpiry,
+            offlineEnrollment.CVV,
+            offlineEnrollment.BillMail,
+            '', ''
+          );
+        }
+      }
+
       const enrollment = new Enrollment();
       enrollment.student = student;
       enrollment.course = course;
@@ -391,19 +414,18 @@ export class EnrollmentService {
       enrollment.BillingState = offlineEnrollment.BillingState;
       enrollment.BillDate = new Date();
       enrollment.BillMail = offlineEnrollment.BillMail;
-      enrollment.CCNo = this.maskCardNumber(offlineEnrollment.CCNo); // mask this
-      enrollment.CCExpiry = offlineEnrollment.CCExpiry;
+      enrollment.CCNo = offlineEnrollment.isPaid ? this.maskCardNumber(offlineEnrollment.CCNo) : null;
+      enrollment.CCExpiry = offlineEnrollment.isPaid ? offlineEnrollment.CCExpiry : null;
       enrollment.Comments = offlineEnrollment.Comments;
       enrollment.MealType = offlineEnrollment.MealType;
-      enrollment.PaymentMode = offlineEnrollment.cardType;
+      enrollment.PaymentMode = offlineEnrollment.isPaid ? offlineEnrollment.cardType : 'Pending-No-Payment';
       enrollment.Price = initialAmount;
-      // if the result is not found, then generate a timestamp
-      enrollment.TransactionId = result?.transId ?? Date.now().toString();
+      enrollment.TransactionId = result?.transId ?? null;
       enrollment.BillPhone = offlineEnrollment.BillPhone;
       enrollment.BillDate = new Date();
       enrollment.enrollmentType = "Course";
       enrollment.PMPPass = false;
-      enrollment.CreditCardHolder = offlineEnrollment.CreditCardHolder;
+      enrollment.CreditCardHolder = offlineEnrollment.isPaid ? offlineEnrollment.CreditCardHolder : null;
       enrollment.pmbok = false;
       enrollment.POID = offlineEnrollment.purchaseOrderId;
       enrollment.Discount = offlineEnrollment.amount - initialAmount <= 0 ? 0 : offlineEnrollment.amount - initialAmount;
@@ -418,7 +440,6 @@ export class EnrollmentService {
     } finally {
       await queryRunner.release();
     }
-
   }
 
 
@@ -575,6 +596,34 @@ export class EnrollmentService {
         }
       }
 
+      // search for billing country ,state and city
+      const billingCountry = await queryRunner.manager.findOne(Country, {
+        where: {
+          id: createEnrollmentDto.BillCountry
+        }
+      });
+      if (!billingCountry) {
+        throw new NotFoundException("Billing country not found");
+      }
+
+      const billingState = await queryRunner.manager.findOne(State, {
+        where: {
+          id: createEnrollmentDto.BillingState
+        }
+      });
+      if (!billingState) {
+        throw new NotFoundException("Billing state not found");
+      }
+
+      const billingCity = await queryRunner.manager.findOne(Location, {
+        where: {
+          id: createEnrollmentDto.BillingCity
+        }
+      });
+
+      
+      
+
       //start the payment process
       const result = await this.authorizeNetService.chargeCreditCard(
         initialAmount,
@@ -592,13 +641,13 @@ export class EnrollmentService {
       enrollment.student = student;
       enrollment.course = !(createEnrollmentDto.courseId && !createEnrollmentDto.classId) ? null : enrollmentTarget as Course;
       enrollment.class = !(!createEnrollmentDto.courseId && createEnrollmentDto.classId) ? null : enrollmentTarget as Class;
-      enrollment.BillCountry = createEnrollmentDto.BillCountry;
-      enrollment.BillingCity = createEnrollmentDto.zipCode;
+      enrollment.BillCountry = billingCountry.CountryName;
+      enrollment.BillingCity = billingCity.location;
       enrollment.BillingName = createEnrollmentDto.BillingName;
-      enrollment.BillingState = createEnrollmentDto.BillingState;
+      enrollment.BillingState = billingState.name;
       enrollment.BillingAddress = createEnrollmentDto.BillingAddress;
-      enrollment.BillingCity = createEnrollmentDto.BillingCity;
-      enrollment.BillingState = createEnrollmentDto.BillingState;
+      enrollment.BillingCity = billingCity.location;
+      enrollment.BillingState = billingState.name;
       enrollment.BillDate = new Date();
       enrollment.BillMail = createEnrollmentDto.BillMail;
       enrollment.CCNo = this.maskCardNumber(createEnrollmentDto.CCNo); // mask this
@@ -637,9 +686,9 @@ export class EnrollmentService {
         billing: {
           name: createEnrollmentDto.BillingName,
           address: createEnrollmentDto.BillingAddress,
-          city: createEnrollmentDto.BillingCity,
-          state: createEnrollmentDto.BillingState,
-          country: createEnrollmentDto.BillCountry,
+          city: billingCity.location,
+          state: billingState.name,
+          country: billingCountry.CountryName,
           zip: createEnrollmentDto.zipCode,
           phone: createEnrollmentDto.BillPhone,
           email: createEnrollmentDto.BillMail,

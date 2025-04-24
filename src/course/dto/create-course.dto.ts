@@ -1,4 +1,4 @@
-import { IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString, IsDecimal, IsNumber } from 'class-validator';
+import { IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString, IsDecimal, IsNumber, IsPositive } from 'class-validator';
 import { Category } from 'src/class/entities/category.entity';
 import { ClassType } from 'src/class/entities/classtype.entity';
 import { User } from 'src/user/entities/user.entity';
@@ -53,4 +53,6 @@ export class CreateCourseDto {
   @IsNotEmpty()
   @IsInt()
   categoryId: number; // Assuming category ID is passed rather than the whole category object
+
+
 }

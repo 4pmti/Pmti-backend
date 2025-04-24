@@ -73,7 +73,9 @@ export class CourseService {
       } = filters;
 
       // Create query builder
-      const queryBuilder = this.courseRepository.createQueryBuilder('course');
+      const queryBuilder = this.courseRepository.createQueryBuilder('course')
+        .leftJoinAndSelect('course.category', 'category')
+        .leftJoinAndSelect('course.classType', 'classType');
 
       // Apply search if provided
       if (search) {
@@ -126,6 +128,7 @@ export class CourseService {
           updatedBy: true,
           createdBy: true,
           category: true,
+          classType: true,
         }
       });
       return course;
@@ -148,12 +151,43 @@ export class CourseService {
       if (!user.roles.includes(Role.ADMIN)) {
         throw new ForbiddenException("You don't have this permission!");
       }
+     
+   
       const course = await this.courseRepository.findOne({
         where: {
           id
+        },
+        relations: {
+          classType: true,
+          category: true,
         }
       });
       Object.assign(course, updateCourseDto);
+
+
+     if(updateCourseDto.categoryId){  
+      const category = await this.categoryRepository.findOne({
+        where: {
+          id: updateCourseDto.categoryId
+        }
+      });
+      if (!category) {
+        throw new NotFoundException("Category not found");
+      }
+      course.category = category;
+     }
+     if(updateCourseDto.classType){
+      const classType = await this.classTypeRepository.findOne({
+        where: {
+          id: updateCourseDto.classType
+        }
+      });
+      if (!classType) {
+        throw new NotFoundException("Class type not found");
+      }
+
+      course.classType = classType;
+     }     
       return await this.courseRepository.save(course);
 
     } catch (error) {

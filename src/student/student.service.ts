@@ -4,12 +4,21 @@ import { Repository } from 'typeorm';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { Student } from './entities/student.entity';
+import { Country } from 'src/course/country/entities/country.entity';
+import { State } from 'src/state/entities/state.entity';
+import { Location } from 'src/location/entities/location.entity';
 
 @Injectable()
 export class StudentService {
   constructor(
     @InjectRepository(Student)
     private readonly studentRepository: Repository<Student>,
+    @InjectRepository(Country)
+    private readonly countryRepository: Repository<Country>,
+    @InjectRepository(State)
+    private readonly stateRepository: Repository<State>,
+    @InjectRepository(Location)
+    private readonly locationRepository: Repository<Location>,
   ) { }
 
   async findAll(): Promise<Student[]> {
@@ -41,12 +50,51 @@ export class StudentService {
       const student = await this.studentRepository.findOne({
         where: {
           id: id
+        },
+        relations: {
+          state: true,
+          country: true,
+          city: true
         }
       });
 
       if (!student) {
         throw new Error('Student not found');
       }
+
+      // Check if country exists if it's being updated
+      if (updateStudentDto.country) {
+        const country = await this.countryRepository.findOne({ 
+          where: { id: updateStudentDto.country }
+        });
+        if (!country) {
+          throw new Error('Country not found');
+        }
+        student.country = country;
+      }
+
+      // Check if state exists if it's being updated
+      if (updateStudentDto.state) {
+        const state = await this.stateRepository.findOne({ 
+          where: { id: updateStudentDto.state }
+        });
+        if (!state) {
+          throw new Error('State not found');
+        }
+        student.state = state;
+      }
+
+      // Check if city/location exists if it's being updated
+      if (updateStudentDto.city) {
+        const city = await this.locationRepository.findOne({ 
+          where: { id: updateStudentDto.city }
+        });
+        if (!city) {
+          throw new Error('City not found');
+        }
+        student.city = city;
+      }
+
       Object.assign(student, updateStudentDto);
       return await this.studentRepository.save(student);
     } catch (error) {

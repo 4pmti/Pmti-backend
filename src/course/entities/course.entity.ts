@@ -18,7 +18,6 @@ import {
     id: number;
   
     @ManyToOne(() => Category)
-    @JoinColumn({ name: 'categoryId' })
     category: Category;
   
     @Column({ type: 'varchar', length: 255, nullable: false })
@@ -60,9 +59,9 @@ import {
     @Column({ type: 'int', nullable: true })
     courseDuration: number; // Assuming duration is in hours or similar units
   
-    // @ManyToOne(() => ClassType)
-    // @JoinColumn({ name: 'classType' })
-    // classType: ClassType;
+    @ManyToOne(() => ClassType)
+    @JoinColumn({ name: 'classType' })
+    classType: ClassType;
   
     @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
     price: number;

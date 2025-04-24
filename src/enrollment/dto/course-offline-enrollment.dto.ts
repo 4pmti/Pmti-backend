@@ -1,4 +1,4 @@
-import { IsBoolean, IsDate, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, Min, ValidateIf } from 'class-validator';
+import { IsBoolean, IsDate, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, MaxLength, Min, ValidateIf } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class OfflineCourseEnrollmentDto {
@@ -25,7 +25,13 @@ export class OfflineCourseEnrollmentDto {
     studentId : number;
 
     @IsNumber()
+    @IsOptional()
+    @IsPositive()
     amount:number;
+
+    @IsBoolean()
+    @IsOptional()
+    isPaid:boolean = false;
 
     // Billing Information
     @IsString()
@@ -116,15 +122,15 @@ export class OfflineCourseEnrollmentDto {
 
     // Payment Information
     @IsString()
-    @IsNotEmpty({ message: 'Credit Card number is required' })
+    @IsOptional()
     CCNo: string;
 
     @IsString()
-    @IsNotEmpty({message: 'CVV  is required'})
+    @IsOptional()
     CVV: string;
 
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     CCExpiry?: string;
 
     @IsString()
