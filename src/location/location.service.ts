@@ -66,18 +66,21 @@ export class LocationService {
   async findAll(findAllDto: FindAllDto) {
     try {
       const { countryId, stateId } = findAllDto;
-      const queryBuilder = this.locationRepository.createQueryBuilder('location');
+      const queryBuilder = this.locationRepository
+        .createQueryBuilder('location')
+        .leftJoinAndSelect('location.country', 'country')
+        .leftJoinAndSelect('location.state', 'state')
+        .where('location.isDelete = :isDelete', { isDelete: false });
 
       if (countryId) {
-        queryBuilder.andWhere('location.countryId = :countryId', { countryId });
+        queryBuilder.andWhere('country.id = :countryId', { countryId });
       }
 
       if (stateId) {
-        queryBuilder.andWhere('location.stateId = :stateId', { stateId });
+        queryBuilder.andWhere('state.id = :stateId', { stateId });
       }
 
       return await queryBuilder.getMany();
-
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(error);
