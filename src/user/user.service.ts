@@ -111,6 +111,9 @@ export class UserService {
             Object.assign(student, createStudentDto); // Copy all properties from DTO to student
             student.uid = `STU-${Date.now()}`;
             student.user = savedUser;
+            student.country = country;
+            student.state = state;
+            student.city = city;
             student.password = savedUser.password;
 
             return this.studentsRepository.save(student);

@@ -17,7 +17,9 @@ import { isAdmin } from 'src/common/util/utilities';
 import { OfflineClassEnrollmentDto } from './dto/class-offline-enrollment.dto';
 import { Role } from 'src/common/enums/role';
 import { OfflineCourseEnrollmentDto } from './dto/course-offline-enrollment.dto';
-
+import { State } from 'src/state/entities/state.entity';
+import { Country } from 'src/country/entities/country.entity';
+import { Location } from 'src/location/entities/location.entity';
 @Injectable()
 export class EnrollmentService {
 
@@ -38,6 +40,12 @@ export class EnrollmentService {
     private classRepository: Repository<Class>,
     @InjectRepository(Course)
     private courseRepository: Repository<Course>,
+    @InjectRepository(Location)
+    private locationRepository: Repository<Location>,
+    @InjectRepository(State)
+    private stateRepository: Repository<State>,
+    @InjectRepository(Country)
+    private countryRepository: Repository<Country>,
   ) { }
 
   private maskCardNumber(cardNumber: string): string {
@@ -455,6 +463,33 @@ export class EnrollmentService {
         }
       }
 
+      // check location, state and country
+      const location = await queryRunner.manager.findOne(Location, {
+        where: {
+          id: createEnrollmentDto.city
+        }
+      });
+      if (!location) {
+        throw new NotFoundException("Location not found");
+      }
+
+      const state = await queryRunner.manager.findOne(State, {
+        where: {
+          id: createEnrollmentDto.state
+        }
+      });
+      if (!state) {
+        throw new NotFoundException("State not found");
+      }
+
+      const country = await queryRunner.manager.findOne(Country, {
+        where: {
+          id: createEnrollmentDto.country
+        }
+      });
+
+
+
 
       //validate the student
       let student = await queryRunner.manager.findOne(Student, {
@@ -462,6 +497,9 @@ export class EnrollmentService {
           email: createEnrollmentDto.email
         }
       });
+
+      
+
 
       if (!student) {
         try {
@@ -590,7 +628,7 @@ export class EnrollmentService {
         studentName: createEnrollmentDto.name,
         studentAddress: createEnrollmentDto.address,
         className: enrollmentTarget instanceof Class ? enrollmentTarget.title : "",
-        location: createEnrollmentDto.city,
+        location: location.location,
         paymentInfo: {
           method: enrollment.PaymentMode,
           cardLastFour: enrollment.CCNo,

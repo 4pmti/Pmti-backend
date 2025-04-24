@@ -13,7 +13,8 @@ import typeorm from 'src/config/typeorm';
 import { Country } from 'src/country/entities/country.entity';
 import { AuthGuard } from './guard/auth.guard';
 import { Instructor } from 'src/instructor/entities/instructor.entity';
-
+import { State } from 'src/state/entities/state.entity';
+import { Location } from 'src/location/entities/location.entity';
 @Module({
   imports: [
     JwtModule.register({
@@ -24,7 +25,7 @@ import { Instructor } from 'src/instructor/entities/instructor.entity';
       isGlobal: true,
       load: [typeorm],
     }),
-    TypeOrmModule.forFeature([User, Student, Admin,Country,Instructor]),
+    TypeOrmModule.forFeature([User, Student, Admin,Country,Instructor, State, Location]),
   ],
   controllers: [AuthController],
   providers: [AuthService, UserService, BcryptService],

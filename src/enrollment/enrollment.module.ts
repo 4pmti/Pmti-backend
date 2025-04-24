@@ -16,6 +16,8 @@ import { Instructor } from 'src/instructor/entities/instructor.entity';
 import { Admin } from 'src/admin/entities/admin.entity';
 import { EmailService } from 'src/common/services/email.service';
 import { AuthModule } from 'src/auth/auth.module';
+import { State } from 'src/state/entities/state.entity';
+import { Location } from 'src/location/entities/location.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -27,7 +29,9 @@ import { AuthModule } from 'src/auth/auth.module';
       Course,
       Instructor,
       Admin,
-      Country
+      Country,
+      State,
+      Location
     ]),
     AuthModule
   ],

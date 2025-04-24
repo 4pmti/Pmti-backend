@@ -10,7 +10,8 @@ import { ConfigModule } from '@nestjs/config';
 import typeorm from 'src/config/typeorm';
 import { Country } from 'src/country/entities/country.entity';
 import { Instructor } from 'src/instructor/entities/instructor.entity';
-
+import { State } from 'src/state/entities/state.entity';
+import { Location } from 'src/location/entities/location.entity';
 
 @Module({
   controllers: [UserController],
@@ -21,7 +22,7 @@ import { Instructor } from 'src/instructor/entities/instructor.entity';
       isGlobal: true,
       load: [typeorm], 
     }),
-    TypeOrmModule.forFeature([User, Student, Admin,Country,Instructor]), 
+    TypeOrmModule.forFeature([User, Student, Admin,Country,Instructor, State, Location]), 
   ],
 
 })
