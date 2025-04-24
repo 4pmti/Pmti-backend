@@ -75,7 +75,8 @@ export class CourseService {
       // Create query builder
       const queryBuilder = this.courseRepository.createQueryBuilder('course')
         .leftJoinAndSelect('course.category', 'category')
-        .leftJoinAndSelect('course.classType', 'classType');
+        .leftJoinAndSelect('course.classType', 'classType')
+        .loadRelationCountAndMap('course.enrollmentCount', 'course.enrollments');
 
       // Apply search if provided
       if (search) {
@@ -129,6 +130,7 @@ export class CourseService {
           createdBy: true,
           category: true,
           classType: true,
+        //  enrollments: true
         }
       });
       return course;
@@ -151,8 +153,8 @@ export class CourseService {
       if (!user.roles.includes(Role.ADMIN)) {
         throw new ForbiddenException("You don't have this permission!");
       }
-     
-   
+
+
       const course = await this.courseRepository.findOne({
         where: {
           id
@@ -165,29 +167,29 @@ export class CourseService {
       Object.assign(course, updateCourseDto);
 
 
-     if(updateCourseDto.categoryId){  
-      const category = await this.categoryRepository.findOne({
-        where: {
-          id: updateCourseDto.categoryId
+      if (updateCourseDto.categoryId) {
+        const category = await this.categoryRepository.findOne({
+          where: {
+            id: updateCourseDto.categoryId
+          }
+        });
+        if (!category) {
+          throw new NotFoundException("Category not found");
         }
-      });
-      if (!category) {
-        throw new NotFoundException("Category not found");
+        course.category = category;
       }
-      course.category = category;
-     }
-     if(updateCourseDto.classType){
-      const classType = await this.classTypeRepository.findOne({
-        where: {
-          id: updateCourseDto.classType
+      if (updateCourseDto.classType) {
+        const classType = await this.classTypeRepository.findOne({
+          where: {
+            id: updateCourseDto.classType
+          }
+        });
+        if (!classType) {
+          throw new NotFoundException("Class type not found");
         }
-      });
-      if (!classType) {
-        throw new NotFoundException("Class type not found");
-      }
 
-      course.classType = classType;
-     }     
+        course.classType = classType;
+      }
       return await this.courseRepository.save(course);
 
     } catch (error) {

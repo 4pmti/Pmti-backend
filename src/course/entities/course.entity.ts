@@ -1,6 +1,7 @@
 import { Category } from 'src/class/entities/category.entity';
 import { ClassType } from 'src/class/entities/classtype.entity';
 import { BaseEntity } from 'src/common/dto/base.dto';
+import { Enrollment } from 'src/enrollment/entities/enrollment.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
     Entity,
@@ -10,6 +11,7 @@ import {
     UpdateDateColumn,
     ManyToOne,
     JoinColumn,
+    OneToMany,
   } from 'typeorm';
   
   @Entity('courses')
@@ -68,5 +70,8 @@ import {
   
     @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
     extPrice: number;
+
+    @OneToMany(() => Enrollment, enrollment => enrollment.course)
+    enrollments: Enrollment[];
   }
   
