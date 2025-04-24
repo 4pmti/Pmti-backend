@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Location } from './entities/location.entity';
@@ -8,7 +8,7 @@ import { CreateLocationDto } from './dto/create-location.dto';
 import { UpdateLocationDto } from './dto/update-location.dto';
 import { Role } from 'src/common/enums/role';
 import { State } from 'src/state/entities/state.entity';
-
+import { FindAllDto } from './dto/find-all.dto';
 @Injectable()
 export class LocationService {
   constructor(
@@ -38,8 +38,8 @@ export class LocationService {
       }
 
       const state = await this.stateRepository.findOne({
-        where : {
-          id : createLocationDto.state
+        where: {
+          id: createLocationDto.state
         }
       });
 
@@ -48,7 +48,7 @@ export class LocationService {
       }
 
 
-      
+
 
       const location = new Location();
       location.location = createLocationDto.location;
@@ -63,21 +63,36 @@ export class LocationService {
     }
   }
 
-  async findAll() {
+  async findAll(findAllDto: FindAllDto) {
     try {
-      return await this.locationRepository.find(
-        {
-          relations : {
-            country : true,
-            state : true
-          }
-        }
-      );
+      const { countryId, stateId } = findAllDto;
+      const queryBuilder = this.locationRepository.createQueryBuilder('location');
+
+      if (countryId) {
+        queryBuilder.andWhere('location.countryId = :countryId', { countryId });
+      }
+
+      if (stateId) {
+        queryBuilder.andWhere('location.stateId = :stateId', { stateId });
+      }
+
+      return await queryBuilder.getMany();
+
     } catch (error) {
       console.log(error);
-      throw error;
+      throw new InternalServerErrorException(error);
     }
   }
+
+
+
+
+
+
+
+
+
+
 
   async update(userId: string, id: number, updateLocationDto: UpdateLocationDto) {
 
