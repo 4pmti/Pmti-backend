@@ -11,17 +11,14 @@ export class CreateStudentDto {
   address?: string;
 
   @IsNumber()
-  @Length(0, 100)
   @IsOptional()
   city?: number;
 
   @IsNumber()
-  @Length(0, 100)
   @IsOptional()
   state?: number;
 
   @IsNumber()
-  @Length(0, 100)
   @IsOptional()
   country?: number;
 
