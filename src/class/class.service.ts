@@ -108,17 +108,17 @@ export class ClassService {
       const location = await this.locationRepository.findOne({
         where: {
           id: createClassDto.locationId
+        },
+        relations: {
+          state: true
         }
       });
       if (!location) {
         throw new BadRequestException('Location Not Found');
-      }     
-      const state = await this.stateRepository.findOne({
-        where: {
-          id: +createClassDto.stateId
-        }
-      });
-      
+      }
+
+      const state = location.state;
+
       if (!state) {
         throw new NotFoundException("State not found");
       }
@@ -156,7 +156,7 @@ export class ClassService {
           country: true,
           classType: true,
           category: true,
-          state : true
+          state: true
         }
       });
       if (!classs) {
@@ -217,7 +217,7 @@ export class ClassService {
 
 
 
-  async findAll(filters:FilterDto) {
+  async findAll(filters: FilterDto) {
     try {
       console.log(filters);
       const {
@@ -238,7 +238,7 @@ export class ClassService {
         isCorpClass
       } = filters;
 
-     
+
       // Create query builder
       const queryBuilder = this.classRepository.createQueryBuilder('class')
         .leftJoinAndSelect('class.classType', 'classType')
@@ -248,7 +248,7 @@ export class ClassService {
         .leftJoinAndSelect('class.country', 'country')
         .leftJoinAndSelect('class.addedBy', 'addedBy')
         .leftJoinAndSelect('class.updatedBy', 'updatedBy')
-        .leftJoinAndSelect('class.state','state')
+        .leftJoinAndSelect('class.state', 'state')
         .loadRelationCountAndMap('class.enrollmentCount', 'class.enrollments');
 
       // Apply search if provided
@@ -271,15 +271,15 @@ export class ClassService {
 
       }
 
-      if(isCancel){
+      if (isCancel) {
         queryBuilder.andWhere('class.isCancel = :isCancel', { isCancel });
       }
 
-      if(isCorpClass){
+      if (isCorpClass) {
         queryBuilder.andWhere('class.isCorpClass = :isCorpClass', { isCorpClass });
       }
 
-      if(status){
+      if (status) {
         queryBuilder.andWhere('class.status = :status', { status });
       }
 
@@ -303,7 +303,7 @@ export class ClassService {
         queryBuilder.andWhere('class.locationID = :locationId', { locationId });
       }
 
-      if(stateId){
+      if (stateId) {
         queryBuilder.andWhere('class.stateId = :stateId', { stateId });
       }
 
@@ -325,9 +325,9 @@ export class ClassService {
 
       // Apply pagination
       const skip = (page - 1) * limit;
-      console.log("page",page);
-      console.log("limit",limit);
-      console.log("skip",skip);
+      console.log("page", page);
+      console.log("limit", limit);
+      console.log("skip", skip);
       queryBuilder.skip(skip).take(limit);
 
       console.log(queryBuilder.getSql());

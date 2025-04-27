@@ -494,14 +494,14 @@ export class EnrollmentService {
         throw new NotFoundException("Location not found");
       }
 
-      const state = await queryRunner.manager.findOne(State, {
-        where: {
-          id: createEnrollmentDto.state
-        }
-      });
-      if (!state) {
-        throw new NotFoundException("State not found");
-      }
+      // const state = await queryRunner.manager.findOne(State, {
+      //   where: {
+      //     id: createEnrollmentDto.state
+      //   }
+      // });
+      // if (!state) {
+      //   throw new NotFoundException("State not found");
+      // }
 
       const country = await queryRunner.manager.findOne(Country, {
         where: {

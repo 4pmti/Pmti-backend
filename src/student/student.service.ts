@@ -24,7 +24,6 @@ export class StudentService {
   async findAll(): Promise<Student[]> {
     return await this.studentRepository.find({
       relations: {
-        state: true,
         country: true,
         city: true,
       }
@@ -34,7 +33,6 @@ export class StudentService {
   async findOne(id: number): Promise<Student> {
 
     const student = await this.studentRepository.findOne({ where: { id }, relations: {
-      state: true,
       country: true,
       city: true,
     }});
@@ -52,7 +50,6 @@ export class StudentService {
           id: id
         },
         relations: {
-          state: true,
           country: true,
           city: true
         }
@@ -74,15 +71,15 @@ export class StudentService {
       }
 
       // Check if state exists if it's being updated
-      if (updateStudentDto.state) {
-        const state = await this.stateRepository.findOne({ 
-          where: { id: updateStudentDto.state }
-        });
-        if (!state) {
-          throw new Error('State not found');
-        }
-        student.state = state;
-      }
+      // if (updateStudentDto.state) {
+      //   const state = await this.stateRepository.findOne({ 
+      //     where: { id: updateStudentDto.state }
+      //   });
+      //   if (!state) {
+      //     throw new Error('State not found');
+      //   }
+      //   student.state = state;
+      // }
 
       // Check if city/location exists if it's being updated
       if (updateStudentDto.city) {

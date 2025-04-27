@@ -7,7 +7,6 @@ import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { FilterDto } from 'src/class/dto/filter.dto';
 
 @Controller('course')
-
 export class CourseController {
   constructor(private readonly courseService: CourseService) { }
 

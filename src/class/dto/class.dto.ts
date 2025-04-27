@@ -38,8 +38,8 @@ export class ClassDto {
   @Transform(({ value }) => new Date(value))
   startDate: Date; 
 
-  @IsNumber()
-  stateId?:number;
+  // @IsNumber()
+  // stateId?:number;
 
   @IsNotEmpty()
   @IsDate()

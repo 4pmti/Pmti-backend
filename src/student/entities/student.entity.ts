@@ -22,9 +22,8 @@ export class Student {
   @JoinColumn({ name: 'locationID' })
   city: Location;
 
-  @ManyToOne(()=>State)
-  @JoinColumn({name : 'stateId'})
-  state:State;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  state: string;
 
   
   @ManyToOne(() => Country)

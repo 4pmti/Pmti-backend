@@ -14,9 +14,9 @@ export class CreateStudentDto {
   @IsOptional()
   city?: number;
 
-  @IsNumber()
-  @IsOptional()
-  state?: number;
+  @IsString()
+  @Length(2, 255)
+  state: string;
 
   @IsNumber()
   @IsOptional()

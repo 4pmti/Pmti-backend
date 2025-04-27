@@ -89,10 +89,10 @@ export class UserService {
                 throw new BadRequestException("Country not found");
             }
 
-            const state = await this.stateRepository.findOne({ where: { id: createStudentDto.state } });
-            if (!state) {
-                throw new BadRequestException("State not found");
-            }
+            // const state = await this.stateRepository.findOne({ where: { id: createStudentDto.state } });
+            // if (!state) {
+            //     throw new BadRequestException("State not found");
+            // }
 
             const city = await this.locationRepository.findOne({ where: { id: createStudentDto.city } });
             if (!city) {
@@ -112,7 +112,7 @@ export class UserService {
             student.uid = `STU-${Date.now()}`;
             student.user = savedUser;
             student.country = country;
-            student.state = state;
+            student.state = createStudentDto.state;
             student.city = city;
             student.password = savedUser.password;
 
@@ -139,6 +139,11 @@ export class UserService {
             if (!createInstructorDto.password) {
                 createInstructorDto.password = this.generateRandomPassword();
             }
+            // check if the user is already an instructor
+            const existingInstructor = await this.instructorRepository.findOne({ where: { emailID: createInstructorDto.emailID } });
+            if (existingInstructor) {
+                throw new BadRequestException("User already has instructor role");
+            }
 
             const instructor = new Instructor();
             Object.assign(instructor, createInstructorDto);
@@ -161,7 +166,7 @@ export class UserService {
                 const savedUser = await this.usersRepository.save(user);
                 instructor.user = savedUser;
             }
-            return this.instructorRepository.save(instructor);
+            return await this.instructorRepository.save(instructor);
         } catch (error) {
             console.log(error);
             throw new InternalServerErrorException(error);
