@@ -47,9 +47,6 @@ export class StudentService {
 
     const enrollments = await this.enrollmentRepository.find({ where: { student: { id } }, relations: { course: true, class: true } });
 
-
-
-
     return { student, enrollments };
   }
 
