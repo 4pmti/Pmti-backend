@@ -1,5 +1,5 @@
 
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Admin } from 'src/admin/entities/admin.entity';
@@ -27,39 +27,44 @@ export class AuthService {
     email: string,
     pass: string,
   ): Promise<{ access_token: string }> {
-    console.log(email, pass);
-    const user = await this.usersRepository.findOne({
-      where: { email }
-    });
+    try {
+      console.log(email, pass);
+      const user = await this.usersRepository.findOne({
+        where: { email }
+      });
 
-    if (!user) {
-      throw new Error("No User Found with this email.");
+      if (!user) {
+        throw new BadRequestException("No User Found with this email.");
+      }
+      const validUser = await this.bcryptService.comparePasswords(pass, user.password);
+      if (!validUser) {
+        throw new BadRequestException("Wrong Credentials.");
+      }
+
+
+      // let realuser: any;
+      // if (user.roles.includes(Role.ADMIN))
+      //   realuser = await this.adminRepository.findOne({
+      //     where: {
+      //       email: email,
+      //     }
+      //   });
+      // } else if (ser.role == Roule.STUDENT) {
+      //   realuser = await this.studentRepository.findOne({
+      //     where: {
+      //       email: email,
+      //     }
+      //   });
+      // }
+      // TODO: add other roles
+
+      const payload = { id: user.id, email: user.email, roles: user.roles };
+      return {
+        access_token: await this.jwtService.signAsync(payload),
+      };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException("Something went wrong." + error);
     }
-    const validUser = await this.bcryptService.comparePasswords(pass, user.password);
-    if (!validUser) {
-      throw new Error("Wrong Credentials.");
-    }
-
-
-    let realuser: any;
-    // if (user.roles.includes(Role.ADMIN))
-    //   realuser = await this.adminRepository.findOne({
-    //     where: {
-    //       email: email,
-    //     }
-    //   });
-    // } else if (ser.role == Roule.STUDENT) {
-    //   realuser = await this.studentRepository.findOne({
-    //     where: {
-    //       email: email,
-    //     }
-    //   });
-    // }
-    // TODO: add other roles
-
-    const payload = { id: user.id, email: user.email };
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-    };
   }
 }

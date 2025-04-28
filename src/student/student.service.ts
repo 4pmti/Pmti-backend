@@ -38,14 +38,14 @@ export class StudentService {
     const student = await this.studentRepository.findOne({
       where: { id }, relations: {
         country: true,
-        state: true
+        state: true,
       }
     });
     if (!student) {
       throw new Error('Student not found');
     }
 
-    const enrollments = await this.enrollmentRepository.find({ where: { student: { id } } });
+    const enrollments = await this.enrollmentRepository.find({ where: { student: { id } }, relations: { course: true, class: true } });
 
 
 
