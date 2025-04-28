@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
 import { In, Repository } from 'typeorm';
@@ -106,7 +106,7 @@ export class PromotionsService {
 
     } catch (error) {
       console.log(error);
-      throw error;
+      throw new InternalServerErrorException("Something went wrong.," + error);
     }
   }
 

@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Country } from './entities/country.entity';
@@ -16,11 +16,17 @@ export class CountryService {
     private readonly countryRepository: Repository<Country>
   ) { }
 
-  create(createCountryDto: CreateCountryDto) {
-    return this.countryRepository.save(createCountryDto);
+  async create(createCountryDto: CreateCountryDto) {
+    try{
+    return await this.countryRepository.save(createCountryDto);
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException("Something went wrong.," + error);
+    }
   }
 
   async findAll() {
+    try{
     const countries = await this.countryRepository.find({
      relations : {
       locations : true,
@@ -30,11 +36,20 @@ export class CountryService {
     console.log(countries);
   
    return countries;
+  } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException("Something went wrong.," + error);
+    }
   }
-  
+
 
   findOne(id: number) {
+    try{
     return this.countryRepository.findOne({ where: { id } });
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException("Something went wrong.," + error);
+    }
   }
 
   async removeBulk(ids: number[], userId: string) {

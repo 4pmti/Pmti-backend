@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsNumber, IsOptional, IsDateString, IsBoolean } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsOptional, IsDateString, IsBoolean, Min, IsPositive, Max } from 'class-validator';
 import { Type } from 'class-transformer';
 export class CreatePromotionDto {
   @IsNumber()
@@ -19,6 +19,9 @@ export class CreatePromotionDto {
 
   @IsNumber()
   @IsNotEmpty()
+  @IsPositive()
+  @Min(0)
+  @Max(10000)
   amount: number;
 
   @IsDateString()

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateStudentDto } from './dto/create-student.dto';
@@ -34,6 +34,7 @@ export class StudentService {
   }
 
   async findOne(id: number): Promise<{ student: Student, enrollments: Enrollment[] }> {
+    try{
 
     const student = await this.studentRepository.findOne({
       where: { id }, relations: {
@@ -42,12 +43,23 @@ export class StudentService {
       }
     });
     if (!student) {
-      throw new Error('Student not found');
+      throw new BadRequestException('Student not found');
     }
 
-    const enrollments = await this.enrollmentRepository.find({ where: { student: { id } }, relations: { course: true, class: true } });
+    const enrollments = await this.enrollmentRepository.
+      find({
+        where: { student: { id } }, relations: {
+          course: true, class: {
+            instructor: true
+          }
+        }
+      });
 
     return { student, enrollments };
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 
   async update(id: number, updateStudentDto: UpdateStudentDto): Promise<Student> {
