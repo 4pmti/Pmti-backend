@@ -69,8 +69,6 @@ export class UserService {
 
     }
 
-
-
     async createStudent(createStudentDto: CreateStudentDto): Promise<Student> {
         try {
 
@@ -89,15 +87,15 @@ export class UserService {
                 throw new BadRequestException("Country not found");
             }
 
-            // const state = await this.stateRepository.findOne({ where: { id: createStudentDto.state } });
-            // if (!state) {
-            //     throw new BadRequestException("State not found");
-            // }
-
-            const city = await this.locationRepository.findOne({ where: { id: createStudentDto.city } });
-            if (!city) {
-                throw new BadRequestException("City not found");
+            const state = await this.stateRepository.findOne({ where: { id: createStudentDto.state } });
+            if (!state) {
+                throw new BadRequestException("State not found");
             }
+
+            // const city = await this.locationRepository.findOne({ where: { id: createStudentDto.city } });
+            // if (!city) {
+            //     throw new BadRequestException("City not found");
+            // }
 
             const user = new User();
             user.name = createStudentDto.name;
@@ -112,8 +110,8 @@ export class UserService {
             student.uid = `STU-${Date.now()}`;
             student.user = savedUser;
             student.country = country;
-            student.state = createStudentDto.state;
-            student.city = city;
+            student.state = state;
+            student.city = createStudentDto.city;
             student.password = savedUser.password;
 
             return this.studentsRepository.save(student);

@@ -7,7 +7,7 @@ import { Student } from './entities/student.entity';
 import { Country } from 'src/course/country/entities/country.entity';
 import { State } from 'src/state/entities/state.entity';
 import { Location } from 'src/location/entities/location.entity';
-
+import { Enrollment } from 'src/enrollment/entities/enrollment.entity';
 @Injectable()
 export class StudentService {
   constructor(
@@ -19,28 +19,38 @@ export class StudentService {
     private readonly stateRepository: Repository<State>,
     @InjectRepository(Location)
     private readonly locationRepository: Repository<Location>,
+
+    @InjectRepository(Enrollment)
+    private readonly enrollmentRepository: Repository<Enrollment>,
   ) { }
 
   async findAll(): Promise<Student[]> {
     return await this.studentRepository.find({
       relations: {
         country: true,
-        city: true,
+        state: true,
       }
     });
   }
 
-  async findOne(id: number): Promise<Student> {
+  async findOne(id: number): Promise<{ student: Student, enrollments: Enrollment[] }> {
 
-    const student = await this.studentRepository.findOne({ where: { id }, relations: {
-      country: true,
-      city: true,
-    }});
-
+    const student = await this.studentRepository.findOne({
+      where: { id }, relations: {
+        country: true,
+        state: true
+      }
+    });
     if (!student) {
       throw new Error('Student not found');
     }
-    return student;
+
+    const enrollments = await this.enrollmentRepository.find({ where: { student: { id } } });
+
+
+
+
+    return { student, enrollments };
   }
 
   async update(id: number, updateStudentDto: UpdateStudentDto): Promise<Student> {
@@ -51,7 +61,7 @@ export class StudentService {
         },
         relations: {
           country: true,
-          city: true
+          state: true
         }
       });
 
@@ -61,7 +71,7 @@ export class StudentService {
 
       // Check if country exists if it's being updated
       if (updateStudentDto.country) {
-        const country = await this.countryRepository.findOne({ 
+        const country = await this.countryRepository.findOne({
           where: { id: updateStudentDto.country }
         });
         if (!country) {
@@ -71,26 +81,26 @@ export class StudentService {
       }
 
       // Check if state exists if it's being updated
-      // if (updateStudentDto.state) {
-      //   const state = await this.stateRepository.findOne({ 
-      //     where: { id: updateStudentDto.state }
-      //   });
-      //   if (!state) {
-      //     throw new Error('State not found');
-      //   }
-      //   student.state = state;
-      // }
+      if (updateStudentDto.state) {
+        const state = await this.stateRepository.findOne({
+          where: { id: updateStudentDto.state }
+        });
+        if (!state) {
+          throw new Error('State not found');
+        }
+        student.state = state;
+      }
 
       // Check if city/location exists if it's being updated
-      if (updateStudentDto.city) {
-        const city = await this.locationRepository.findOne({ 
-          where: { id: updateStudentDto.city }
-        });
-        if (!city) {
-          throw new Error('City not found');
-        }
-        student.city = city;
-      }
+      // if (updateStudentDto.city) {
+      //   const city = await this.locationRepository.findOne({ 
+      //     where: { id: updateStudentDto.city }
+      //   });
+      //   if (!city) {
+      //     throw new Error('City not found');
+      //   }
+      //   student.city = city;
+      // }
 
       Object.assign(student, updateStudentDto);
       return await this.studentRepository.save(student);
@@ -101,19 +111,19 @@ export class StudentService {
   }
 
   async remove(id: number): Promise<String> {
-     try{
-        const student = await this.studentRepository.findOne({
-          where: {
-            id: id
-          }
-        });
-        if (!student) {
-          throw new Error('Student not found');
+    try {
+      const student = await this.studentRepository.findOne({
+        where: {
+          id: id
         }
-        await this.studentRepository.remove(student);
-        return "Successfully deleted";
-     } catch(error){
-       throw error;
-     }
+      });
+      if (!student) {
+        throw new Error('Student not found');
+      }
+      await this.studentRepository.remove(student);
+      return "Successfully deleted";
+    } catch (error) {
+      throw error;
+    }
   }
 }

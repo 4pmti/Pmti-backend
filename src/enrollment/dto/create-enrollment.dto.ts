@@ -60,13 +60,11 @@ export class CreateEnrollmentDto {
     @IsNotEmpty()
     address: string;
 
-    @IsNumber()
-    @IsNotEmpty()
-    city: number;
+  
+    city: number|string;
     
-    @IsString()
-    @IsNotEmpty()
-    state: string;
+    @IsNumber()
+    state: number;
 
     @IsNumber()
     @IsNotEmpty()

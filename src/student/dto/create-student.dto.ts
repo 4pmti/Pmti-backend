@@ -10,13 +10,12 @@ export class CreateStudentDto {
   @IsOptional()
   address?: string;
 
-  @IsNumber()
-  @IsOptional()
-  city?: number;
-
   @IsString()
-  @Length(2, 255)
-  state: string;
+  @Length(1, 255)
+  city?: string;
+
+  @IsNumber()
+  state: number;
 
   @IsNumber()
   @IsOptional()

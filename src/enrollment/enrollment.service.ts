@@ -487,7 +487,7 @@ export class EnrollmentService {
       // check location, state and country
       const location = await queryRunner.manager.findOne(Location, {
         where: {
-          id: createEnrollmentDto.city
+          id: createEnrollmentDto.city as number
         }
       });
       if (!location) {
@@ -529,7 +529,7 @@ export class EnrollmentService {
             email: createEnrollmentDto.email,
             address: createEnrollmentDto.address,
             zipCode: createEnrollmentDto.zipCode,
-            city: createEnrollmentDto.city,
+            city: createEnrollmentDto.city as string,
             phone: createEnrollmentDto.phone,
             state: createEnrollmentDto.state,
             country: createEnrollmentDto.country,

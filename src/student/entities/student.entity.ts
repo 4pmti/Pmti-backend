@@ -18,12 +18,13 @@ export class Student {
   @Column({ type: 'varchar', length: 255, nullable: true })
   address: string;
 
-  @ManyToOne(() => Location)
-  @JoinColumn({ name: 'locationID' })
-  city: Location;
-
   @Column({ type: 'varchar', length: 255, nullable: true })
-  state: string;
+  city: string;
+
+
+  @ManyToOne(() => State)
+  @JoinColumn({ name: 'stateID' })
+  state: State;
 
   
   @ManyToOne(() => Country)
