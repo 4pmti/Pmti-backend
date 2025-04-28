@@ -46,13 +46,12 @@ export class OfflineCourseEnrollmentDto {
     @IsNotEmpty()
     BillingCity: string;
 
-    @IsString()
-    @IsNotEmpty()
-    BillingState: string;
+    @IsNumber()
+    BillingState: number;
 
-    @IsString()
+    @IsNumber()
     @IsNotEmpty()
-    BillCountry: string;
+    BillCountry: number;
 
     @IsString()
     @IsNotEmpty()

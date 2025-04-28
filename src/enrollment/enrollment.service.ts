@@ -248,18 +248,35 @@ export class EnrollmentService {
         }
       }
 
+      const billingCountry = await queryRunner.manager.findOne(Country, {
+        where: {
+          id: offlineEnrollment.BillCountry
+        }
+      });
+      if (!billingCountry) {
+        throw new NotFoundException("Billing country not found");
+      }
+
+      const billingState = await queryRunner.manager.findOne(State, {
+        where: {
+          id: offlineEnrollment.BillingState
+        }
+      });
+      if (!billingState) {
+        throw new NotFoundException("Billing state not found");
+      }
+
       const enrollment = new Enrollment();
       enrollment.student = student;
       enrollment.course = null;
       enrollment.class = classs;
       enrollment.Comments = offlineEnrollment.Comments;
-      enrollment.BillCountry = offlineEnrollment.BillCountry;
+      enrollment.BillCountry = billingCountry.CountryName;
       enrollment.BillingCity = offlineEnrollment.zipCode;
       enrollment.BillingName = offlineEnrollment.BillingName;
-      enrollment.BillingState = offlineEnrollment.BillingState;
+      enrollment.BillingState = billingState.name;
       enrollment.BillingAddress = offlineEnrollment.BillingAddress;
       enrollment.BillingCity = offlineEnrollment.BillingCity;
-      enrollment.BillingState = offlineEnrollment.BillingState;
       enrollment.BillDate = new Date();
       enrollment.BillMail = offlineEnrollment.BillMail;
       enrollment.CCNo = offlineEnrollment.isPaid ? this.maskCardNumber(offlineEnrollment.CCNo) : null;
@@ -399,19 +416,38 @@ export class EnrollmentService {
           );
         }
       }
+      const billingCountry = await queryRunner.manager.findOne(Country, {
+        where: {
+          id: offlineEnrollment.BillCountry
+        }
+      });
+      if (!billingCountry) {
+        throw new NotFoundException("Billing country not found");
+      }
+
+      const billingState = await queryRunner.manager.findOne(State, {
+        where: {
+          id: offlineEnrollment.BillingState
+        }
+      });
+      if (!billingState) {
+        throw new NotFoundException("Billing state not found");
+      }
+      
+      
 
       const enrollment = new Enrollment();
       enrollment.student = student;
       enrollment.course = course;
       enrollment.class = null;
       enrollment.Comments = offlineEnrollment.Comments;
-      enrollment.BillCountry = offlineEnrollment.BillCountry;
+      enrollment.BillCountry = billingCountry.CountryName;
       enrollment.BillingCity = offlineEnrollment.zipCode;
       enrollment.BillingName = offlineEnrollment.BillingName;
-      enrollment.BillingState = offlineEnrollment.BillingState;
+      enrollment.BillingState = billingState.name;
       enrollment.BillingAddress = offlineEnrollment.BillingAddress;
       enrollment.BillingCity = offlineEnrollment.BillingCity;
-      enrollment.BillingState = offlineEnrollment.BillingState;
+      enrollment.BillingState = billingState.name;
       enrollment.BillDate = new Date();
       enrollment.BillMail = offlineEnrollment.BillMail;
       enrollment.CCNo = offlineEnrollment.isPaid ? this.maskCardNumber(offlineEnrollment.CCNo) : null;
