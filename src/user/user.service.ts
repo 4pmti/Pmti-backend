@@ -153,8 +153,12 @@ export class UserService {
             const existingUser = await this.usersRepository.findOne({ where: { email: createInstructorDto.emailID } });
             if (existingUser) {
                 instructor.user = existingUser;
-                existingUser.roles = [...existingUser.roles, Role.INSTRUCTOR];
-                await this.usersRepository.save(existingUser);
+                if (!existingUser.roles.includes(Role.INSTRUCTOR)) {
+                    existingUser.roles = [...existingUser.roles, Role.INSTRUCTOR];
+                    await this.usersRepository.save(existingUser);
+                } else {
+                    throw new BadRequestException("User already has instructor role");
+                }
             } else {
                 const user = new User();
                 user.name = createInstructorDto.name;
