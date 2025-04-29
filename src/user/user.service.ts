@@ -64,7 +64,7 @@ export class UserService {
 
         } catch (error) {
             console.log(error);
-
+            throw new InternalServerErrorException(error);
         }
 
     }
@@ -185,7 +185,7 @@ export class UserService {
 
             const country = await this.countryRepository.findOne({ where: { id: createAdminDto.countryId } });
             if (!country) {
-                throw new UnauthorizedException('Country not found');
+                throw new BadRequestException('Country not found');
             }
 
             const checkExistinguser = await this.usersRepository.findOne({ where: { email: createAdminDto.email } });
