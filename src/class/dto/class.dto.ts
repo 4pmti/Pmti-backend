@@ -34,19 +34,13 @@ export class ClassDto {
   locationId?: number;  // Optional: Location ID (Foreign Key)
 
   @IsNotEmpty()
-  @Matches(/^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])-\d{4}$/, {
-    message: 'Date must be in MM-dd-YYYY format'
-  })
   @Transform(({ value }) => new Date(value))
   startDate: Date;
 
   @IsNotEmpty()
-  @Matches(/^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])-\d{4}$/, {
-    message: 'Date must be in MM-dd-YYYY format'
-  })
   @Transform(({ value }) => new Date(value))
   endDate: Date;  
-    
+
   @IsNotEmpty()
   @IsNumber()
   maxStudent: number;  // Maximum number of students
