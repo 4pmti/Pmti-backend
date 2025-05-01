@@ -6,6 +6,7 @@ import { RescheduleDto } from './dto/reschedule.dto';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { Request } from 'express';
 import { OfflineClassEnrollmentDto } from './dto/class-offline-enrollment.dto';
+import { OfflineCourseEnrollmentDto } from './dto/course-offline-enrollment.dto';
 
 @Controller('enrollment')
 export class EnrollmentController {
@@ -22,10 +23,10 @@ export class EnrollmentController {
  // @UsePipes(new ValidationPipe({ transform: true }))
   createOfflineEnrollmentForCourse(
     @Req() req: Request,
-    @Body() rescheduleDto: CreateEnrollmentDto
+    @Body() offlineCourseDto: OfflineCourseEnrollmentDto
   ){
     const userId = req.user.id;
-
+    return this.enrollmentService.createOfflineCourseEnrollment(userId,offlineCourseDto);
   }
 
   @UseGuards(AuthGuard)
