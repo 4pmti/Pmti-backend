@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsNumber, IsOptional, IsDate, IsBoolean, IsEnum } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsOptional, IsDate, IsBoolean, IsEnum, Matches } from 'class-validator';
 import { Transform, Type } from "class-transformer";
 import { classStatus } from 'src/common/enums/enums';
 
@@ -34,18 +34,19 @@ export class ClassDto {
   locationId?: number;  // Optional: Location ID (Foreign Key)
 
   @IsNotEmpty()
-  @IsDate()
+  @Matches(/^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])-\d{4}$/, {
+    message: 'Date must be in MM-dd-YYYY format'
+  })
   @Transform(({ value }) => new Date(value))
-  startDate: Date ; 
-
-  // @IsNumber()
-  // stateId?:number;
+  startDate: Date;
 
   @IsNotEmpty()
-  @IsDate()
+  @Matches(/^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])-\d{4}$/, {
+    message: 'Date must be in MM-dd-YYYY format'
+  })
   @Transform(({ value }) => new Date(value))
   endDate: Date;  
-  
+    
   @IsNotEmpty()
   @IsNumber()
   maxStudent: number;  // Maximum number of students
