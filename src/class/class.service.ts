@@ -127,6 +127,8 @@ export class ClassService {
       Object.assign(newClass, createClassDto);;
       newClass.category = classCategory;
       newClass.addedBy = user;
+      newClass.startDate = createClassDto.startDate.toISOString().split('T')[0];
+      newClass.endDate = createClassDto.endDate.toISOString().split('T')[0];
       newClass.instructor = instructor;
       newClass.updatedBy = user;
       newClass.classType = classType;

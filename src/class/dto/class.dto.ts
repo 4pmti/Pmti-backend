@@ -36,7 +36,7 @@ export class ClassDto {
   @IsNotEmpty()
   @IsDate()
   @Transform(({ value }) => new Date(value))
-  startDate: Date; 
+  startDate: Date ; 
 
   // @IsNumber()
   // stateId?:number;
