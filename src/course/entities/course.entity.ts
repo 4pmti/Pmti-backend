@@ -41,6 +41,9 @@ import {
     @ManyToOne(() => User)
     @JoinColumn({ name: 'createdBy' })
     createdBy: User;
+
+    @Column({ type: 'boolean', default: true })
+    isActive: boolean;
   
     @CreateDateColumn()
     createdOn: Date;
