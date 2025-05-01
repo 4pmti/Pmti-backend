@@ -345,15 +345,15 @@ export class EnrollmentService {
         throw new NotFoundException("User not found");
       }
 
-      const pastEnrollment = await queryRunner.manager.findOne(Enrollment, {
-        where: {
-          POID: offlineEnrollment.purchaseOrderId
-        }
-      });
+      // const pastEnrollment = await queryRunner.manager.findOne(Enrollment, {
+      //   where: {
+      //     POID: offlineEnrollment.purchaseOrderId
+      //   }
+      // });
 
-      if (!pastEnrollment) {
-        throw new NotFoundException("Enrollment not found");
-      }
+      // if (!pastEnrollment) {
+      //   throw new NotFoundException("Enrollment not found");
+      // }
 
       let initialAmount = offlineEnrollment.amount;
       const currentDate = new Date();
