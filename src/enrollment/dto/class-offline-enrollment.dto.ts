@@ -80,7 +80,7 @@ export class OfflineClassEnrollmentDto {
     city: string;
 
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     state: string;
 
     @IsString()
