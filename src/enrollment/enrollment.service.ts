@@ -763,13 +763,23 @@ export class EnrollmentService {
 
   async update(id: number, updateEnrollmentDto: UpdateEnrollmentDto) {
     try {
-      console.log(updateEnrollmentDto);
-      await this.enrollmentRepository.update(id, updateEnrollmentDto);
-      return await this.enrollmentRepository.findOne({
-        where: {
-          ID: id
-        }
+      // Check if the enrollment exists
+      const enrollment = await this.enrollmentRepository.findOne({
+        where: { ID: id }
       });
+
+      if (!enrollment) {
+        throw new NotFoundException(`Enrollment with ID ${id} not found`);
+      }
+
+      // Merge the existing enrollment with the new data
+      const updated = this.enrollmentRepository.merge(enrollment, updateEnrollmentDto);
+
+      // Save the updated enrollment
+      await this.enrollmentRepository.save(updated);
+
+      // Return the updated enrollment
+      return updated;
     } catch (e) {
       console.log(e);
       throw e;
