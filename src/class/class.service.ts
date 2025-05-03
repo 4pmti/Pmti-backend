@@ -168,7 +168,6 @@ export class ClassService {
       const enrollments = await this.enrollmentRepository.find({
         where: {
           class: { id: classs.id },
-          enrollmentType: 'Class',
         },
         relations: {
           student: true,
@@ -187,6 +186,8 @@ export class ClassService {
           BillMail: true,
           BillDate: true,
           isDelete: true,
+          status: true,
+          enrollmentProgress: true,
           PMPPass: true,
           CourseExpiryDate: true,
           MealType: true,
