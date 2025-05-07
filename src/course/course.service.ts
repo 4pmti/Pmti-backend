@@ -69,7 +69,7 @@ export class CourseService {
         page = 1,
         limit = 10,
         search = '',
-        sort = 'createdAt:DESC',
+        sort = 'createdAt:ASC',
         courseCategory,
         classType
       } = filters;
