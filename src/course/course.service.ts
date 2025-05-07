@@ -69,7 +69,9 @@ export class CourseService {
         page = 1,
         limit = 10,
         search = '',
-        sort = 'createdAt:DESC'
+        sort = 'createdAt:DESC',
+        courseCategory,
+        classType
       } = filters;
 
       // Create query builder
@@ -89,6 +91,13 @@ export class CourseService {
       if (sort) {
         const [field, order] = sort.split(':');
         queryBuilder.orderBy(`course.${field}`, order as 'ASC' | 'DESC');
+      }
+      if (courseCategory) {
+        queryBuilder.andWhere('course.category = :courseCategory', { courseCategory });
+      }
+
+      if (classType) {
+        queryBuilder.andWhere('course.classType = :classType', { classType });
       }
 
       // Apply pagination
@@ -130,7 +139,7 @@ export class CourseService {
           createdBy: true,
           category: true,
           classType: true,
-        //  enrollments: true
+          //  enrollments: true
         }
       });
       return course;
