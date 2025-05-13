@@ -296,7 +296,7 @@ export class EnrollmentService {
       enrollment.pmbok = false;
       enrollment.POID = offlineEnrollment.purchaseOrderId;
       enrollment.Discount = offlineEnrollment.amount - initialAmount <= 0 ? 0 : offlineEnrollment.amount - initialAmount;
-     
+
 
       await queryRunner.manager.save(enrollment);
       await queryRunner.commitTransaction();
@@ -435,8 +435,8 @@ export class EnrollmentService {
       if (!billingState) {
         throw new NotFoundException("Billing state not found");
       }
-      
-      
+
+
 
       const enrollment = new Enrollment();
       enrollment.student = student;
@@ -491,6 +491,30 @@ export class EnrollmentService {
       if (createEnrollmentDto.classId && createEnrollmentDto.courseId) {
         throw new NotFoundException("Either Class or Course is required");
       }
+
+
+
+      // find user by email and check if hes already enrolled in this class or course
+      const user = await queryRunner.manager.findOne(User, {
+        where: {
+          email: createEnrollmentDto.email
+        },
+        relations: {
+          student: true
+        }
+      });
+      
+      if (user) {
+        const enrollment = await queryRunner.manager.find(Enrollment, {
+          where: {
+            student: user.student,
+          }
+        });
+        if (enrollment.length > 0) {
+          throw new BadRequestException("You are already enrolled in this class or course");
+        }
+      }
+
       let enrollmentTarget: Class | Course;
       if (createEnrollmentDto.courseId) {
         enrollmentTarget = await queryRunner.manager.findOne(Course, {
@@ -521,6 +545,11 @@ export class EnrollmentService {
           throw new NotFoundException("Class not found");
         }
       }
+
+
+
+
+
 
       // check location, state and country
       const location = await queryRunner.manager.findOne(Location, {
@@ -557,7 +586,7 @@ export class EnrollmentService {
         }
       });
 
-      
+
 
 
       if (!student) {
@@ -659,8 +688,8 @@ export class EnrollmentService {
         }
       });
 
-      
-      
+
+
 
       //start the payment process
       const result = await this.authorizeNetService.chargeCreditCard(
