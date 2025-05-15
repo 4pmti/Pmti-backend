@@ -13,3 +13,9 @@ export enum classStatus{
     ACTIVE = 'active',
     INACTIVE = 'inactive'
 }
+
+export enum reviewCategory{
+    SHOPPER_APPROVED = 'Shopper Approved',
+    GOOGLE = 'Google',
+    BBB = 'BBB',
+}
