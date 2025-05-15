@@ -4,7 +4,7 @@ import { UpdateReviewDto } from './dto/update-review.dto';
 import { Review } from './entities/review.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-
+import { reviewCategory } from 'src/common/enums/enums';
 @Injectable()
 export class ReviewsService {
    
@@ -23,16 +23,28 @@ export class ReviewsService {
     }
   }
 
-  findAll() {
-    return `This action returns all reviews`;
+  async findAll(category: reviewCategory) {
+   try{
+    if(category){
+      return await this.reviewRepository.find({where: {category}});
+    }
+    return await this.reviewRepository.find();
+  }catch(error){
+    throw new HttpException(error, HttpStatus.BAD_REQUEST);
+  }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} review`;
-  }
 
-  update(id: number, updateReviewDto: UpdateReviewDto) {
-    return `This action updates a #${id} review`;
+  async update(id: number, updateReviewDto: UpdateReviewDto) {
+    try{
+      const review = await this.reviewRepository.findOne({where: {id}});
+      if(!review){
+        throw new HttpException('Review not found', HttpStatus.NOT_FOUND);
+      }
+      return await this.reviewRepository.update(id, updateReviewDto);
+    } catch(e){
+      throw new HttpException(e, HttpStatus.BAD_REQUEST);
+    }
   }
 
   remove(id: number) {
