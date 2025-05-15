@@ -22,6 +22,7 @@ import { StateModule } from './state/state.module';
 import { UploadModule } from './upload/upload.module';
 import { BlogModule } from './blog/blog.module';
 import { MiscModule } from './misc/misc.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 
 @Module({
@@ -52,7 +53,8 @@ import { MiscModule } from './misc/misc.module';
     StateModule,
     UploadModule,
     BlogModule,
-    MiscModule],
+    MiscModule,
+    ReviewsModule],
   controllers: [AppController],
   providers: [AppService],
 })
