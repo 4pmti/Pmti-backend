@@ -18,6 +18,7 @@ import { Enrollment } from 'src/enrollment/entities/enrollment.entity';
 import { State } from 'src/state/entities/state.entity';
 import { FilterDto } from './dto/filter.dto';
 import { classStatus } from 'src/common/enums/enums';
+import { Course } from 'src/course/entities/course.entity';
 
 @Injectable()
 export class ClassService {
@@ -346,7 +347,7 @@ export class ClassService {
       console.log('Classes:', classes);
 
       return {
-        data: classes,
+        data: await this.dynamicPrice(classes),
         metadata: {
           total,
           totalPages,
@@ -359,6 +360,62 @@ export class ClassService {
     } catch (error) {
       console.error('Error in findAll:', error);
       throw new Error('Failed to fetch classes');
+    }
+  }
+
+
+
+  async dynamicPrice(classes: Class[]) {
+    try {
+      const currentDate = new Date();
+      
+      // Step 1: Identify classes that need price updates in a single pass
+      const classesToUpdate = classes.filter(classs => {
+        const startDate = new Date(classs.startDate);
+        const daysDiff = (startDate.getTime() - currentDate.getTime()) / (1000 * 3600 * 24);
+        return daysDiff < 14 && daysDiff >= 0;
+      });
+
+      if (classesToUpdate.length === 0) {
+        return classes; // Early return if no updates needed
+      }
+
+      // Step 2: Perform bulk database update
+      await this.classRepository
+        .createQueryBuilder()
+        .update(Class)
+        .set({ price: () => 'price + 100' })
+        .where('id IN (:...ids)', { ids: classesToUpdate.map(c => c.id) })
+        .execute();
+
+      // Step 3: Update prices in memory
+      classesToUpdate.forEach(classs => {
+        classs.price += 100;
+      });
+
+      return classes;
+    } catch (error) {
+      console.error('Error in dynamicPrice:', error); // Better error logging
+      throw error;
+    }
+  }
+
+
+  async changePrice(classId: number, price: number) {
+    try {
+      const classs = await this.classRepository.findOne({
+        where: {
+          id: classId
+        }
+      });
+      if (!classs) {
+        throw new NotFoundException("Class not Found");
+      }
+      classs.price = price;
+      return await this.classRepository.save(classs);
+    } catch (error) {
+      console.log(error);
+      throw error;
     }
   }
 
