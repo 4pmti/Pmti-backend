@@ -268,6 +268,7 @@ export class ClassService {
       console.log('Filters:', filters);
       console.log('startFrom:', startFrom);
       console.log('dateTo:', dateTo);
+      console.log('isCorpClass:', isCorpClass);
 
 
       // Apply date range filter
