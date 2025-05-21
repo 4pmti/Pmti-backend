@@ -41,17 +41,10 @@ import {
     @ManyToOne(() => User)
     @JoinColumn({ name: 'createdBy' })
     createdBy: User;
-
-  
-    @CreateDateColumn()
-    createdOn: Date;
   
     @ManyToOne(() => User)
     @JoinColumn({ name: 'updatedBy' })
     updatedBy: User;
-  
-    @UpdateDateColumn()
-    updatedOn: Date;
   
     @Column({ type: 'boolean', default: true })
     isVisible: boolean;
