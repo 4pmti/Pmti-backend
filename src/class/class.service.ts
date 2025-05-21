@@ -263,6 +263,8 @@ export class ClassService {
         );
       }
 
+
+
       console.log('Filters:', filters);
       console.log('startFrom:', startFrom);
       console.log('dateTo:', dateTo);
@@ -273,6 +275,10 @@ export class ClassService {
         const formattedStartFrom = new Date(startFrom).toISOString().split('T')[0];
         queryBuilder.andWhere('class.startDate >= :startFrom', { startFrom: formattedStartFrom });
 
+      }
+
+      if (isCorpClass) {
+        queryBuilder.andWhere('class.isCorpClass = :isCorpClass', { isCorpClass });
       }
 
       if (isCancel) {
@@ -320,7 +326,6 @@ export class ClassService {
       if (countryId) {
         queryBuilder.andWhere('class.countryID = :countryId', { countryId });
       }
-
       // Apply sorting
       if (sort) {
         const [field, order] = sort.split(':');
@@ -384,9 +389,9 @@ export class ClassService {
       await this.classRepository
         .createQueryBuilder()
         .update(Class)
-        .set({ 
+        .set({
           price: () => 'price + :increment',
-          isPriceIncreased: true 
+          isPriceIncreased: true
         })
         .where('id IN (:...ids)', {
           ids: classesToUpdate.map(c => c.id),

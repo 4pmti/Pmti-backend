@@ -56,7 +56,7 @@ export class FilterDto {
     @IsBoolean()
     @IsOptional()
     @Transform(({ value }) => value === 'true')
-    isCorpClass?: boolean;
+    isCorpClass?: boolean = false;
 
 
     
