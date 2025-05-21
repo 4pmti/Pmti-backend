@@ -278,10 +278,6 @@ export class ClassService {
 
       }
 
-      if (isCorpClass) {
-        queryBuilder.andWhere('class.isCorpClass = :isCorpClass', { isCorpClass });
-      }
-
       if (isCancel) {
         queryBuilder.andWhere('class.isCancel = :isCancel', { isCancel });
       }
