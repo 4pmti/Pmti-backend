@@ -552,14 +552,14 @@ export class EnrollmentService {
 
 
       // check location, state and country
-      const location = await queryRunner.manager.findOne(Location, {
-        where: {
-          id: createEnrollmentDto.city as number
-        }
-      });
-      if (!location) {
-        throw new NotFoundException("Location not found");
-      }
+        // const location = await queryRunner.manager.findOne(Location, {
+        //   where: {
+        //     id: createEnrollmentDto.city as number
+        //   }
+        // });
+        // if (!location) {
+        //   throw new NotFoundException("Location not found");
+        // }
 
       // const state = await queryRunner.manager.findOne(State, {
       //   where: {
@@ -743,7 +743,7 @@ export class EnrollmentService {
         studentName: createEnrollmentDto.name,
         studentAddress: createEnrollmentDto.address,
         className: enrollmentTarget instanceof Class ? enrollmentTarget.title : "",
-        location: location.location,
+        location: createEnrollmentDto.BillingCity,
         paymentInfo: {
           method: enrollment.PaymentMode,
           cardLastFour: enrollment.CCNo,
