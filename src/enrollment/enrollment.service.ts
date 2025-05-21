@@ -682,11 +682,11 @@ export class EnrollmentService {
         throw new NotFoundException("Billing state not found");
       }
 
-      const billingCity = await queryRunner.manager.findOne(Location, {
-        where: {
-          id: createEnrollmentDto.BillingCity
-        }
-      });
+      // const billingCity = await queryRunner.manager.findOne(Location, {
+      //   where: {
+      //     id: createEnrollmentDto.BillingCity
+      //   }
+      // });
 
 
 
@@ -709,11 +709,10 @@ export class EnrollmentService {
       enrollment.course = !(createEnrollmentDto.courseId && !createEnrollmentDto.classId) ? null : enrollmentTarget as Course;
       enrollment.class = !(!createEnrollmentDto.courseId && createEnrollmentDto.classId) ? null : enrollmentTarget as Class;
       enrollment.BillCountry = billingCountry.CountryName;
-      enrollment.BillingCity = billingCity.location;
       enrollment.BillingName = createEnrollmentDto.BillingName;
       enrollment.BillingState = billingState.name;
       enrollment.BillingAddress = createEnrollmentDto.BillingAddress;
-      enrollment.BillingCity = billingCity.location;
+      enrollment.BillingCity = createEnrollmentDto.BillingCity;
       enrollment.BillingState = billingState.name;
       enrollment.BillDate = new Date();
       enrollment.BillMail = createEnrollmentDto.BillMail;
@@ -753,7 +752,7 @@ export class EnrollmentService {
         billing: {
           name: createEnrollmentDto.BillingName,
           address: createEnrollmentDto.BillingAddress,
-          city: billingCity.location,
+          city: createEnrollmentDto.BillingCity,
           state: billingState.name,
           country: billingCountry.CountryName,
           zip: createEnrollmentDto.zipCode,

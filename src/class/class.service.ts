@@ -368,7 +368,7 @@ export class ClassService {
   async dynamicPrice(classes: Class[]) {
     try {
       const currentDate = new Date();
-      
+
       // Step 1: Identify classes that need price updates in a single pass
       const classesToUpdate = classes.filter(classs => {
         const startDate = new Date(classs.startDate);
@@ -384,13 +384,17 @@ export class ClassService {
       await this.classRepository
         .createQueryBuilder()
         .update(Class)
-        .set({ price: () => 'price + 100' })
-        .where('id IN (:...ids)', { ids: classesToUpdate.map(c => c.id) })
+        .set({ price: () => 'price + :increment' })
+        .where('id IN (:...ids)', {
+          ids: classesToUpdate.map(c => c.id),
+          increment: 100
+        })
         .execute();
+
 
       // Step 3: Update prices in memory
       classesToUpdate.forEach(classs => {
-        classs.price += 100;
+        classs.price = Number(classs.price) + 100;
       });
 
       return classes;

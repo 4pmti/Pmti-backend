@@ -26,9 +26,9 @@ export class CreateEnrollmentDto {
     @IsNotEmpty()
     BillingAddress: string;
 
-    @IsNumber()
-    @Type(() => Number)
-    BillingCity: number;
+    @IsString()
+    @IsNotEmpty()
+    BillingCity: string;
 
     @IsNumber()
     @Type(() => Number)
