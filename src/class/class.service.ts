@@ -373,7 +373,7 @@ export class ClassService {
       const classesToUpdate = classes.filter(classs => {
         const startDate = new Date(classs.startDate);
         const daysDiff = (startDate.getTime() - currentDate.getTime()) / (1000 * 3600 * 24);
-        return daysDiff < 14 && daysDiff >= 0;
+        return daysDiff < 14 && daysDiff >= 0 && !classs.isPriceIncreased;
       });
 
       if (classesToUpdate.length === 0) {
@@ -384,22 +384,25 @@ export class ClassService {
       await this.classRepository
         .createQueryBuilder()
         .update(Class)
-        .set({ price: () => 'price + :increment' })
+        .set({ 
+          price: () => 'price + :increment',
+          isPriceIncreased: true 
+        })
         .where('id IN (:...ids)', {
           ids: classesToUpdate.map(c => c.id),
           increment: 100
         })
         .execute();
 
-
       // Step 3: Update prices in memory
       classesToUpdate.forEach(classs => {
         classs.price = Number(classs.price) + 100;
+        classs.isPriceIncreased = true;
       });
 
       return classes;
     } catch (error) {
-      console.error('Error in dynamicPrice:', error); // Better error logging
+      console.error('Error in dynamicPrice:', error);
       throw error;
     }
   }

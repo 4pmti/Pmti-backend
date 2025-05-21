@@ -55,7 +55,10 @@ export class Class extends BaseEntity {
 
   @Column({ type: 'decimal' })
   price: number;
-  
+
+  @Column({ type: 'boolean', default: false })
+  isPriceIncreased: boolean;
+
   @Column({ type: 'enum', enum: classStatus, default: classStatus.ACTIVE })
   status: classStatus;
 
