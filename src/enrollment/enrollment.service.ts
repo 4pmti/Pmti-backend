@@ -20,6 +20,8 @@ import { OfflineCourseEnrollmentDto } from './dto/course-offline-enrollment.dto'
 import { State } from 'src/state/entities/state.entity';
 import { Country } from 'src/country/entities/country.entity';
 import { Location } from 'src/location/entities/location.entity';
+import { EmailQueueService } from 'src/queue/emails/queue.service';
+import { EmailJobType, RescheduleEmailData } from 'src/common/templates/types';
 @Injectable()
 export class EnrollmentService {
 
@@ -46,6 +48,9 @@ export class EnrollmentService {
     private stateRepository: Repository<State>,
     @InjectRepository(Country)
     private countryRepository: Repository<Country>,
+
+
+    private queueService: EmailQueueService,
   ) { }
 
   private maskCardNumber(cardNumber: string): string {
@@ -63,7 +68,15 @@ export class EnrollmentService {
       if (!await isAdmin(userId, this.userRepository)) {
         throw new UnauthorizedException("You dont have permission to perform this action!!!");
       }
+      //fetch the admin name
+      const user = await queryRunner.manager.findOne(User, {
+        where: {
+          id: userId
+        }
+      });
       console.log(rescheduleDto);
+
+      //fetch the student
       const student = await queryRunner.manager.findOne(Student, {
         where: {
           id: rescheduleDto.studentId
@@ -75,6 +88,7 @@ export class EnrollmentService {
         throw new NotFoundException('Student not found');
       }
 
+      //fetch the class
       const classs = await queryRunner.manager.findOne(Class, {
         where: {
           id: rescheduleDto.classId
@@ -87,6 +101,7 @@ export class EnrollmentService {
         throw new NotFoundException('Class not found');
       }
 
+      //fetch the enrollment
       let enrollment = await queryRunner.manager.findOne(Enrollment, {
         where: {
           ID: rescheduleDto.enrollmentId,
@@ -115,12 +130,14 @@ export class EnrollmentService {
         );
         await queryRunner.manager.update(Enrollment, enrollment.ID, {
           class: classs,
-          Comments: `reschedule paid amount ${rescheduleDto.amount} on ${Date.now()}`
+          Comments: enrollment.Comments + `\nreschedule paid amount ${rescheduleDto.amount} on ${new Date().toISOString()}`
         });
       }
+
+      //move the enrollment to the new class
       await queryRunner.manager.update(Enrollment, enrollment.ID, {
         class: classs,
-        Comments: `reschedule class on ${Date.now()}`
+        Comments: enrollment.Comments + `\nreschedule class on ${new Date().toISOString()}`
       });
       const updatedEnrollment = await queryRunner.manager.findOne(Enrollment, {
         where: {
@@ -128,6 +145,26 @@ export class EnrollmentService {
         }
       });
       await queryRunner.commitTransaction();
+
+      const rescheduleEmailData: RescheduleEmailData = {
+        adminName: user.name,
+        studentName: student.name,
+        studentId: student.id.toString(),
+        studentEmail: student.email,
+        oldLocation: classs.location.location,
+        oldStartDate: classs.startDate,
+        oldEndDate: classs.endDate,
+        newLocation: classs.location.location,
+        newStartDate: classs.startDate,
+        newEndDate: classs.endDate,
+        address: student.address,
+      }
+
+      await this.queueService.addJob({
+        type: EmailJobType.RESCHEDULE_CONFIRMATION,
+        data: rescheduleEmailData,
+        recipients: [student.email, process.env.ADMIN_EMAIL]
+      });
       return updatedEnrollment;
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -503,7 +540,7 @@ export class EnrollmentService {
           student: true
         }
       });
-      
+
       if (user) {
         const enrollment = await queryRunner.manager.find(Enrollment, {
           where: {
@@ -552,14 +589,14 @@ export class EnrollmentService {
 
 
       // check location, state and country
-        // const location = await queryRunner.manager.findOne(Location, {
-        //   where: {
-        //     id: createEnrollmentDto.city as number
-        //   }
-        // });
-        // if (!location) {
-        //   throw new NotFoundException("Location not found");
-        // }
+      // const location = await queryRunner.manager.findOne(Location, {
+      //   where: {
+      //     id: createEnrollmentDto.city as number
+      //   }
+      // });
+      // if (!location) {
+      //   throw new NotFoundException("Location not found");
+      // }
 
       // const state = await queryRunner.manager.findOne(State, {
       //   where: {
@@ -735,32 +772,32 @@ export class EnrollmentService {
       await queryRunner.manager.save(enrollment);
       await queryRunner.commitTransaction();
 
-      this.emailService.sendRegistrationEmails({
-        studentPhone: createEnrollmentDto.phone,
-        startDate: enrollmentTarget instanceof Class ? new Date(enrollmentTarget.startDate) : new Date(),
-        endDate: enrollmentTarget instanceof Class ? new Date(enrollmentTarget.endDate) : new Date(),
-        studentEmail: createEnrollmentDto.email,
-        studentName: createEnrollmentDto.name,
-        studentAddress: createEnrollmentDto.address,
-        className: enrollmentTarget instanceof Class ? enrollmentTarget.title : "",
-        location: createEnrollmentDto.BillingCity,
-        paymentInfo: {
-          method: enrollment.PaymentMode,
-          cardLastFour: enrollment.CCNo,
-          amount: initialAmount
-        },
-        billing: {
-          name: createEnrollmentDto.BillingName,
-          address: createEnrollmentDto.BillingAddress,
-          city: createEnrollmentDto.BillingCity,
-          state: billingState.name,
-          country: billingCountry.CountryName,
-          zip: createEnrollmentDto.zipCode,
-          phone: createEnrollmentDto.BillPhone,
-          email: createEnrollmentDto.BillMail,
-        }
+      // this.emailService.sendRegistrationEmails({
+      //   studentPhone: createEnrollmentDto.phone,
+      //   startDate: enrollmentTarget instanceof Class ? new Date(enrollmentTarget.startDate) : new Date(),
+      //   endDate: enrollmentTarget instanceof Class ? new Date(enrollmentTarget.endDate) : new Date(),
+      //   studentEmail: createEnrollmentDto.email,
+      //   studentName: createEnrollmentDto.name,
+      //   studentAddress: createEnrollmentDto.address,
+      //   className: enrollmentTarget instanceof Class ? enrollmentTarget.title : "",
+      //   location: createEnrollmentDto.BillingCity,
+      //   paymentInfo: {
+      //     method: enrollment.PaymentMode,
+      //     cardLastFour: enrollment.CCNo,
+      //     amount: initialAmount
+      //   },
+      //   billing: {
+      //     name: createEnrollmentDto.BillingName,
+      //     address: createEnrollmentDto.BillingAddress,
+      //     city: createEnrollmentDto.BillingCity,
+      //     state: billingState.name,
+      //     country: billingCountry.CountryName,
+      //     zip: createEnrollmentDto.zipCode,
+      //     phone: createEnrollmentDto.BillPhone,
+      //     email: createEnrollmentDto.BillMail,
+      //   }
 
-      });
+      // });
       return enrollment;
     } catch (error) {
       console.log(error);

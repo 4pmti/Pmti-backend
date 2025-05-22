@@ -27,6 +27,13 @@ export class Blog {
   @Column({})
   slug: string
 
+  @Column({ type: 'text', nullable: true })
+  head :string
+
+  @Column({ type: 'text', nullable: true })
+  style: string
+
+
   @Column('json', { nullable: true })
   metadata: Record<string, any>;
 

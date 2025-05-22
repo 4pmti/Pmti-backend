@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue, QueueEvents } from 'bullmq';
 import { queues } from 'src/config/queue';
+import { EmailJobData, RescheduleEmailData } from 'src/common/templates/types';
 
 @Injectable()
 export class EmailQueueService {
@@ -14,24 +15,17 @@ export class EmailQueueService {
     });
   }
 
-  async addJob(data: {
-    channelId: string;
-  }) {
-    const job = await this.queue.add(
-      queues.email,
-      data,
+  async addJob(data: EmailJobData) {
+    await this.queue.add(
+      queues.email, // Job type matching the processor
+      data,          // Job data
       {
-        attempts: 5,              // Retry up to 5 times
+        attempts: 1,              // Retry up to 1 times
         backoff: {
           type: 'exponential',    // Exponential backoff
-          delay: 10000,           // Initial delay of 10 seconds
+          delay: 1000,            // Initial delay of 1 second
         },
-        removeOnComplete: true,   // Remove completed jobs
-        removeOnFail: false      // Keep failed jobs for debugging
       },
     );
-
-    // Return both job and queueEvents
-    return { job, queueEvents: this.queueEvents };
   }
 }

@@ -9,6 +9,7 @@ import { UploadService } from "src/upload/upload.service";
 import { EmailQueueService } from "./emails/queue.service";
 import { EmailQueueProcessor } from "./emails/queue.processor";
 import { queues } from "src/config/queue";
+import { EmailService } from "src/common/services/email.service";
 
 @Module({
     imports: [
@@ -28,6 +29,7 @@ import { queues } from "src/config/queue";
         ]),
     ],
     providers: [
+        EmailService,
         UploadService,
         EmailQueueService,
         EmailQueueProcessor,

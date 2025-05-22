@@ -11,76 +11,83 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 @Processor(queues.email)
 export class EmailQueueProcessor extends WorkerHost {
-    constructor(
-        private readonly emailService: EmailService,
-        private readonly configService: ConfigService
-    ) {
-        super();
+  constructor(
+    private readonly emailService: EmailService,
+    private readonly configService: ConfigService
+  ) {
+    super();
+  }
+
+  async process(job: Job<EmailJobData>): Promise<any> {
+    try {
+      const { type, data, recipients, cc, bcc, attachments } = job.data;
+      let template: EmailTemplate;
+
+      // Handle different email types and generate appropriate template
+      switch (type) {
+        case EmailJobType.REGISTRATION_CONFIRMATION:
+          template = registrationTemplates.generateRegistrationConfirmation(data);
+          break;
+
+        case EmailJobType.WELCOME_EMAIL:
+          template = registrationTemplates.generateWelcomeEmail(data);
+          break;
+
+        case EmailJobType.ACP:
+          template = registrationTemplates.generateWelcomeEmail(data);
+          break;
+
+        case EmailJobType.PMP:
+          template = registrationTemplates.generateWelcomeEmail(data);
+          break;
+
+        case EmailJobType.CAPM:
+          template = registrationTemplates.generateWelcomeEmail(data);
+          break;
+
+        case EmailJobType.RESCHEDULE_CONFIRMATION:
+          template = this.generateRescheduleEmail(data.subject, data.html);
+          break;
+
+        case EmailJobType.TRANSACTION_CONFIRMATION:
+          template = this.generateTransactionEmail(data);
+          break;
+
+        default:
+          throw new Error(`Unknown email job type: ${type}`);
+      }
+
+
+    //  return true;
+
+     // Send the email using the email service
+      return await this.emailService.sendEmail({
+        to: recipients,
+        cc,
+        bcc,
+        template,
+        attachments
+      });
+
+    } catch (error) {
+      console.error('Error processing email job:', error);
+      throw error;
     }
+  }
 
-    async process(job: Job<EmailJobData>): Promise<any> {
-        try {
-            const { type, data, recipients, cc, bcc, attachments } = job.data;
-            let template: EmailTemplate;
 
-            // Handle different email types and generate appropriate template
-            switch (type) {
-                case EmailJobType.REGISTRATION_CONFIRMATION:
-                    template = registrationTemplates.generateRegistrationConfirmation(data);
-                    break;
+  private generateRescheduleEmail(subject: string, html: string): EmailTemplate {
+    return {
+      subject: subject,
+      html: html
+    };
+  }
 
-                case EmailJobType.WELCOME_EMAIL:
-                    template = registrationTemplates.generateWelcomeEmail(data);
-                    break;
-
-                case EmailJobType.ACP:
-                    template = registrationTemplates.generateWelcomeEmail(data);
-                    break;
-
-                case EmailJobType.PMP:
-                    template = registrationTemplates.generateWelcomeEmail(data);
-                    break;
-
-                case EmailJobType.CAPM:
-                    template = registrationTemplates.generateWelcomeEmail(data);
-                    break;
-                    
-                case EmailJobType.RESCHEDULE_CONFIRMATION:
-                    template = rescheduleStudentTemplate(data);
-                    break;
-
-                case EmailJobType.TRANSACTION_CONFIRMATION:
-                    template = this.generateTransactionEmail(data);
-                    break;
-
-                case EmailJobType.CUSTOM:
-                    template = data.template;
-                    break;
-
-                default:
-                    throw new Error(`Unknown email job type: ${type}`);
-            }
-
-            // Send the email using the email service
-            return await this.emailService.sendEmail({
-                to: recipients,
-                cc,
-                bcc,
-                template,
-                attachments
-            });
-
-        } catch (error) {
-            console.error('Error processing email job:', error);
-            throw error;
-        }
-    }
-
-    private generateTransactionEmail(data: any): EmailTemplate {
-        // Implementation of transaction email template
-        return {
-            subject: `Transaction Confirmation - ${data.invoiceNumber}`,
-            html: `...` // Your HTML template here
-        };
-    }
+  private generateTransactionEmail(data: any): EmailTemplate {
+    // Implementation of transaction email template
+    return {
+      subject: `Transaction Confirmation - ${data.invoiceNumber}`,
+      html: `...` // Your HTML template here
+    };
+  }
 }

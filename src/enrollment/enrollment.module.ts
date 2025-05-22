@@ -18,6 +18,8 @@ import { EmailService } from 'src/common/services/email.service';
 import { AuthModule } from 'src/auth/auth.module';
 import { State } from 'src/state/entities/state.entity';
 import { Location } from 'src/location/entities/location.entity';
+import { EmailQueueService } from 'src/queue/emails/queue.service';
+import { QueueModule } from 'src/queue/queue.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -33,7 +35,8 @@ import { Location } from 'src/location/entities/location.entity';
       State,
       Location
     ]),
-    AuthModule
+    AuthModule, 
+    QueueModule
   ],
   controllers: [EnrollmentController],
   providers: [
@@ -41,7 +44,8 @@ import { Location } from 'src/location/entities/location.entity';
     AuthorizeNetService,
     UserService,
     BcryptService,
-    EmailService
+    EmailService,
+    EmailQueueService
   ],
   exports: [EnrollmentService]
 })

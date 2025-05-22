@@ -51,4 +51,18 @@ export enum EmailJobType {
     PMP = 'PMP',
     CAPM = 'CAPM',    
 }
+
+export interface RescheduleEmailData {
+  adminName: string;
+  studentName: string;
+  studentId: string;
+  studentEmail: string;
+  oldLocation: string;
+  oldStartDate: string;
+  oldEndDate: string;
+  newLocation: string;
+  newStartDate: string;
+  newEndDate: string;
+  address: string;
+}
   

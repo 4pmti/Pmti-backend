@@ -64,15 +64,15 @@ export class PaymentService {
       // Commit transaction
       await queryRunner.commitTransaction();
       console.log(paymentResponse);
-      await this.emailService.sendTransactionEmail({
-        adminName: user.name,
-        invoiceNumber: createPaymentDto.invoiceNumber,
-        transactionAmount: createPaymentDto.amount,
-        transactionDate: paymentEntity.createdAt.toLocaleString(),
-        description: createPaymentDto.description,
-        referenceNumber: createPaymentDto.transactionId,
-        studentEmail: createPaymentDto.email
-      });
+      // await this.emailService.sendTransactionEmail({
+      //   adminName: user.name,
+      //   invoiceNumber: createPaymentDto.invoiceNumber,
+      //   transactionAmount: createPaymentDto.amount,
+      //   transactionDate: paymentEntity.createdAt.toLocaleString(),
+      //   description: createPaymentDto.description,
+      //   referenceNumber: createPaymentDto.transactionId,
+      //   studentEmail: createPaymentDto.email
+      // });
       return paymentEntity;
     } catch (error) {
       // Rollback transaction on error

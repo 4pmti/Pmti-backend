@@ -23,6 +23,8 @@ import { UploadModule } from './upload/upload.module';
 import { BlogModule } from './blog/blog.module';
 import { MiscModule } from './misc/misc.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { BullModule } from '@nestjs/bullmq';
+import { QueueModule } from './queue/queue.module';
 
 
 @Module({
@@ -38,8 +40,16 @@ import { ReviewsModule } from './reviews/reviews.module';
         configService.get('typeorm'),
       inject: [ConfigService],
     }),
+
+    BullModule.forRoot({
+      connection: {
+        host: process.env.REDIS_HOST, // Redis host
+        port: parseInt(process.env.REDIS_PORT), // Redis port
+      },
+    }),
     AdminModule,
     StudentModule,
+    QueueModule,
     AuthModule,
     CountryModule,
     UserModule,
