@@ -22,10 +22,33 @@ export interface StudentRegistrationData {
       phone: string;
       email: string;
     };
-  }
-  
-  export interface EmailTemplate {
+}
+
+export interface EmailTemplate {
     subject: string;
     html: string;
-  }
+}
+
+export interface EmailJobData {
+    type: EmailJobType;
+    data: any;
+    recipients: string[];
+    cc?: string[];
+    bcc?: string[];
+    attachments?: Array<{
+        filename: string;
+        content: Buffer | string;
+        contentType?: string;
+    }>;
+}
+
+export enum EmailJobType {
+    REGISTRATION_CONFIRMATION = 'REGISTRATION_CONFIRMATION',
+    WELCOME_EMAIL = 'WELCOME_EMAIL',
+    TRANSACTION_CONFIRMATION = 'TRANSACTION_CONFIRMATION',
+    RESCHEDULE_CONFIRMATION = 'RESCHEDULE_CONFIRMATION',
+    ACP = 'ACP',
+    PMP = 'PMP',
+    CAPM = 'CAPM',    
+}
   
