@@ -42,10 +42,14 @@ import { QueueModule } from './queue/queue.module';
     }),
 
     BullModule.forRoot({
-      connection: {
-        host: process.env.REDIS_HOST, // Redis host
-        port: parseInt(process.env.REDIS_PORT), // Redis port
-      },
+      connection:
+        process.env.REDIS_PATH == undefined ?
+          {
+            host: process.env.REDIS_HOST, // Redis host
+            port: parseInt(process.env.REDIS_PORT), // Redis port
+          } : {
+            path: process.env.REDIS_PATH, // Redis path
+          },
     }),
     AdminModule,
     StudentModule,
