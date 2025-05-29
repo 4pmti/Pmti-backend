@@ -23,4 +23,7 @@ export class Review  extends BaseEntity{
 
     @Column({ type: 'text', nullable: true })
     review: string;
+
+    @Column({ nullable: true })
+    profilePicture: string;
 }

@@ -34,9 +34,4 @@ export class LocationController {
     const userId = req.user.id
     return this.locationService.update(userId,+id, updateLocationDto);
   }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.locationService.remove(+id);
-  //}
 }

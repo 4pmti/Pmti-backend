@@ -1,4 +1,4 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, IsOptional } from "class-validator";
 import { reviewCategory } from "src/common/enums/enums";
 
 export class CreateReviewDto {
@@ -17,4 +17,7 @@ export class CreateReviewDto {
 
     @IsNotEmpty()
     date: string;
+
+    @IsOptional()
+    profilePicture: string;
 }
