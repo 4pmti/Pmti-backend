@@ -92,6 +92,9 @@ export class EnrollmentService {
       const classs = await queryRunner.manager.findOne(Class, {
         where: {
           id: rescheduleDto.classId
+        },
+        relations: {
+          location: true
         }
       });
 
@@ -152,10 +155,10 @@ export class EnrollmentService {
         studentName: student.name,
         studentId: student.id.toString(),
         studentEmail: student.email,
-        oldLocation: 'classs.location.locatio',
+        oldLocation: classs.location.location,
         oldStartDate: classs.startDate,
         oldEndDate: classs.endDate,
-        newLocation: 'classs.location.location',
+        newLocation: classs.location.location,
         newStartDate: classs.startDate,
         newEndDate: classs.endDate,
         address: student.address,
