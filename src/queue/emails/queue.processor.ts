@@ -47,7 +47,7 @@ export class EmailQueueProcessor extends WorkerHost {
           break;
 
         case EmailJobType.RESCHEDULE_CONFIRMATION:
-          template = this.generateRescheduleEmail(data.subject, data.html);
+          template = registrationTemplates.generateRescheduleEmail(data);
           break;
 
         case EmailJobType.TRANSACTION_CONFIRMATION:
