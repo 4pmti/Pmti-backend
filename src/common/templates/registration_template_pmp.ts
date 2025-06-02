@@ -3,8 +3,14 @@ import { EmailTemplate, RescheduleEmailData, StudentRegistrationData, PortalLogi
 
 
 export const registrationTemplates = {
-  formatDate(date: Date): string {
-    return date.toLocaleDateString('en-US', {
+  toDate(date: Date | string | number | null | undefined): Date {
+    if (!date) return new Date();
+    return date instanceof Date ? date : new Date(date);
+  },
+
+  formatDate(date: Date | string | number | null | undefined): string {
+    const safeDate = this.toDate(date);
+    return safeDate.toLocaleDateString('en-US', {
       month: 'numeric',
       day: 'numeric',
       year: 'numeric',
