@@ -21,7 +21,7 @@ export class StatesSeederService {
         countryName: 'United States',
         states: [
           'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California',
-          'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia',
+          'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia',
           'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa',
           'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland',
           'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri',

@@ -4,6 +4,8 @@ import { CountriesSeederService } from './country.seeder';
 import { CategorySeeder } from './course.category.seeder';
 import { StatesSeederService } from './state.seeder';
 import { ReviewSeederService } from './review.seeder';
+import { LocationSeederService } from './location.seeder';
+import { NearbyLocationSeederService } from './nearby-location.seeder';
 
 @Injectable()
 export class Seeder {
@@ -11,8 +13,10 @@ export class Seeder {
     private readonly logger: Logger,
     private readonly countriesSeederService: CountriesSeederService,
     private readonly CateforySeederService: CategorySeeder,
-    private readonly stateSeederService:StatesSeederService,
+    private readonly stateSeederService: StatesSeederService,
     private readonly reviewSeederService: ReviewSeederService,
+    private readonly locationSeederService: LocationSeederService,
+    private readonly nearbyLocationSeederService: NearbyLocationSeederService,
   ) {}
 
   async seed() {
@@ -42,6 +46,30 @@ export class Seeder {
           Promise.resolve(completed);
         }
       )
+      .catch(error => {
+        this.logger.error('Failed seeding states...');
+        Promise.reject(error);
+      });
+
+      await this.locations()
+        .then(completed => {
+          this.logger.debug('Successfully completed seeding locations...');
+          Promise.resolve(completed);
+        })
+        .catch(error => {
+          this.logger.error('Failed seeding locations...');
+          Promise.reject(error);
+        });
+
+      await this.nearbyLocations()
+        .then(completed => {
+          this.logger.debug('Successfully completed seeding nearby locations...');
+          Promise.resolve(completed);
+        })
+        .catch(error => {
+          this.logger.error('Failed seeding nearby locations...');
+          Promise.reject(error);
+        });
 
     await this.reviews()
       .then(completed => {
@@ -94,6 +122,19 @@ export class Seeder {
       .catch(error => Promise.reject(error));
   }
 
+  async locations() {
+    return await this.locationSeederService
+      .seed()
+      .then(createdLocations => {
+        this.logger.debug(
+          'No. of locations created : ' +
+          createdLocations,
+        );
+        return Promise.resolve(true);
+      })
+      .catch(error => Promise.reject(error));
+  }
+
   async reviews() {
     return await this.reviewSeederService
       .seed()
@@ -101,6 +142,19 @@ export class Seeder {
         this.logger.debug(
           'No. of reviews created : ' +
           createdReviews,
+        );
+        return Promise.resolve(true);
+      })
+      .catch(error => Promise.reject(error));
+  }
+
+  async nearbyLocations() {
+    return await this.nearbyLocationSeederService
+      .seed()
+      .then(updatedLocations => {
+        this.logger.debug(
+          'No. of nearby locations updated : ' +
+          updatedLocations,
         );
         return Promise.resolve(true);
       })

@@ -26,4 +26,7 @@ export class Location extends BaseEntity {
   @ManyToOne(() => State, (state) => state.locations, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'state_id' })
   state: State;
+
+  @Column({ type: 'varchar', length: 255, default: '' })
+  nearbyLocations: string;
 }

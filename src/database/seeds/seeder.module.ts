@@ -12,6 +12,9 @@ import { StatesSeederService } from './state.seeder';
 import { State } from 'src/state/entities/state.entity';
 import { ReviewSeederService } from './review.seeder';
 import { Review } from 'src/reviews/entities/review.entity';
+import { LocationSeederService } from './location.seeder';
+import { Location } from 'src/location/entities/location.entity';
+import { NearbyLocationSeederService } from './nearby-location.seeder';
 
 @Module({
   imports: [
@@ -24,8 +27,8 @@ import { Review } from 'src/reviews/entities/review.entity';
           configService.get('typeorm'),
         inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([Country, Category, State, Review])
+    TypeOrmModule.forFeature([Country, Category, State, Review, Location])
   ],
-  providers: [Logger, Seeder, CountriesSeederService, CategorySeeder, StatesSeederService, ReviewSeederService],
+  providers: [Logger, Seeder, CountriesSeederService, CategorySeeder, StatesSeederService, ReviewSeederService, LocationSeederService, NearbyLocationSeederService],
 })
 export class SeederModule {}
