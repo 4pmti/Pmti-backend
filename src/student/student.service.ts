@@ -75,7 +75,16 @@ export class StudentService {
       });
 
       if (!student) {
-        throw new Error('Student not found');
+        throw new BadRequestException('Student not found');
+      }
+
+      if(updateStudentDto.email){
+        const existingStudent = await this.studentRepository.findOne({
+          where: { email: updateStudentDto.email }
+        });
+        if(existingStudent){
+          throw new BadRequestException('Email already exists');
+        }
       }
 
       // Check if country exists if it's being updated
@@ -99,18 +108,6 @@ export class StudentService {
         }
         student.state = state;
       }
-
-      // Check if city/location exists if it's being updated
-      // if (updateStudentDto.city) {
-      //   const city = await this.locationRepository.findOne({ 
-      //     where: { id: updateStudentDto.city }
-      //   });
-      //   if (!city) {
-      //     throw new Error('City not found');
-      //   }
-      //   student.city = city;
-      // }
-
       Object.assign(student, updateStudentDto);
       return await this.studentRepository.save(student);
     } catch (error) {
