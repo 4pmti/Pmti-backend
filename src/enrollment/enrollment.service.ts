@@ -167,6 +167,7 @@ export class EnrollmentService {
       });
       return updatedEnrollment;
     } catch (error) {
+      console.log(error);
       await queryRunner.rollbackTransaction();
       throw error;
     } finally {
