@@ -7,7 +7,7 @@ import { User } from 'src/user/entities/user.entity';
 import { BaseEntity } from 'src/common/dto/base.dto';
 import { Enrollment } from 'src/enrollment/entities/enrollment.entity';
 import { State } from 'src/state/entities/state.entity';
-import { Country } from 'src/course/country/entities/country.entity';
+import { Country } from 'src/country/entities/country.entity';
 import { classStatus } from 'src/common/enums/enums';
 
 @Entity('Class')

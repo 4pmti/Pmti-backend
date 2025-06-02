@@ -1,5 +1,5 @@
 import { Type, Transform } from "class-transformer";
-import { IsBoolean, IsEnum } from "class-validator";
+import { IsBoolean, IsEnum, IsString } from "class-validator";
 import { IsOptional } from "class-validator";
 import { classStatus } from "src/common/enums/enums";
 
@@ -58,8 +58,9 @@ export class FilterDto {
     @Transform(({ value }) => value === 'true')
     isCorpClass?: boolean = false;
 
-
-    
+    @IsString()
+    @IsOptional()
+    nearbyLocation?: string;
 }
 
 

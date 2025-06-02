@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { Student } from './entities/student.entity';
-import { Country } from 'src/course/country/entities/country.entity';
+import { Country } from 'src/country/entities/country.entity';
 import { State } from 'src/state/entities/state.entity';
 import { Location } from 'src/location/entities/location.entity';
 import { Enrollment } from 'src/enrollment/entities/enrollment.entity';

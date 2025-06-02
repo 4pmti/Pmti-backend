@@ -37,8 +37,6 @@ export class ClassController {
     return this.classService.findClassDetails(+id);
   }    
 
-
-
   @UseGuards(AuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {

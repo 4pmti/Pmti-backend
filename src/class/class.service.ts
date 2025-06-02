@@ -239,6 +239,7 @@ export class ClassService {
         stateId,
         status,
         isCancel,
+        nearbyLocation,
         isCorpClass
       } = filters;
 
@@ -276,6 +277,13 @@ export class ClassService {
         const formattedStartFrom = new Date(startFrom).toISOString().split('T')[0];
         queryBuilder.andWhere('class.startDate >= :startFrom', { startFrom: formattedStartFrom });
 
+      }
+
+      if (nearbyLocation) {
+        const nearbyLocations = nearbyLocation.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+        if (nearbyLocations.length > 0) {
+          queryBuilder.andWhere('class.locationID IN (:...nearbyLocations)', { nearbyLocations });
+        }
       }
 
       if (isCancel) {
