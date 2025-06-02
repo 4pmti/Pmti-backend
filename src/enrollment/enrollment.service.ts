@@ -21,7 +21,7 @@ import { State } from 'src/state/entities/state.entity';
 import { Country } from 'src/country/entities/country.entity';
 import { Location } from 'src/location/entities/location.entity';
 import { EmailQueueService } from 'src/queue/emails/queue.service';
-import { EmailJobType, RescheduleEmailData } from 'src/common/templates/types';
+import { EmailJobType, PortalLoginData, RescheduleEmailData, StudentRegistrationData } from 'src/common/templates/types';
 @Injectable()
 export class EnrollmentService {
 
@@ -56,6 +56,16 @@ export class EnrollmentService {
   private maskCardNumber(cardNumber: string): string {
     return cardNumber.replace(/\d(?=\d{4})/g, 'X'); // Masks all but the last 4 digits
   }
+
+  private generateRandomPassword(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const passwordLength = 12;
+    let password = '';
+    for (let i = 0; i < passwordLength; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+}
 
 
 
@@ -632,9 +642,10 @@ export class EnrollmentService {
 
 
 
-
+      const password = this.generateRandomPassword();
       if (!student) {
         try {
+         
           student = await this.userService.createStudent({
             name: createEnrollmentDto.name,
             email: createEnrollmentDto.email,
@@ -643,6 +654,7 @@ export class EnrollmentService {
             city: createEnrollmentDto.city as string,
             phone: createEnrollmentDto.phone,
             state: createEnrollmentDto.state,
+            password: password,
             country: createEnrollmentDto.country,
             profession: createEnrollmentDto.profession || null,
             companyName: createEnrollmentDto.companyName || null,
@@ -726,14 +738,7 @@ export class EnrollmentService {
         throw new NotFoundException("Billing state not found");
       }
 
-      // const billingCity = await queryRunner.manager.findOne(Location, {
-      //   where: {
-      //     id: createEnrollmentDto.BillingCity
-      //   }
-      // });
-
-
-
+      
 
       //start the payment process
       const result = await this.authorizeNetService.chargeCreditCard(
@@ -777,34 +782,69 @@ export class EnrollmentService {
       enrollment.Discount = enrollmentTarget.price - initialAmount;
 
       await queryRunner.manager.save(enrollment);
+
+      const emailConfirmationData: StudentRegistrationData = {
+        studentName: createEnrollmentDto.name,
+        studentEmail: createEnrollmentDto.email,
+        studentPhone: createEnrollmentDto.phone,
+        studentAddress: createEnrollmentDto.address,
+        className: enrollmentTarget instanceof Class ? enrollmentTarget.title : enrollmentTarget.courseName,
+        location: createEnrollmentDto.BillingCity,
+        startDate: enrollmentTarget instanceof Class ? new Date(enrollmentTarget.startDate) : new Date(),
+        endDate: enrollmentTarget instanceof Class ? new Date(enrollmentTarget.endDate) : (() => {
+          const endDate = new Date();
+          endDate.setDate(endDate.getDate() + (enrollmentTarget.courseDuration || 0));
+          return endDate;
+        })(),
+        paymentInfo: {
+          method: enrollment.PaymentMode,
+          cardLastFour: enrollment.CCNo,
+          amount: initialAmount
+        },
+        billing: {
+          name: createEnrollmentDto.BillingName,
+          address: createEnrollmentDto.BillingAddress,
+          city: createEnrollmentDto.BillingCity,
+          state: billingState.name,
+          country: billingCountry.CountryName,
+          zip: createEnrollmentDto.zipCode,
+          phone: createEnrollmentDto.BillPhone,
+          email: createEnrollmentDto.BillMail,
+        }
+      };
+
+      const portalLoginData: PortalLoginData = {
+        studentName: createEnrollmentDto.name,
+        studentEmail: createEnrollmentDto.email,
+        className: enrollmentTarget instanceof Class ? enrollmentTarget.title : enrollmentTarget.courseName,
+        location: createEnrollmentDto.BillingCity,
+        startDate: enrollmentTarget instanceof Class ? new Date(enrollmentTarget.startDate) : new Date(),
+        password: password,
+        expiryDate: new Date(new Date().setDate(new Date().getDate() + 30)),
+        classEndDate: enrollmentTarget instanceof Class ? new Date(enrollmentTarget.endDate) : (() => {
+          const endDate = new Date();
+          endDate.setDate(endDate.getDate() + (enrollmentTarget.courseDuration || 0));
+          return endDate;
+        })(),
+      };
+
+
+
+
+      await this.queueService.addJob({
+        type: EmailJobType.REGISTRATION_CONFIRMATION,
+        data: emailConfirmationData,
+        recipients: [createEnrollmentDto.email, process.env.ADMIN_EMAIL]
+      });
+
+      await this.queueService.addJob({
+        type: EmailJobType.PORTAL_LOGIN,
+        data: portalLoginData,
+        recipients: [createEnrollmentDto.email, process.env.ADMIN_EMAIL]
+      });
+
+
       await queryRunner.commitTransaction();
-
-      // this.emailService.sendRegistrationEmails({
-      //   studentPhone: createEnrollmentDto.phone,
-      //   startDate: enrollmentTarget instanceof Class ? new Date(enrollmentTarget.startDate) : new Date(),
-      //   endDate: enrollmentTarget instanceof Class ? new Date(enrollmentTarget.endDate) : new Date(),
-      //   studentEmail: createEnrollmentDto.email,
-      //   studentName: createEnrollmentDto.name,
-      //   studentAddress: createEnrollmentDto.address,
-      //   className: enrollmentTarget instanceof Class ? enrollmentTarget.title : "",
-      //   location: createEnrollmentDto.BillingCity,
-      //   paymentInfo: {
-      //     method: enrollment.PaymentMode,
-      //     cardLastFour: enrollment.CCNo,
-      //     amount: initialAmount
-      //   },
-      //   billing: {
-      //     name: createEnrollmentDto.BillingName,
-      //     address: createEnrollmentDto.BillingAddress,
-      //     city: createEnrollmentDto.BillingCity,
-      //     state: billingState.name,
-      //     country: billingCountry.CountryName,
-      //     zip: createEnrollmentDto.zipCode,
-      //     phone: createEnrollmentDto.BillPhone,
-      //     email: createEnrollmentDto.BillMail,
-      //   }
-
-      // });
       return enrollment;
     } catch (error) {
       console.log(error);

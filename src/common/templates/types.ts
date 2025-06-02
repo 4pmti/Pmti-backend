@@ -24,6 +24,17 @@ export interface StudentRegistrationData {
     };
 }
 
+export interface PortalLoginData {
+  studentName: string;
+  studentEmail: string;
+  password: string;
+  expiryDate: Date;
+  className: string;
+  location: string;
+  startDate: Date;
+  classEndDate: Date;
+}
+
 export interface EmailTemplate {
     subject: string;
     html: string;
@@ -49,7 +60,8 @@ export enum EmailJobType {
     RESCHEDULE_CONFIRMATION = 'RESCHEDULE_CONFIRMATION',
     ACP = 'ACP',
     PMP = 'PMP',
-    CAPM = 'CAPM',    
+    CAPM = 'CAPM',
+    PORTAL_LOGIN = 'PORTAL_LOGIN',
 }
 
 export interface RescheduleEmailData {

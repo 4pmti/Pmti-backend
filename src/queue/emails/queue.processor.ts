@@ -54,6 +54,10 @@ export class EmailQueueProcessor extends WorkerHost {
           template = this.generateTransactionEmail(data);
           break;
 
+        case EmailJobType.PORTAL_LOGIN:
+          template = registrationTemplates.generatePortalLoginEmail(data);
+          break;
+
         default:
           throw new Error(`Unknown email job type: ${type}`);
       }
