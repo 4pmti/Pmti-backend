@@ -847,7 +847,7 @@ export class EnrollmentService {
       await queryRunner.commitTransaction();
       return enrollment;
     } catch (error) {
-      console.log(error);
+      console.log("error in create enrollment", error);
       await queryRunner.rollbackTransaction();
       throw error;
     } finally {
