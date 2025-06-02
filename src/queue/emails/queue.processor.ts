@@ -20,6 +20,7 @@ export class EmailQueueProcessor extends WorkerHost {
 
   async process(job: Job<EmailJobData>): Promise<any> {
     try {
+      console.log('Processing email job:', job.data);
       const { type, data, recipients, cc, bcc, attachments } = job.data;
       let template: EmailTemplate;
 
