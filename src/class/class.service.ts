@@ -281,6 +281,7 @@ export class ClassService {
 
       if (nearbyLocation) {
         const nearbyLocations = nearbyLocation.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+        console.log('nearbyLocations', nearbyLocations);
         if (nearbyLocations.length > 0) {
           queryBuilder.andWhere('class.locationID IN (:...nearbyLocations)', { nearbyLocations });
         }
