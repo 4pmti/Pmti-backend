@@ -144,17 +144,18 @@ export class EnrollmentService {
           ID: enrollment.ID
         }
       });
-      await queryRunner.commitTransaction();
+
+      console.log(classs.location);
 
       const rescheduleEmailData: RescheduleEmailData = {
         adminName: user.name,
         studentName: student.name,
         studentId: student.id.toString(),
         studentEmail: student.email,
-        oldLocation: classs.location.location,
+        oldLocation: 'classs.location.locatio',
         oldStartDate: classs.startDate,
         oldEndDate: classs.endDate,
-        newLocation: classs.location.location,
+        newLocation: 'classs.location.location',
         newStartDate: classs.startDate,
         newEndDate: classs.endDate,
         address: student.address,
@@ -165,6 +166,8 @@ export class EnrollmentService {
         data: rescheduleEmailData,
         recipients: [student.email, process.env.ADMIN_EMAIL]
       });
+      console.log(rescheduleEmailData);
+      await queryRunner.commitTransaction();
       return updatedEnrollment;
     } catch (error) {
       console.log(error);
