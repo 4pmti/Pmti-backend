@@ -137,12 +137,18 @@ export class BlogService {
   }
 
   async update(userId: string, id: number, updateBlogDto: UpdateBlogDto) {
+    console.log(`[BlogService.update] Starting blog update - userId: ${userId}, blogId: ${id}`);
+    console.log(`[BlogService.update] Update payload:`, updateBlogDto);
+    
     try {
-
+      console.log(`[BlogService.update] Checking admin permissions for user: ${userId}`);
       if (!await isAdmin(userId, this.userRepository)) {
+        console.log(`[BlogService.update] Permission denied - user ${userId} is not admin`);
         throw new UnauthorizedException("You dont have enough permission to do this");
       }
+      console.log(`[BlogService.update] Admin permission check passed`);
 
+      console.log(`[BlogService.update] Fetching user details for userId: ${userId}`);
       const user = await this.userRepository.findOne({
         where: {
           id: userId
@@ -150,8 +156,12 @@ export class BlogService {
       });
 
       if (!user) {
+        console.log(`[BlogService.update] User not found with id: ${userId}`);
         throw new UnauthorizedException("User not found!");
       }
+      console.log(`[BlogService.update] User found - id: ${user.id}, roles: ${user.roles}`);
+
+      console.log(`[BlogService.update] Fetching blog details for blogId: ${id}`);
       const blog = await this.blogRepository.findOne({
         where: {
           id
@@ -160,25 +170,33 @@ export class BlogService {
           user: true
         }
       });
-      console.log(blog);
+
       if (!blog) {
+        console.log(`[BlogService.update] Blog not found with id: ${id}`);
         throw new NotFoundException('Blog not found!');
       }
-      console.log(user);
+      console.log(`[BlogService.update] Blog found - id: ${blog.id}, title: ${blog.title}, owner: ${blog.user.id}`);
+
       if (blog.user.id != user.id) {
+        console.log(`[BlogService.update] Authorization failed - blog owner: ${blog.user.id}, requesting user: ${user.id}`);
         throw new UnauthorizedException("This action is not allowed!");
       }
-      console.log(id);
+      console.log(`[BlogService.update] Authorization check passed - user owns the blog`);
 
+      console.log(`[BlogService.update] Updating blog with id: ${id}`);
       // Update the blog
       await this.blogRepository.update(id, updateBlogDto);
+      console.log(`[BlogService.update] Blog update completed successfully`);
 
+      console.log(`[BlogService.update] Fetching updated blog data`);
       // Fetch updated blog
       const updatedBlog = await this.blogRepository.findOne({ where: { id } });
+      console.log(`[BlogService.update] Successfully retrieved updated blog - id: ${updatedBlog?.id}`);
 
       return updatedBlog;
     } catch (error) {
-      console.log(error);
+      console.error(`[BlogService.update] Error occurred:`, error);
+      console.error(`[BlogService.update] Error details - userId: ${userId}, blogId: ${id}`);
       throw new InternalServerErrorException(error);
     }
   }
