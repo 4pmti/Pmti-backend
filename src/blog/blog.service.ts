@@ -179,7 +179,7 @@ export class BlogService {
       return updatedBlog;
     } catch (error) {
       console.log(error);
-      throw error;
+      throw new InternalServerErrorException(error);
     }
   }
 
