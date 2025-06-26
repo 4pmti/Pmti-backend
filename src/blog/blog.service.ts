@@ -32,14 +32,14 @@ export class BlogService {
           id: userId
         }
       });
-     
+
       if (!user) throw new NotFoundException('User not found');
       if (!user.roles.includes(Role.ADMIN)
         && !user.roles.includes(Role.INSTRUCTOR)
       ) {
         throw new UnauthorizedException("You dont have enough permission to do this");
       }
-      console.log({createBlogDto});
+      console.log({ createBlogDto });
       const tags = await Promise.all(
         createBlogDto.tagNames.map(async (name) => {
           let tag = await this.tagRepo.findOne({ where: { name } });
@@ -138,8 +138,8 @@ export class BlogService {
 
   async update(userId: string, id: number, updateBlogDto: UpdateBlogDto) {
     console.log(`[BlogService.update] Starting blog update - userId: ${userId}, blogId: ${id}`);
-    console.log(`[BlogService.update] Update payload:`, updateBlogDto);
-    
+    // console.log(`[BlogService.update] Update payload:`, updateBlogDto);
+
     try {
       console.log(`[BlogService.update] Checking admin permissions for user: ${userId}`);
       if (!await isAdmin(userId, this.userRepository)) {
