@@ -13,6 +13,10 @@ export class CreateBlogDto {
   @IsString()
   coverImage:string
 
+  @IsNotEmpty()
+  @IsString()
+  thumbnail:string
+
   @IsOptional()
   @IsArray()
   @ArrayUnique() 

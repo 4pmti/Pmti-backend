@@ -57,6 +57,7 @@ export class BlogService {
         content: createBlogDto.content,
         metadata: createBlogDto.metadata,
         cover_image: createBlogDto.coverImage,
+        thumbnail: createBlogDto.thumbnail,
         user: user,
         slug: createBlogDto.slug
       });
