@@ -10,6 +10,17 @@ import { FilterBlogDto } from './dto/filter-blog.dto';
 export class BlogController {
   constructor(private readonly blogService: BlogService) { }
 
+
+  @Patch(':id')
+  @UseGuards(AuthGuard)
+  update(
+    @Req() req: Request,
+    @Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
+    const userId = req.user?.id ?? '';
+    console.log({userId});
+    return this.blogService.update(userId,+id, updateBlogDto);
+  }
+
   @Post()
   @UseGuards(AuthGuard)
   create(
@@ -18,6 +29,8 @@ export class BlogController {
     const userId = req.user?.id ?? '';
     return this.blogService.create(userId, createBlogDto);
   }
+
+
 
   @Get()
   findAll(@Query() filter: FilterBlogDto) {
@@ -29,15 +42,6 @@ export class BlogController {
     return this.blogService.findOne(+id);
   }
 
-  @Patch(':id')
-  @UseGuards(AuthGuard)
-  update(
-    @Req() req: Request,
-    @Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
-    const userId = req.user?.id ?? '';
-    console.log({userId});
-    return this.blogService.update(userId,+id, updateBlogDto);
-  }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
