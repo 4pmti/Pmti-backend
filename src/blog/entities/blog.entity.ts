@@ -19,6 +19,9 @@ export class Blog {
   cover_image: string
 
   @Column()
+  thumbnail: string
+
+  @Column()
   title: string;
 
   @Column('text')
