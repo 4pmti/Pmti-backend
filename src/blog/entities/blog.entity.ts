@@ -43,6 +43,9 @@ export class Blog {
   @ManyToOne(() => User, (user) => user.blogs, { onDelete: 'CASCADE' })
   user: User;
 
+  @Column({ type: 'text', nullable: true })
+  description: string;
+
   @ManyToMany(() => Tag, (tag) => tag.blogs, { cascade: true })
   @JoinTable()
   tags: Tag[];

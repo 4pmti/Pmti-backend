@@ -59,7 +59,8 @@ export class BlogService {
         cover_image: createBlogDto.coverImage,
         thumbnail: createBlogDto.thumbnail,
         user: user,
-        slug: createBlogDto.slug
+        slug: createBlogDto.slug,
+        description: createBlogDto.description
       });
       return this.blogRepository.save(blog);
     } catch (error) {

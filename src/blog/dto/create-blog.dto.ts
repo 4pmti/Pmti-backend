@@ -26,6 +26,11 @@ export class CreateBlogDto {
 
   @IsOptional()
   @IsString()
+  description?:string
+
+
+  @IsOptional()
+  @IsString()
   slug?:string
 
   @IsOptional()
