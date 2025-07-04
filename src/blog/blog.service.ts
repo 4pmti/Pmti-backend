@@ -51,7 +51,7 @@ export class BlogService {
         })
       );
 
-      const blog = this.blogRepository.create({
+      const blog = await this.blogRepository.create({
         tags: tags,
         title: createBlogDto.title,
         content: createBlogDto.content,
@@ -62,7 +62,7 @@ export class BlogService {
         slug: createBlogDto.slug,
         description: createBlogDto.description
       });
-      return this.blogRepository.save(blog);
+      return await this.blogRepository.save(blog);
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(error);
@@ -140,7 +140,6 @@ export class BlogService {
 
   async update(userId: string, id: number, updateBlogDto: UpdateBlogDto) {
     console.log(`[BlogService.update] Starting blog update - userId: ${userId}, blogId: ${id}`);
-    // console.log(`[BlogService.update] Update payload:`, updateBlogDto);
 
     try {
       console.log(`[BlogService.update] Checking admin permissions for user: ${userId}`);
@@ -169,7 +168,8 @@ export class BlogService {
           id
         },
         relations: {
-          user: true
+          user: true,
+          tags: true
         }
       });
 
@@ -186,14 +186,29 @@ export class BlogService {
       console.log(`[BlogService.update] Authorization check passed - user owns the blog`);
 
       console.log(`[BlogService.update] Updating blog with id: ${id}`);
-      // Update the blog
-      await this.blogRepository.update(id, updateBlogDto);
-      console.log(`[BlogService.update] Blog update completed successfully`);
+      
+      if (updateBlogDto.tagNames) {
+        console.log(`[BlogService.update] Processing tags: ${updateBlogDto.tagNames}`);
+        const tags = await Promise.all(
+          updateBlogDto.tagNames.map(async (name) => {
+            let tag = await this.tagRepo.findOne({ where: { name } });
+            if (!tag) {
+              console.log(`[BlogService.update] Creating new tag: ${name}`);
+              tag = this.tagRepo.create({ name });
+              await this.tagRepo.save(tag);
+            }
+            return tag;
+          })
+        );
+        blog.tags = tags;
+        console.log(`[BlogService.update] Tags updated successfully`);
+      }
 
-      console.log(`[BlogService.update] Fetching updated blog data`);
-      // Fetch updated blog
-      const updatedBlog = await this.blogRepository.findOne({ where: { id } });
-      console.log(`[BlogService.update] Successfully retrieved updated blog - id: ${updatedBlog?.id}`);
+      const { tagNames, ...updateData } = updateBlogDto;
+      Object.assign(blog, updateData);
+
+      const updatedBlog = await this.blogRepository.save(blog);
+      console.log(`[BlogService.update] Blog update completed successfully`);
 
       return updatedBlog;
     } catch (error) {
