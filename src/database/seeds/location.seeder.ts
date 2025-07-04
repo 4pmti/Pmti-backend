@@ -166,7 +166,7 @@ export class LocationSeederService {
         locationData.isDelete = false;
         locationData.nearbyLocations = '';
         locationData.createdAt = new Date();
-        locationData.updateAt = new Date();
+        locationData.updatedAt = new Date();
 
         locationsToInsert.push(locationData);
         this.logger.debug(`Prepared location: ${cityName} in ${fullStateName} with id ${locationId}`);
