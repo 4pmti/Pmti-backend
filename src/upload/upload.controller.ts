@@ -77,6 +77,17 @@ export class UploadController {
       'image/bmp',
       'image/tiff',
       'application/pdf',
+      // Font types
+      'application/font-ttf',
+      'font/ttf',
+      'application/font-otf',
+      'font/otf',
+      'application/font-woff',
+      'font/woff',
+      'application/font-woff2',
+      'font/woff2',
+      'application/x-font-ttf',
+      'application/x-font-otf',
       // Add more as needed
     ];
     return validTypes.includes(mimeType);
