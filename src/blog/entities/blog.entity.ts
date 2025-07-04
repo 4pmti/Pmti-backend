@@ -9,9 +9,10 @@ import {
 } from 'typeorm';
 import { Tag } from './tag.entity';
 import { User } from 'src/user/entities/user.entity';
+import { BaseEntity } from 'src/common/dto/base.dto';
 
 @Entity()
-export class Blog {
+export class Blog  extends BaseEntity{
   @PrimaryGeneratedColumn()
   id: number;
 
