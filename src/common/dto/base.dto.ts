@@ -6,5 +6,5 @@ export abstract class BaseEntity {
   createdAt: Date;
 
   @UpdateDateColumn({ type: 'datetime' })
-  updateAt: Date;
+  updatedAt: Date;
 }
