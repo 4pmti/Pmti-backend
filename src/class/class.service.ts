@@ -272,8 +272,8 @@ export class ClassService {
       console.log('isCorpClass:', isCorpClass);
 
 
-      // Apply date range filter
-      if (startFrom) {
+      // Apply date range filter only if startFrom is explicitly provided
+      if (startFrom !== undefined && startFrom !== null) {
         const formattedStartFrom = new Date(startFrom).toISOString().split('T')[0];
         queryBuilder.andWhere('class.startDate >= :startFrom', { startFrom: formattedStartFrom });
 
@@ -291,7 +291,8 @@ export class ClassService {
         queryBuilder.andWhere('class.isCancel = :isCancel', { isCancel });
       }
 
-      if (isCorpClass !== undefined) {
+      // Only apply isCorpClass filter if it's explicitly provided
+      if (isCorpClass !== undefined && isCorpClass !== null) {
         queryBuilder.andWhere('class.isCorpClass = :isCorpClass', { isCorpClass });
       }
 

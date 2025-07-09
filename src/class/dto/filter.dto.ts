@@ -56,8 +56,8 @@ export class FilterDto {
     @IsBoolean()
     @IsOptional()
     @Transform(({ value }) => value === 'true')
-    isCorpClass?: boolean = false;
-
+    isCorpClass?: boolean;
+    
     @IsString()
     @IsOptional()
     nearbyLocation?: string;
