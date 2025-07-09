@@ -355,7 +355,7 @@ export class ClassService {
       const currentPage = page;
       const hasNext = currentPage < totalPages;
       const hasPrevious = currentPage > 1;
-      console.log('Classes:', classes);
+      console.log('Classes:', classes.length);
 
       return {
         data: await this.dynamicPrice(classes),
