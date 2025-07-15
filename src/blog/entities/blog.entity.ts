@@ -50,4 +50,16 @@ export class Blog  extends BaseEntity{
   @ManyToMany(() => Tag, (tag) => tag.blogs, { cascade: true })
   @JoinTable()
   tags: Tag[];
+
+  // Related articles - many-to-many self-relationship
+  @ManyToMany(() => Blog, (blog) => blog.relatedTo, { cascade: true })
+  @JoinTable({
+    name: 'blog_related_articles',
+    joinColumn: { name: 'blog_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'related_blog_id', referencedColumnName: 'id' }
+  })
+  relatedArticles: Blog[];
+
+  @ManyToMany(() => Blog, (blog) => blog.relatedArticles)
+  relatedTo: Blog[];
 }

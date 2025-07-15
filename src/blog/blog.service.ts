@@ -26,7 +26,6 @@ export class BlogService {
 
   async create(userId: string, createBlogDto: CreateBlogDto) {
     try {
-
       const user = await this.userRepository.findOne({
         where: {
           id: userId
@@ -39,19 +38,35 @@ export class BlogService {
       ) {
         throw new UnauthorizedException("You dont have enough permission to do this");
       }
+      
       console.log({ createBlogDto });
+      
+      // Handle tags
       const tags = await Promise.all(
-        createBlogDto.tagNames.map(async (name) => {
+        createBlogDto.tagNames?.map(async (name) => {
           let tag = await this.tagRepo.findOne({ where: { name } });
           if (!tag) {
             tag = this.tagRepo.create({ name });
             await this.tagRepo.save(tag);
           }
           return tag;
-        })
+        }) || []
       );
 
-      const blog = await this.blogRepository.create({
+      // Handle related articles
+      let relatedArticles: Blog[] = [];
+      if (createBlogDto.relatedArticleIds && createBlogDto.relatedArticleIds.length > 0) {
+        relatedArticles = await this.blogRepository.findByIds(createBlogDto.relatedArticleIds);
+        
+        // Validate that all related articles exist
+        if (relatedArticles.length !== createBlogDto.relatedArticleIds.length) {
+          const foundIds = relatedArticles.map(article => article.id);
+          const missingIds = createBlogDto.relatedArticleIds.filter(id => !foundIds.includes(id));
+          throw new NotFoundException(`Related articles not found with IDs: ${missingIds.join(', ')}`);
+        }
+      }
+
+      const blog = this.blogRepository.create({
         tags: tags,
         title: createBlogDto.title,
         content: createBlogDto.content,
@@ -60,8 +75,10 @@ export class BlogService {
         thumbnail: createBlogDto.thumbnail,
         user: user,
         slug: createBlogDto.slug,
-        description: createBlogDto.description
+        description: createBlogDto.description,
+        relatedArticles: relatedArticles
       });
+      
       return await this.blogRepository.save(blog);
     } catch (error) {
       console.log(error);
@@ -76,6 +93,7 @@ export class BlogService {
       const query = this.blogRepository.createQueryBuilder('blog')
         .leftJoinAndSelect('blog.tags', 'tag')
         .leftJoinAndSelect('blog.user', 'user')
+        .leftJoinAndSelect('blog.relatedArticles', 'relatedArticle')
         .skip((page - 1) * limit)
         .take(limit);
 
@@ -110,26 +128,26 @@ export class BlogService {
       console.log(e);
       throw e;
     }
-
   }
 
   async findOne(id: number) {
     try {
-
-
       const blog = await this.blogRepository.findOne({
         where: {
           id
         },
         relations: {
           tags: true,
-          user: true
+          user: true,
+          relatedArticles: {
+            tags: true,
+            user: true
+          }
         }
       });
 
       if (!blog) {
-        throw new NotFoundException("Blog Not Found"
-        );
+        throw new NotFoundException("Blog Not Found");
       }
       return blog;
     } catch (error) {
@@ -169,7 +187,8 @@ export class BlogService {
         },
         relations: {
           user: true,
-          tags: true
+          tags: true,
+          relatedArticles: true
         }
       });
 
@@ -186,7 +205,8 @@ export class BlogService {
       console.log(`[BlogService.update] Authorization check passed - user owns the blog`);
 
       console.log(`[BlogService.update] Updating blog with id: ${id}`);
-      
+
+      // Handle tags update
       if (updateBlogDto.tagNames) {
         console.log(`[BlogService.update] Processing tags: ${updateBlogDto.tagNames}`);
         const tags = await Promise.all(
@@ -204,7 +224,35 @@ export class BlogService {
         console.log(`[BlogService.update] Tags updated successfully`);
       }
 
-      const { tagNames, ...updateData } = updateBlogDto;
+      // Handle related articles update
+      if (updateBlogDto.relatedArticleIds !== undefined) {
+        console.log(`[BlogService.update] Processing related articles: ${updateBlogDto.relatedArticleIds}`);
+        
+        if (updateBlogDto.relatedArticleIds.length > 0) {
+          // Ensure the blog is not relating to itself
+          const filteredIds = updateBlogDto.relatedArticleIds.filter(articleId => articleId !== id);
+          
+          if (filteredIds.length > 0) {
+            const relatedArticles = await this.blogRepository.findByIds(filteredIds);
+            
+            // Validate that all related articles exist
+            if (relatedArticles.length !== filteredIds.length) {
+              const foundIds = relatedArticles.map(article => article.id);
+              const missingIds = filteredIds.filter(id => !foundIds.includes(id));
+              throw new NotFoundException(`Related articles not found with IDs: ${missingIds.join(', ')}`);
+            }
+            
+            blog.relatedArticles = relatedArticles;
+          } else {
+            blog.relatedArticles = [];
+          }
+        } else {
+          blog.relatedArticles = [];
+        }
+        console.log(`[BlogService.update] Related articles updated successfully`);
+      }
+
+      const { tagNames, relatedArticleIds, ...updateData } = updateBlogDto;
       Object.assign(blog, updateData);
 
       const updatedBlog = await this.blogRepository.save(blog);
