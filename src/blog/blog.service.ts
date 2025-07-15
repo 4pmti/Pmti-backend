@@ -93,7 +93,8 @@ export class BlogService {
       const query = this.blogRepository.createQueryBuilder('blog')
         .leftJoinAndSelect('blog.tags', 'tag')
         .leftJoinAndSelect('blog.user', 'user')
-        .leftJoinAndSelect('blog.relatedArticles', 'relatedArticle')
+        .leftJoin('blog.relatedArticles', 'relatedArticle')
+        .addSelect('relatedArticle.id')
         .skip((page - 1) * limit)
         .take(limit);
 
@@ -115,8 +116,19 @@ export class BlogService {
 
       const [blogs, total] = await query.getManyAndCount();
 
+      // Transform related articles to only include IDs
+      const transformedBlogs = blogs.map(blog => ({
+        ...blog,
+        relatedArticleIds: blog.relatedArticles?.map(article => article.id) || []
+      }));
+
+      // Remove the full relatedArticles objects
+      transformedBlogs.forEach(blog => {
+        delete blog.relatedArticles;
+      });
+
       return {
-        data: blogs,
+        data: transformedBlogs,
         meta: {
           total,
           page,
@@ -139,17 +151,24 @@ export class BlogService {
         relations: {
           tags: true,
           user: true,
-          relatedArticles: {
-            tags: true,
-            user: true
-          }
+          relatedArticles: true
         }
       });
 
       if (!blog) {
         throw new NotFoundException("Blog Not Found");
       }
-      return blog;
+
+      // Transform related articles to only include IDs
+      const transformedBlog = {
+        ...blog,
+        relatedArticleIds: blog.relatedArticles?.map(article => article.id) || []
+      };
+
+      // Remove the full relatedArticles object
+      delete transformedBlog.relatedArticles;
+
+      return transformedBlog;
     } catch (error) {
       console.log(error);
       throw error;
