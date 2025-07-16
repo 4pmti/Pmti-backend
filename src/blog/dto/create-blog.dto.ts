@@ -43,4 +43,10 @@ export class CreateBlogDto {
   @ArrayUnique() 
   @IsInt({ each: true }) 
   relatedArticleIds?: number[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique() 
+  @IsInt({ each: true }) 
+  pageIds?: number[];
 }

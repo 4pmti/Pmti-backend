@@ -31,4 +31,14 @@ export class FilterBlogDto {
   @IsOptional()
   @IsString()
   slug?: string; // Filter by slug
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  pageId?: number; // Filter by page ID
+
+  @IsOptional()
+  @IsString()
+  pageName?: string; // Filter by page name
 }

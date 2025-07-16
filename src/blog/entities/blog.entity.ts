@@ -10,6 +10,7 @@ import {
 import { Tag } from './tag.entity';
 import { User } from 'src/user/entities/user.entity';
 import { BaseEntity } from 'src/common/dto/base.dto';
+import { Page } from './page.entity';
 
 @Entity()
 export class Blog  extends BaseEntity{
@@ -62,4 +63,8 @@ export class Blog  extends BaseEntity{
 
   @ManyToMany(() => Blog, (blog) => blog.relatedArticles)
   relatedTo: Blog[];
+
+  @ManyToMany(() => Page, (page) => page.blogs, { cascade: true })
+  @JoinTable()
+  pages: Page[];
 }
