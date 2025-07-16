@@ -7,7 +7,7 @@ import { FilterPageDto } from './dto/filter-page.dto';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Blog } from './entities/blog.entity';
 import { Page } from './entities/page.entity';
 import { Role } from 'src/common/enums/role';
@@ -59,11 +59,11 @@ export class BlogService {
         }) || []
       );
 
-            // Handle related articles
+      // Handle related articles
       let relatedArticles: Blog[] = [];
       if (createBlogDto.relatedArticleIds && createBlogDto.relatedArticleIds.length > 0) {
         relatedArticles = await this.blogRepository.findByIds(createBlogDto.relatedArticleIds);
-        
+
         // Validate that all related articles exist
         if (relatedArticles.length !== createBlogDto.relatedArticleIds.length) {
           const foundIds = relatedArticles.map(article => article.id);
@@ -76,7 +76,7 @@ export class BlogService {
       let pages: Page[] = [];
       if (createBlogDto.pageIds && createBlogDto.pageIds.length > 0) {
         pages = await this.pageRepository.findByIds(createBlogDto.pageIds);
-        
+
         // Validate that all pages exist
         if (pages.length !== createBlogDto.pageIds.length) {
           const foundIds = pages.map(page => page.id);
@@ -274,24 +274,24 @@ export class BlogService {
         console.log(`[BlogService.update] Tags updated successfully`);
       }
 
-            // Handle related articles update
+      // Handle related articles update
       if (updateBlogDto.relatedArticleIds !== undefined) {
         console.log(`[BlogService.update] Processing related articles: ${updateBlogDto.relatedArticleIds}`);
-        
+
         if (updateBlogDto.relatedArticleIds.length > 0) {
           // Ensure the blog is not relating to itself
           const filteredIds = updateBlogDto.relatedArticleIds.filter(articleId => articleId !== id);
-          
+
           if (filteredIds.length > 0) {
             const relatedArticles = await this.blogRepository.findByIds(filteredIds);
-            
+
             // Validate that all related articles exist
             if (relatedArticles.length !== filteredIds.length) {
               const foundIds = relatedArticles.map(article => article.id);
               const missingIds = filteredIds.filter(id => !foundIds.includes(id));
               throw new NotFoundException(`Related articles not found with IDs: ${missingIds.join(', ')}`);
             }
-            
+
             blog.relatedArticles = relatedArticles;
           } else {
             blog.relatedArticles = [];
@@ -305,17 +305,21 @@ export class BlogService {
       // Handle pages update
       if (updateBlogDto.pageIds !== undefined) {
         console.log(`[BlogService.update] Processing pages: ${updateBlogDto.pageIds}`);
-        
+
         if (updateBlogDto.pageIds.length > 0) {
-          const pages = await this.pageRepository.findByIds(updateBlogDto.pageIds);
-          
+          const pages = await this.pageRepository.find({
+            where: {
+              id: In(updateBlogDto.pageIds)
+            }
+          });
+
           // Validate that all pages exist
           if (pages.length !== updateBlogDto.pageIds.length) {
             const foundIds = pages.map(page => page.id);
             const missingIds = updateBlogDto.pageIds.filter(id => !foundIds.includes(id));
             throw new NotFoundException(`Pages not found with IDs: ${missingIds.join(', ')}`);
           }
-          
+
           blog.pages = pages;
         } else {
           blog.pages = [];
