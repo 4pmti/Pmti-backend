@@ -128,8 +128,9 @@ export class ClassService {
       Object.assign(newClass, createClassDto);;
       newClass.category = classCategory;
       newClass.addedBy = user;
-      newClass.startDate = createClassDto.startDate.toISOString().split('T')[0];
-      newClass.endDate = createClassDto.endDate.toISOString().split('T')[0];
+      // Fix: Preserve the exact date without timezone conversion
+      newClass.startDate = this.formatDateWithoutTimezone(createClassDto.startDate);
+      newClass.endDate = this.formatDateWithoutTimezone(createClassDto.endDate);
       newClass.instructor = instructor;
       newClass.updatedBy = user;
       newClass.classType = classType;
@@ -274,7 +275,7 @@ export class ClassService {
 
       // Apply date range filter only if startFrom is explicitly provided
       if (startFrom !== undefined && startFrom !== null) {
-        const formattedStartFrom = new Date(startFrom).toISOString().split('T')[0];
+        const formattedStartFrom = this.formatDateWithoutTimezone(new Date(startFrom));
         queryBuilder.andWhere('class.startDate >= :startFrom', { startFrom: formattedStartFrom });
 
       }
@@ -301,7 +302,7 @@ export class ClassService {
       }
 
       if (dateTo) {
-        const formattedDateTo = new Date(dateTo).toISOString().split('T')[0];
+        const formattedDateTo = this.formatDateWithoutTimezone(new Date(dateTo));
         queryBuilder.andWhere('class.endDate <= :dateTo', { dateTo: formattedDateTo });
       }
 
@@ -486,6 +487,14 @@ export class ClassService {
         throw new NotFoundException("Class not Found");
       }
       Object.assign(classs, updateClassDto);
+      
+      // Fix: Handle date conversion for updates if dates are provided
+      if (updateClassDto.startDate) {
+        classs.startDate = this.formatDateWithoutTimezone(updateClassDto.startDate);
+      }
+      if (updateClassDto.endDate) {
+        classs.endDate = this.formatDateWithoutTimezone(updateClassDto.endDate);
+      }
 
       const updatedClass = await this.classRepository.save(classs);
 
@@ -586,5 +595,19 @@ export class ClassService {
       console.log(error);
       throw error;
     }
+  }
+
+  private formatDateWithoutTimezone(date: Date): string {
+    const d = new Date(date);
+    let month = '' + (d.getMonth() + 1);
+    let day = '' + d.getDate();
+    const year = d.getFullYear();
+
+    if (month.length < 2)
+      month = '0' + month;
+    if (day.length < 2)
+      day = '0' + day;
+
+    return [year, month, day].join('-');
   }
 }

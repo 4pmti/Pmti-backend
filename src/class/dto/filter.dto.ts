@@ -18,7 +18,7 @@ export class FilterDto {
     sort?: string;
 
 
-    startFrom?: Date|string = new Date().toISOString().split('T')[0];
+    startFrom?: Date|string;
 
 
     dateTo?: Date;
