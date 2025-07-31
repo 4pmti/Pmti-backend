@@ -246,6 +246,8 @@ export class ClassService {
 
       // Set default startFrom to today's date if not provided in query params
       const effectiveStartFrom = startFrom || new Date().toISOString().split('T')[0];
+      console.log('effectiveStartFrom type:', typeof effectiveStartFrom);
+      console.log('effectiveStartFrom value:', effectiveStartFrom);
 
 
       // Create query builder
@@ -278,7 +280,7 @@ export class ClassService {
 
 
       // Apply date range filter with startFrom (defaults to today's date if not provided)
-      const formattedStartFrom = this.formatDateWithoutTimezone(new Date(effectiveStartFrom));
+      const formattedStartFrom = this.formatDateWithoutTimezone(effectiveStartFrom);
       console.log('formattedStartFrom:', formattedStartFrom);
       queryBuilder.andWhere('class.startDate >= :startFrom', { startFrom: formattedStartFrom });
 
@@ -304,7 +306,7 @@ export class ClassService {
       }
 
       if (dateTo) {
-        const formattedDateTo = this.formatDateWithoutTimezone(new Date(dateTo));
+        const formattedDateTo = this.formatDateWithoutTimezone(dateTo);
         queryBuilder.andWhere('class.endDate <= :dateTo', { dateTo: formattedDateTo });
       }
 
@@ -599,8 +601,17 @@ export class ClassService {
     }
   }
 
-  private formatDateWithoutTimezone(date: Date): string {
-    const d = new Date(date);
+  private formatDateWithoutTimezone(date: Date | string): string {
+    let d: Date;
+    
+    // If it's already a string in YYYY-MM-DD format, parse it properly
+    if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      const [year, month, day] = date.split('-').map(Number);
+      d = new Date(year, month - 1, day); // month is 0-indexed in Date constructor
+    } else {
+      d = new Date(date);
+    }
+    
     let month = '' + (d.getMonth() + 1);
     let day = '' + d.getDate();
     const year = d.getFullYear();
