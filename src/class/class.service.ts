@@ -244,6 +244,9 @@ export class ClassService {
         isCorpClass
       } = filters;
 
+      // Set default startFrom to today's date if not provided in query params
+      const effectiveStartFrom = startFrom || new Date().toISOString().split('T')[0];
+
 
       // Create query builder
       const queryBuilder = this.classRepository.createQueryBuilder('class')
@@ -268,17 +271,15 @@ export class ClassService {
 
 
       console.log('Filters:', filters);
-      console.log('startFrom:', startFrom);
+      console.log('startFrom (query param):', startFrom);
+      console.log('effectiveStartFrom (with default):', effectiveStartFrom);
       console.log('dateTo:', dateTo);
       console.log('isCorpClass:', isCorpClass);
 
 
-      // Apply date range filter only if startFrom is explicitly provided
-      if (startFrom !== undefined && startFrom !== null) {
-        const formattedStartFrom = this.formatDateWithoutTimezone(new Date(startFrom));
-        queryBuilder.andWhere('class.startDate >= :startFrom', { startFrom: formattedStartFrom });
-
-      }
+      // Apply date range filter with startFrom (defaults to today's date if not provided)
+      const formattedStartFrom = this.formatDateWithoutTimezone(new Date(effectiveStartFrom));
+      queryBuilder.andWhere('class.startDate >= :startFrom', { startFrom: formattedStartFrom });
 
       if (nearbyLocation) {
         const nearbyLocations = nearbyLocation.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
