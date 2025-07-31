@@ -279,6 +279,7 @@ export class ClassService {
 
       // Apply date range filter with startFrom (defaults to today's date if not provided)
       const formattedStartFrom = this.formatDateWithoutTimezone(new Date(effectiveStartFrom));
+      console.log('formattedStartFrom:', formattedStartFrom);
       queryBuilder.andWhere('class.startDate >= :startFrom', { startFrom: formattedStartFrom });
 
       if (nearbyLocation) {
