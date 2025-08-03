@@ -121,7 +121,7 @@ export class StudentService {
     }
   }
 
-  async remove(userId: string, id: number): Promise<String> {
+  async remove(userId: string, id: number, cascadeDelete: boolean = true): Promise<String> {
     // Use transaction to ensure atomicity of all operations
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -152,7 +152,13 @@ export class StudentService {
       });
 
       if (relatedEnrollments.length > 0) {
-        throw new Error(`Cannot delete student. Student has ${relatedEnrollments.length} active enrollment(s). Please delete enrollments first.`);
+        if (cascadeDelete) {
+          // Delete all enrollments first if cascade delete is enabled
+          console.log(`Deleting ${relatedEnrollments.length} enrollment(s) for student #${id}`);
+          await queryRunner.manager.remove(Enrollment, relatedEnrollments);
+        } else {
+          throw new Error(`Cannot delete student. Student has ${relatedEnrollments.length} active enrollment(s). Please delete enrollments first or use cascade delete option.`);
+        }
       }
 
       // Delete the student record first (child table - has foreign key to User)
@@ -172,7 +178,10 @@ export class StudentService {
       // Commit transaction
       await queryRunner.commitTransaction();
 
-      return "Successfully deleted student and related records";
+      const cascadeMessage = cascadeDelete && relatedEnrollments.length > 0 
+        ? ` and ${relatedEnrollments.length} enrollment(s)` 
+        : '';
+      return `Successfully deleted student${cascadeMessage} and related records`;
     } catch (error) {
       // Rollback transaction on any error
       await queryRunner.rollbackTransaction();

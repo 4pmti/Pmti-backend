@@ -7,7 +7,7 @@ import { Request } from 'express';
 
 @Controller('students')
 export class StudentController {
-  constructor(private readonly studentService: StudentService) {}
+  constructor(private readonly studentService: StudentService) { }
 
 
   @Get()
@@ -27,7 +27,10 @@ export class StudentController {
 
   @Delete(':id')
   @UseGuards(AuthGuard)
-  remove(@Param('id') id: string, @Req() req: Request) {
-    return this.studentService.remove(req.user.id, +id);
+  remove(
+    @Param('id') id: string,
+    @Req() req: Request,
+  ) {
+    return this.studentService.remove(req.user.id, +id, true);
   }
 }
