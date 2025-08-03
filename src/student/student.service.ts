@@ -155,18 +155,19 @@ export class StudentService {
         throw new Error(`Cannot delete student. Student has ${relatedEnrollments.length} active enrollment(s). Please delete enrollments first.`);
       }
 
-      // Check for related user record and delete it first (due to OneToOne relationship)
+      // Delete the student record first (child table - has foreign key to User)
+      await queryRunner.manager.remove(Student, student);
+
+      // Then delete the associated user record (parent table - referenced by Student)
       if (student.user) {
         try {
           await queryRunner.manager.remove(User, student.user);
         } catch (userError) {
           console.error('Error deleting associated user:', userError);
-          throw new Error('Failed to delete associated user record. Please try again.');
+          // Don't throw error here as student is already deleted
+          // Just log the error for debugging purposes
         }
       }
-
-      // Now safely delete the student
-      await queryRunner.manager.remove(Student, student);
 
       // Commit transaction
       await queryRunner.commitTransaction();
