@@ -1,6 +1,6 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { Student } from './entities/student.entity';
@@ -8,6 +8,9 @@ import { Country } from 'src/country/entities/country.entity';
 import { State } from 'src/state/entities/state.entity';
 import { Location } from 'src/location/entities/location.entity';
 import { Enrollment } from 'src/enrollment/entities/enrollment.entity';
+import { User } from 'src/user/entities/user.entity';
+import { isAdmin } from 'src/common/util/utilities';
+
 @Injectable()
 export class StudentService {
   constructor(
@@ -19,9 +22,11 @@ export class StudentService {
     private readonly stateRepository: Repository<State>,
     @InjectRepository(Location)
     private readonly locationRepository: Repository<Location>,
-
     @InjectRepository(Enrollment)
     private readonly enrollmentRepository: Repository<Enrollment>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    private readonly dataSource: DataSource,
   ) { }
 
   async findAll(): Promise<Student[]> {
@@ -34,28 +39,28 @@ export class StudentService {
   }
 
   async findOne(id: number): Promise<{ student: Student, enrollments: Enrollment[] }> {
-    try{
+    try {
 
-    const student = await this.studentRepository.findOne({
-      where: { id }, relations: {
-        country: true,
-        state: true,
-      }
-    });
-    if (!student) {
-      throw new BadRequestException('Student not found');
-    }
-
-    const enrollments = await this.enrollmentRepository.
-      find({
-        where: { student: { id } }, relations: {
-          course: true, class: {
-            instructor: true
-          }
+      const student = await this.studentRepository.findOne({
+        where: { id }, relations: {
+          country: true,
+          state: true,
         }
       });
+      if (!student) {
+        throw new BadRequestException('Student not found');
+      }
 
-    return { student, enrollments };
+      const enrollments = await this.enrollmentRepository.
+        find({
+          where: { student: { id } }, relations: {
+            course: true, class: {
+              instructor: true
+            }
+          }
+        });
+
+      return { student, enrollments };
     } catch (error) {
       console.log(error);
       throw error;
@@ -78,11 +83,11 @@ export class StudentService {
         throw new BadRequestException('Student not found');
       }
 
-      if(updateStudentDto.email){
+      if (updateStudentDto.email) {
         const existingStudent = await this.studentRepository.findOne({
           where: { email: updateStudentDto.email }
         });
-        if(existingStudent){
+        if (existingStudent) {
           throw new BadRequestException('Email already exists');
         }
       }
@@ -116,20 +121,74 @@ export class StudentService {
     }
   }
 
-  async remove(id: number): Promise<String> {
+  async remove(userId: string, id: number): Promise<String> {
+    // Use transaction to ensure atomicity of all operations
+
+    const queryRunner = this.dataSource.createQueryRunner();
+
     try {
-      const student = await this.studentRepository.findOne({
-        where: {
-          id: id
-        }
+      // Start transaction
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+
+      const user = await queryRunner.manager.findOne(User, { where: { id: userId } });
+      if (!user || !isAdmin(userId, this.userRepository)) {
+        throw new UnauthorizedException('You don’t have permission to perform this action.');
+      }
+
+      // First, check if the student exists with all relations
+      const student = await queryRunner.manager.findOne(Student, {
+        where: { id: id },
+        relations: ['user', 'country', 'state'] // Include all necessary relationships
       });
+
       if (!student) {
         throw new Error('Student not found');
       }
-      await this.studentRepository.remove(student);
-      return "Successfully deleted";
+
+      // Check for related enrollments before deletion
+      const relatedEnrollments = await queryRunner.manager.find(Enrollment, {
+        where: { student: { id: id } }
+      });
+
+      if (relatedEnrollments.length > 0) {
+        throw new Error(`Cannot delete student. Student has ${relatedEnrollments.length} active enrollment(s). Please delete enrollments first.`);
+      }
+
+      // Check for related user record and delete it first (due to OneToOne relationship)
+      if (student.user) {
+        try {
+          await queryRunner.manager.remove(User, student.user);
+        } catch (userError) {
+          console.error('Error deleting associated user:', userError);
+          throw new Error('Failed to delete associated user record. Please try again.');
+        }
+      }
+
+      // Now safely delete the student
+      await queryRunner.manager.remove(Student, student);
+
+      // Commit transaction
+      await queryRunner.commitTransaction();
+
+      return "Successfully deleted student and related records";
     } catch (error) {
-      throw error;
+      // Rollback transaction on any error
+      await queryRunner.rollbackTransaction();
+
+      // Log the error for debugging
+      console.error('Error deleting student:', error);
+
+      // Re-throw with more descriptive message
+      if (error instanceof Error && error.message.includes('Cannot delete student')) {
+        throw error; // Re-throw the specific enrollment error
+      }
+
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      throw new Error(`Failed to delete student: ${errorMessage}`);
+    } finally {
+      // Always release the query runner
+      await queryRunner.release();
     }
   }
 }

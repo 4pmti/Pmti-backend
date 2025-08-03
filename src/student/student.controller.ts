@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { StudentService } from './student.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
+import { AuthGuard } from 'src/auth/guard/auth.guard';
+import { Request } from 'express';
 
 @Controller('students')
 export class StudentController {
@@ -24,7 +26,8 @@ export class StudentController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.studentService.remove(+id);
+  @UseGuards(AuthGuard)
+  remove(@Param('id') id: string, @Req() req: Request) {
+    return this.studentService.remove(req.user.id, +id);
   }
 }
