@@ -898,7 +898,68 @@ export class EnrollmentService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} enrollment`;
+  async remove(id: number): Promise<string> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    
+    try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+
+      // Find the enrollment
+      const enrollment = await queryRunner.manager.findOne(Enrollment, {
+        where: { ID: id }
+      });
+
+      if (!enrollment) {
+        throw new NotFoundException(`Enrollment with ID ${id} not found`);
+      }
+
+      // Delete the enrollment
+      await queryRunner.manager.remove(Enrollment, enrollment);
+
+      await queryRunner.commitTransaction();
+      return `Successfully deleted enrollment #${id}`;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.error('Error deleting enrollment:', error);
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  /**
+   * Delete all enrollments for a specific student
+   * @param studentId - The ID of the student
+   * @returns Promise<string> - Success message
+   */
+  async removeByStudentId(studentId: number): Promise<string> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    
+    try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+
+      // Find all enrollments for the student
+      const enrollments = await queryRunner.manager.find(Enrollment, {
+        where: { student: { id: studentId } }
+      });
+
+      if (enrollments.length === 0) {
+        return `No enrollments found for student #${studentId}`;
+      }
+
+      // Delete all enrollments
+      await queryRunner.manager.remove(Enrollment, enrollments);
+
+      await queryRunner.commitTransaction();
+      return `Successfully deleted ${enrollments.length} enrollment(s) for student #${studentId}`;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.error('Error deleting enrollments for student:', error);
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

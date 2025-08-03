@@ -1,8 +1,9 @@
 import { Country } from 'src/country/entities/country.entity';
 import { State } from 'src/state/entities/state.entity';
 import { User } from 'src/user/entities/user.entity';
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Location } from 'src/location/entities/location.entity';
+import { Enrollment } from 'src/enrollment/entities/enrollment.entity';
 
 @Entity('Student')
 export class Student {

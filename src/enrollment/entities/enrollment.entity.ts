@@ -19,7 +19,7 @@ export class Enrollment {
     @JoinColumn({ name: 'courseId' })
     course: Course;
 
-    @ManyToOne(() => Student, { nullable: false })
+    @ManyToOne(() => Student, { nullable: false, onDelete: 'CASCADE' })
     student: Student;
 
     @Column({ type: 'enum', enum: ['Course', 'Class'] })
