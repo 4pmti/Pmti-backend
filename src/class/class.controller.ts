@@ -7,6 +7,7 @@ import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { Request } from 'express';
 import { FilterDto } from './dto/filter.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 
 
@@ -84,6 +85,12 @@ export class CategoryController {
   async getAllCategory() {
     return await this.classService.getAllCategory();
   }
+
+  @Patch(':id')
+  async updateCategory(@Param('id') id: string, @Body() updateCategory: UpdateCategoryDto) {
+    return await this.classService.updateCategory(+id, updateCategory);
+  }
+
 }
 
 

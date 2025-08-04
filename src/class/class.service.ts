@@ -19,6 +19,7 @@ import { State } from 'src/state/entities/state.entity';
 import { FilterDto } from './dto/filter.dto';
 import { classStatus } from 'src/common/enums/enums';
 import { Course } from 'src/course/entities/course.entity';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Injectable()
 export class ClassService {
@@ -491,7 +492,7 @@ export class ClassService {
         throw new NotFoundException("Class not Found");
       }
       Object.assign(classs, updateClassDto);
-      
+
       // Fix: Handle date conversion for updates if dates are provided
       if (updateClassDto.startDate) {
         classs.startDate = this.formatDateWithoutTimezone(updateClassDto.startDate);
@@ -601,9 +602,24 @@ export class ClassService {
     }
   }
 
+  async updateCategory(id: number, updateCategory: UpdateCategoryDto) {
+
+    try {
+      const category = await this.categoryRepository.findOne({ where: { id: id } });
+      if (!category) {
+        throw new NotFoundException("Category not Found");
+      }
+      Object.assign(category, updateCategory);
+      return await this.categoryRepository.save(category);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
   private formatDateWithoutTimezone(date: Date | string): string {
     let d: Date;
-    
+
     // If it's already a string in YYYY-MM-DD format, parse it properly
     if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
       const [year, month, day] = date.split('-').map(Number);
@@ -611,7 +627,7 @@ export class ClassService {
     } else {
       d = new Date(date);
     }
-    
+
     let month = '' + (d.getMonth() + 1);
     let day = '' + d.getDate();
     const year = d.getFullYear();
