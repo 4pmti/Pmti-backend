@@ -34,14 +34,12 @@ export class ClassDto {
   locationId?: number;  // Optional: Location ID (Foreign Key)
 
   @IsNotEmpty()
-  @IsString()
-  @Matches(/^\d{2}-\d{2}-\d{4}$/, { message: 'Start date must be in the format MM-DD-YYYY' })
-  startDate: string;
+  @Transform(({ value }) => new Date(value))
+  startDate: Date;
 
   @IsNotEmpty()
-  @IsString()
-  @Matches(/^\d{2}-\d{2}-\d{4}$/, { message: 'End date must be in the format MM-DD-YYYY' })
-  endDate: string;  
+  @Transform(({ value }) => new Date(value))
+  endDate: Date;  
 
   @IsNotEmpty()
   @IsNumber()
