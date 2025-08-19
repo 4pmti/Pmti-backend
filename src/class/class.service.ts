@@ -130,8 +130,8 @@ export class ClassService {
       newClass.category = classCategory;
       newClass.addedBy = user;
       // Fix: Preserve the exact date without timezone conversion
-      newClass.startDate = this.formatDateWithoutTimezone(createClassDto.startDate);
-      newClass.endDate = this.formatDateWithoutTimezone(createClassDto.endDate);
+      newClass.startDate = createClassDto.startDate;
+      newClass.endDate = createClassDto.endDate;
       newClass.instructor = instructor;
       newClass.updatedBy = user;
       newClass.classType = classType;
@@ -495,10 +495,10 @@ export class ClassService {
 
       // Fix: Handle date conversion for updates if dates are provided
       if (updateClassDto.startDate) {
-        classs.startDate = this.formatDateWithoutTimezone(updateClassDto.startDate);
+        classs.startDate = updateClassDto.startDate;
       }
       if (updateClassDto.endDate) {
-        classs.endDate = this.formatDateWithoutTimezone(updateClassDto.endDate);
+        classs.endDate = updateClassDto.endDate;
       }
 
       const updatedClass = await this.classRepository.save(classs);
