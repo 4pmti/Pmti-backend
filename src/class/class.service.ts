@@ -495,9 +495,11 @@ export class ClassService {
 
       // Fix: Handle date conversion for updates if dates are provided
       if (updateClassDto.startDate) {
+        console.log("updateClassDto.startDate", updateClassDto.startDate);
         classs.startDate = this.formatDateWithoutTimezone(updateClassDto.startDate);
       }
       if (updateClassDto.endDate) {
+        console.log("updateClassDto.endDate", updateClassDto.endDate);
         classs.endDate = this.formatDateWithoutTimezone(updateClassDto.endDate);
       }
 
