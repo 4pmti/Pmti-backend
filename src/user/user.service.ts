@@ -63,7 +63,7 @@ export class UserService {
             return user;
 
         } catch (error) {
-            console.log(error);
+            //console(error);
             throw new InternalServerErrorException(error);
         }
 
@@ -75,7 +75,7 @@ export class UserService {
             if (!createStudentDto.password) {
                 createStudentDto.password = this.generateRandomPassword();
             }
-            console.log(createStudentDto);
+            //console(createStudentDto);
             const checkExistinguser = await this.usersRepository.findOne({ where: { email: createStudentDto.email } });
             if (checkExistinguser) {
                 throw new BadRequestException("This Email Already Exists");
@@ -116,7 +116,7 @@ export class UserService {
 
             return this.studentsRepository.save(student);
         } catch (error) {
-            console.log(error);
+            //console(error);
             throw new InternalServerErrorException(error);
         }
     }
@@ -170,13 +170,13 @@ export class UserService {
             }
             return await this.instructorRepository.save(instructor);
         } catch (error) {
-            console.log(error);
+            //console(error);
             throw new InternalServerErrorException(error);
         }
     }
 
     async createAdmin(userId: string, createAdminDto: CreateAdminDto) {
-        console.log(createAdminDto);
+        //console(createAdminDto);
 
         try {
             if (!await isAdmin(userId, this.usersRepository)) {
@@ -216,7 +216,7 @@ export class UserService {
             admin.user = savedUser;
             return await this.adminsRepository.save(admin);
         } catch (error) {
-            console.log(error);
+            //console(error);
             throw new InternalServerErrorException(error);
         }
     }

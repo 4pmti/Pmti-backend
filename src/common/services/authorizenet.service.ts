@@ -31,7 +31,7 @@ export class AuthorizeNetService {
     createRequest.setMerchantAuthentication(this.merchantAuthentication);
     createRequest.setTransactionRequest(transactionRequest);
 
-    console.log(JSON.stringify(createRequest.getJSON(), null, 2));
+    //console(JSON.stringify(createRequest.getJSON(), null, 2));
 
     const ctrl = new APIControllers.CreateTransactionController(createRequest.getJSON());
 
@@ -46,7 +46,7 @@ export class AuthorizeNetService {
       ctrl.execute(() => {
         const response = ctrl.getResponse();
         const result = new APIContracts.CreateTransactionResponse(response);
-        console.log(JSON.stringify(result.getJSON(), null, 2));
+        //console(JSON.stringify(result.getJSON(), null, 2));
         if (result.getMessages().getResultCode() === APIContracts.MessageTypeEnum.OK) {
           resolve(result.getTransactionResponse());
         } else {

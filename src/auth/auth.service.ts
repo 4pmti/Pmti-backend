@@ -28,7 +28,7 @@ export class AuthService {
     pass: string,
   ): Promise<{ access_token: string }> {
     try {
-      console.log(email, pass);
+      //console(email, pass);
       const user = await this.usersRepository.findOne({
         where: { email }
       });
@@ -63,7 +63,7 @@ export class AuthService {
         access_token: await this.jwtService.signAsync(payload),
       };
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw new InternalServerErrorException("Something went wrong." + error);
     }
   }

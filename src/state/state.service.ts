@@ -40,7 +40,7 @@ export class StateService {
       await this.stateRepository.save(state);
       return state;
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -77,7 +77,7 @@ export class StateService {
       }
       return state;
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }

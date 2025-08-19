@@ -45,7 +45,7 @@ export class BlogService {
         throw new UnauthorizedException("You dont have enough permission to do this");
       }
 
-      console.log({ createBlogDto });
+      //console({ createBlogDto });
 
       // Handle tags
       const tags = await Promise.all(
@@ -101,7 +101,7 @@ export class BlogService {
 
       return await this.blogRepository.save(blog);
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw new InternalServerErrorException(error);
     }
   }
@@ -166,7 +166,7 @@ export class BlogService {
         },
       }
     } catch (e) {
-      console.log(e);
+      //console(e);
       throw e;
     }
   }
@@ -200,23 +200,23 @@ export class BlogService {
 
       return transformedBlog;
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
 
   async update(userId: string, id: number, updateBlogDto: UpdateBlogDto) {
-    console.log(`[BlogService.update] Starting blog update - userId: ${userId}, blogId: ${id}`);
+    //console(`[BlogService.update] Starting blog update - userId: ${userId}, blogId: ${id}`);
 
     try {
-      console.log(`[BlogService.update] Checking admin permissions for user: ${userId}`);
+      //console(`[BlogService.update] Checking admin permissions for user: ${userId}`);
       if (!await isAdmin(userId, this.userRepository)) {
-        console.log(`[BlogService.update] Permission denied - user ${userId} is not admin`);
+        //console(`[BlogService.update] Permission denied - user ${userId} is not admin`);
         throw new UnauthorizedException("You dont have enough permission to do this");
       }
-      console.log(`[BlogService.update] Admin permission check passed`);
+      //console(`[BlogService.update] Admin permission check passed`);
 
-      console.log(`[BlogService.update] Fetching user details for userId: ${userId}`);
+      //console(`[BlogService.update] Fetching user details for userId: ${userId}`);
       const user = await this.userRepository.findOne({
         where: {
           id: userId
@@ -224,12 +224,12 @@ export class BlogService {
       });
 
       if (!user) {
-        console.log(`[BlogService.update] User not found with id: ${userId}`);
+        //console(`[BlogService.update] User not found with id: ${userId}`);
         throw new UnauthorizedException("User not found!");
       }
-      console.log(`[BlogService.update] User found - id: ${user.id}, roles: ${user.roles}`);
+      //console(`[BlogService.update] User found - id: ${user.id}, roles: ${user.roles}`);
 
-      console.log(`[BlogService.update] Fetching blog details for blogId: ${id}`);
+      //console(`[BlogService.update] Fetching blog details for blogId: ${id}`);
       const blog = await this.blogRepository.findOne({
         where: {
           id
@@ -243,27 +243,27 @@ export class BlogService {
       });
 
       if (!blog) {
-        console.log(`[BlogService.update] Blog not found with id: ${id}`);
+        //console(`[BlogService.update] Blog not found with id: ${id}`);
         throw new NotFoundException('Blog not found!');
       }
-      console.log(`[BlogService.update] Blog found - id: ${blog.id}, title: ${blog.title}, owner: ${blog.user.id}`);
+      //console(`[BlogService.update] Blog found - id: ${blog.id}, title: ${blog.title}, owner: ${blog.user.id}`);
 
       if (blog.user.id != user.id) {
-        console.log(`[BlogService.update] Authorization failed - blog owner: ${blog.user.id}, requesting user: ${user.id}`);
+        //console(`[BlogService.update] Authorization failed - blog owner: ${blog.user.id}, requesting user: ${user.id}`);
         throw new UnauthorizedException("This action is not allowed!");
       }
-      console.log(`[BlogService.update] Authorization check passed - user owns the blog`);
+      //console(`[BlogService.update] Authorization check passed - user owns the blog`);
 
-      console.log(`[BlogService.update] Updating blog with id: ${id}`);
+      //console(`[BlogService.update] Updating blog with id: ${id}`);
 
       // Handle tags update
       if (updateBlogDto.tagNames) {
-        console.log(`[BlogService.update] Processing tags: ${updateBlogDto.tagNames}`);
+        //console(`[BlogService.update] Processing tags: ${updateBlogDto.tagNames}`);
         const tags = await Promise.all(
           updateBlogDto.tagNames.map(async (name) => {
             let tag = await this.tagRepo.findOne({ where: { name } });
             if (!tag) {
-              console.log(`[BlogService.update] Creating new tag: ${name}`);
+              //console(`[BlogService.update] Creating new tag: ${name}`);
               tag = this.tagRepo.create({ name });
               await this.tagRepo.save(tag);
             }
@@ -271,12 +271,12 @@ export class BlogService {
           })
         );
         blog.tags = tags;
-        console.log(`[BlogService.update] Tags updated successfully`);
+        //console(`[BlogService.update] Tags updated successfully`);
       }
 
       // Handle related articles update
       if (updateBlogDto.relatedArticleIds !== undefined) {
-        console.log(`[BlogService.update] Processing related articles: ${updateBlogDto.relatedArticleIds}`);
+        //console(`[BlogService.update] Processing related articles: ${updateBlogDto.relatedArticleIds}`);
 
         if (updateBlogDto.relatedArticleIds.length > 0) {
           // Ensure the blog is not relating to itself
@@ -299,12 +299,12 @@ export class BlogService {
         } else {
           blog.relatedArticles = [];
         }
-        console.log(`[BlogService.update] Related articles updated successfully`);
+        //console(`[BlogService.update] Related articles updated successfully`);
       }
 
       // Handle pages update
       if (updateBlogDto.pageIds !== undefined) {
-        console.log(`[BlogService.update] Processing pages: ${updateBlogDto.pageIds}`);
+        //console(`[BlogService.update] Processing pages: ${updateBlogDto.pageIds}`);
 
         if (updateBlogDto.pageIds.length > 0) {
           const pages = await this.pageRepository.find({
@@ -324,14 +324,14 @@ export class BlogService {
         } else {
           blog.pages = [];
         }
-        console.log(`[BlogService.update] Pages updated successfully`);
+        //console(`[BlogService.update] Pages updated successfully`);
       }
 
       const { tagNames, relatedArticleIds, pageIds, ...updateData } = updateBlogDto;
       Object.assign(blog, updateData);
 
       const updatedBlog = await this.blogRepository.save(blog);
-      console.log(`[BlogService.update] Blog update completed successfully`);
+      //console(`[BlogService.update] Blog update completed successfully`);
 
       return updatedBlog;
     } catch (error) {
@@ -358,7 +358,7 @@ export class BlogService {
 
       return await this.blogRepository.delete(id);
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -380,7 +380,7 @@ export class BlogService {
       const newPage = this.pageRepository.create(createPageDto);
       return await this.pageRepository.save(newPage);
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw new InternalServerErrorException(error);
     }
   }
@@ -388,7 +388,7 @@ export class BlogService {
   async findAllPages(filter: FilterPageDto) {
     try {
       const { page = 1, limit = 10, search } = filter;
-      console.log({ filter });
+      //console({ filter });
 
       const query = this.pageRepository.createQueryBuilder('page')
         .skip((page - 1) * limit)
@@ -411,7 +411,7 @@ export class BlogService {
         },
       };
     } catch (error) {
-      console.log("error in findAllPages", error);
+      //console("error in findAllPages", error);
       throw error;
     }
   }
@@ -428,7 +428,7 @@ export class BlogService {
 
       return page;
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -450,7 +450,7 @@ export class BlogService {
       Object.assign(page, updatePageDto);
       return await this.pageRepository.save(page);
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw new InternalServerErrorException(error);
     }
   }
@@ -471,7 +471,7 @@ export class BlogService {
 
       return await this.pageRepository.delete(id);
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }

@@ -43,7 +43,7 @@ export class UploadController {
       }
 
       const unique = uploadDto.unique === 'true';
-      console.log(unique);
+      //console(unique);
 
       const { key, url } = await this.uploadService.uploadFile(
         processedFile.buffer,
@@ -61,7 +61,7 @@ export class UploadController {
         mimeType: processedFile.mimetype
       };
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }

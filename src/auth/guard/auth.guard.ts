@@ -25,7 +25,7 @@ import {
             secret: process.env.SECRET_KEY
           }
         );
-        console.log(payload);
+        //console(payload);
         request['user'] = payload;
       } catch {
         throw new UnauthorizedException();

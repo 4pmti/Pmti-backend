@@ -62,7 +62,7 @@ export class StudentService {
 
       return { student, enrollments };
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -116,7 +116,7 @@ export class StudentService {
       Object.assign(student, updateStudentDto);
       return await this.studentRepository.save(student);
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -154,7 +154,7 @@ export class StudentService {
       if (relatedEnrollments.length > 0) {
         if (cascadeDelete) {
           // Delete all enrollments first if cascade delete is enabled
-          console.log(`Deleting ${relatedEnrollments.length} enrollment(s) for student #${id}`);
+          //console(`Deleting ${relatedEnrollments.length} enrollment(s) for student #${id}`);
           await queryRunner.manager.remove(Enrollment, relatedEnrollments);
         } else {
           throw new Error(`Cannot delete student. Student has ${relatedEnrollments.length} active enrollment(s). Please delete enrollments first or use cascade delete option.`);

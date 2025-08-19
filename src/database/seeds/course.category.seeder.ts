@@ -37,9 +37,9 @@ export class CategorySeeder {
 
       if (!existingCategory) {
         await this.categoryRepository.save(this.categoryRepository.create(category));
-        console.log(`Category "${category.name}" inserted.`);
+        //console(`Category "${category.name}" inserted.`);
       } else {
-        console.log(`Category "${category.name}" already exists.`);
+        //console(`Category "${category.name}" already exists.`);
       }
     }
   }

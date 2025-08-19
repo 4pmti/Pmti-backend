@@ -30,7 +30,7 @@ export class CourseService {
 
   async create(createCourseDto: CreateCourseDto, userId: string) {
     try {
-      console.log(createCourseDto);
+
       const user = await this.userRepository.findOne({
         where: {
           id: userId
@@ -58,7 +58,7 @@ export class CourseService {
       course.updatedBy = user;
       return await this.courseRepository.save(course);
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -144,7 +144,7 @@ export class CourseService {
       });
       return course;
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -202,7 +202,7 @@ export class CourseService {
       return await this.courseRepository.save(course);
 
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }

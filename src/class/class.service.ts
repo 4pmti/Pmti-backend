@@ -54,7 +54,7 @@ export class ClassService {
 
     try {
 
-      console.log(createClassDto);
+      //console(createClassDto);
       const user = await this.userRepository.findOne({
         where: {
           id: userId
@@ -141,7 +141,7 @@ export class ClassService {
       newClass.status = classStatus.ACTIVE;
       return await this.classRepository.save(newClass);
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
 
@@ -167,7 +167,7 @@ export class ClassService {
       if (!classs) {
         throw new NotFoundException("Class not Found");
       }
-      console.log(classs);
+      //console(classs);
       const enrollments = await this.enrollmentRepository.find({
         where: {
           class: { id: classs.id },
@@ -215,7 +215,7 @@ export class ClassService {
 
 
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -225,7 +225,7 @@ export class ClassService {
 
   async findAll(filters: FilterDto) {
     try {
-      console.log(filters);
+      //console(filters);
       const {
         page = 1,
         limit = 10,
@@ -247,8 +247,8 @@ export class ClassService {
 
       // Set default startFrom to today's date if not provided in query params
       const effectiveStartFrom = startFrom || new Date().toISOString().split('T')[0];
-      console.log('effectiveStartFrom type:', typeof effectiveStartFrom);
-      console.log('effectiveStartFrom value:', effectiveStartFrom);
+      //console('effectiveStartFrom type:', typeof effectiveStartFrom);
+      //console('effectiveStartFrom value:', effectiveStartFrom);
 
 
       // Create query builder
@@ -273,21 +273,21 @@ export class ClassService {
 
 
 
-      console.log('Filters:', filters);
-      console.log('startFrom (query param):', startFrom);
-      console.log('effectiveStartFrom (with default):', effectiveStartFrom);
-      console.log('dateTo:', dateTo);
-      console.log('isCorpClass:', isCorpClass);
+      //console('Filters:', filters);
+      //console('startFrom (query param):', startFrom);
+      //console('effectiveStartFrom (with default):', effectiveStartFrom);
+      //console('dateTo:', dateTo);
+      //console('isCorpClass:', isCorpClass);
 
 
       // Apply date range filter with startFrom (defaults to today's date if not provided)
       const formattedStartFrom = this.formatDateWithoutTimezone(effectiveStartFrom);
-      console.log('formattedStartFrom:', formattedStartFrom);
+      //console('formattedStartFrom:', formattedStartFrom);
       queryBuilder.andWhere('class.startDate >= :startFrom', { startFrom: formattedStartFrom });
 
       if (nearbyLocation) {
         const nearbyLocations = nearbyLocation.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
-        console.log('nearbyLocations', nearbyLocations);
+        //console('nearbyLocations', nearbyLocations);
         if (nearbyLocations.length > 0) {
           queryBuilder.andWhere('class.locationID IN (:...nearbyLocations)', { nearbyLocations });
         }
@@ -347,12 +347,12 @@ export class ClassService {
 
       // Apply pagination
       const skip = (page - 1) * limit;
-      console.log("page", page);
-      console.log("limit", limit);
-      console.log("skip", skip);
+      //console("page", page);
+      //console("limit", limit);
+      //console("skip", skip);
       queryBuilder.skip(skip).take(limit);
 
-      console.log(queryBuilder.getSql());
+      //console(queryBuilder.getSql());
 
       // Execute query and get total count
       const [classes, total] = await queryBuilder.getManyAndCount();
@@ -362,7 +362,7 @@ export class ClassService {
       const currentPage = page;
       const hasNext = currentPage < totalPages;
       const hasPrevious = currentPage > 1;
-      console.log('Classes:', classes.length);
+      //console('Classes:', classes.length);
 
       return {
         data: await this.dynamicPrice(classes),
@@ -439,7 +439,7 @@ export class ClassService {
       classs.price = price;
       return await this.classRepository.save(classs);
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -464,7 +464,7 @@ export class ClassService {
       }
       return classs;
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -571,7 +571,7 @@ export class ClassService {
       const newCategory = this.categoryRepository.create(createCategory);
       return await this.categoryRepository.save(newCategory);
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -580,7 +580,7 @@ export class ClassService {
 
       return await this.categoryRepository.find();
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -590,7 +590,7 @@ export class ClassService {
       const newClassType = await this.classTypeRepository.create(createCategory);
       return await this.classTypeRepository.save(newClassType);
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -599,7 +599,7 @@ export class ClassService {
 
       return await this.classTypeRepository.find();
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -614,7 +614,7 @@ export class ClassService {
       Object.assign(category, updateCategory);
       return await this.categoryRepository.save(category);
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }

@@ -74,7 +74,7 @@ export class PromotionsService {
       if (!await isAdmin(userId, this.userRepository)) {
         throw new UnauthorizedException("You Dont Have permission to perform this action");
       }
-      console.log(createPromotionDto);
+      //console(createPromotionDto);
 
       const checkPromotion = await this.promoRepository.findOne({
         where: {
@@ -105,7 +105,7 @@ export class PromotionsService {
       return await this.promoRepository.save(promotion);
 
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw new InternalServerErrorException("Something went wrong.," + error);
     }
   }
@@ -151,7 +151,7 @@ export class PromotionsService {
 
       return queryBuilder.getMany();
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -173,7 +173,7 @@ export class PromotionsService {
       return promo;
 
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -234,7 +234,7 @@ export class PromotionsService {
       // 7. Save the updated promotion
       return await this.promoRepository.save(promotion);
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -264,7 +264,7 @@ export class PromotionsService {
       }
       return await this.promoRepository.remove(promo);
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -292,7 +292,7 @@ export class PromotionsService {
       }
       await this.promoRepository.remove(promotions);
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }

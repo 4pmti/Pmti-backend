@@ -84,7 +84,7 @@ export class EnrollmentService {
           id: userId
         }
       });
-      console.log(rescheduleDto);
+      //console(rescheduleDto);
 
       //fetch the student
       const student = await queryRunner.manager.findOne(Student, {
@@ -92,7 +92,7 @@ export class EnrollmentService {
           id: rescheduleDto.studentId
         }
       });
-      console.log(student);
+      //console(student);
 
       if (!student) {
         throw new NotFoundException('Student not found');
@@ -108,7 +108,7 @@ export class EnrollmentService {
         }
       });
 
-      console.log(classs);
+      //console(classs);
 
       if (!classs) {
         throw new NotFoundException('Class not found');
@@ -127,7 +127,7 @@ export class EnrollmentService {
           class: true
         }
       });
-      console.log(enrollment);
+      //console(enrollment);
       if (!enrollment) {
         throw new NotFoundException('Enrollment not found');
       }
@@ -158,7 +158,7 @@ export class EnrollmentService {
         }
       });
 
-      console.log(classs.location);
+      //console(classs.location);
 
       const rescheduleEmailData: RescheduleEmailData = {
         adminName: user.name,
@@ -179,11 +179,11 @@ export class EnrollmentService {
         data: rescheduleEmailData,
         recipients: [student.email, process.env.ADMIN_EMAIL]
       });
-      console.log(rescheduleEmailData);
+      //console(rescheduleEmailData);
       await queryRunner.commitTransaction();
       return updatedEnrollment;
     } catch (error) {
-      console.log(error);
+      //console(error);
       await queryRunner.rollbackTransaction();
       throw error;
     } finally {
@@ -195,7 +195,7 @@ export class EnrollmentService {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-    console.log(offlineEnrollment);
+    //console(offlineEnrollment);
     try {
       const user = await queryRunner.manager.findOne(User, {
         where: {
@@ -265,7 +265,7 @@ export class EnrollmentService {
         if (classs.category.id != promotion.category.id) {
           throw new BadRequestException("This promotion is not valid for this class.");
         }
-        console.log(initialAmount, promotion.amount);
+        //console(initialAmount, promotion.amount);
         initialAmount -= promotion.amount;
         if (initialAmount < 0) {
           initialAmount = 0;
@@ -356,7 +356,7 @@ export class EnrollmentService {
       await queryRunner.commitTransaction();
       return enrollment;
     } catch (error) {
-      console.log(error);
+      //console(error);
       await queryRunner.rollbackTransaction();
       throw error;
     } finally {
@@ -368,7 +368,7 @@ export class EnrollmentService {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-    console.log(offlineEnrollment);
+    //console(offlineEnrollment);
     try {
       const user = await queryRunner.manager.findOne(User, {
         where: {
@@ -434,7 +434,7 @@ export class EnrollmentService {
         if (course.category.id != promotion.category.id) {
           throw new BadRequestException("This promotion is not valid for this course.");
         }
-        console.log(initialAmount, promotion.amount);
+        //console(initialAmount, promotion.amount);
         initialAmount -= promotion.amount;
         if (initialAmount < 0) {
           initialAmount = 0;
@@ -526,7 +526,7 @@ export class EnrollmentService {
       await queryRunner.commitTransaction();
       return enrollment;
     } catch (error) {
-      console.log(error);
+      //console(error);
       await queryRunner.rollbackTransaction();
       throw error;
     } finally {
@@ -539,7 +539,7 @@ export class EnrollmentService {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-    console.log(createEnrollmentDto);
+    //console(createEnrollmentDto);
     try {
       //validate the class and course
       if (createEnrollmentDto.classId && createEnrollmentDto.courseId) {
@@ -661,7 +661,7 @@ export class EnrollmentService {
             referredBy: '',
           });
         } catch (error) {
-          console.log(error);
+          //console(error);
           throw error;
         }
       }
@@ -679,7 +679,7 @@ export class EnrollmentService {
             country: true
           }
         });
-        console.log(promotion);
+        //console(promotion);
 
         if (!promotion) {
           throw new NotFoundException("Promotion is not valid");
@@ -694,7 +694,7 @@ export class EnrollmentService {
 
         //class & country belonging check
         if (enrollmentTarget instanceof Class) {
-          // console.log(enrollmentTarget.category, promotion.category);
+          // //console(enrollmentTarget.category, promotion.category);
           if (enrollmentTarget.category.id != promotion.category.id) {
             throw new BadRequestException("This promotion is not valid for this class.");
           }
@@ -711,7 +711,7 @@ export class EnrollmentService {
           if (enrollmentTarget.category.id != promotion.category.id) {
             throw new BadRequestException("This promotion is not valid for this course.");
           }
-          console.log(initialAmount, promotion.amount);
+          //console(initialAmount, promotion.amount);
           initialAmount -= promotion.amount;
           if (initialAmount < 0) {
             initialAmount = 0;
@@ -847,7 +847,7 @@ export class EnrollmentService {
       await queryRunner.commitTransaction();
       return enrollment;
     } catch (error) {
-      console.log("error in create enrollment", error);
+      //console("error in create enrollment", error);
       await queryRunner.rollbackTransaction();
       throw error;
     } finally {
@@ -860,7 +860,7 @@ export class EnrollmentService {
       const { ids, changes } = bulkUpdateEnrollmentDto;
       return await this.enrollmentRepository.update(ids, changes);
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -893,7 +893,7 @@ export class EnrollmentService {
       // Return the updated enrollment
       return updated;
     } catch (e) {
-      console.log(e);
+      //console(e);
       throw e;
     }
   }

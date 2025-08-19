@@ -28,7 +28,7 @@ export class InstructorService {
           id: userId
         }
       });
-      console.log("admin user", user);
+      //console("admin user", user);
 
       const existingUser = await this.userRepository.findOne({
         where: {
@@ -56,7 +56,7 @@ export class InstructorService {
       return savedInstructor;
 
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw new InternalServerErrorException(error);
     }
   }

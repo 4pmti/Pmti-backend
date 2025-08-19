@@ -63,7 +63,7 @@ export class PaymentService {
 
       // Commit transaction
       await queryRunner.commitTransaction();
-      console.log(paymentResponse);
+      //console(paymentResponse);
       // await this.emailService.sendTransactionEmail({
       //   adminName: user.name,
       //   invoiceNumber: createPaymentDto.invoiceNumber,
@@ -76,7 +76,7 @@ export class PaymentService {
       return paymentEntity;
     } catch (error) {
       // Rollback transaction on error
-      console.log(error);
+      //console(error);
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException('Transaction failed.', error.toString());
     } finally {

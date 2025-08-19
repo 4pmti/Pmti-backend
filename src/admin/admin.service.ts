@@ -36,7 +36,7 @@ export class AdminService {
         select: Object.fromEntries(includedFields.map((field) => [field, true])),
       });
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -50,7 +50,7 @@ export class AdminService {
       });
       return admin;
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -85,7 +85,7 @@ export class AdminService {
       return updatedAdmin;
 
     } catch (error) { 
-      console.log(error);
+      //console(error);
       throw error;
     }
   }

@@ -24,7 +24,7 @@ export class BlogController {
     if (isNaN(blogId)) {
       throw new BadRequestException('Invalid blog ID');
     }
-    console.log({userId});
+    //console({userId});
     return this.blogService.update(userId, blogId, updateBlogDto);
   }
 

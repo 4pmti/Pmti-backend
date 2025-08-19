@@ -23,13 +23,13 @@ export class AuthController {
     @Req() req: Request,
   ){
     const userId = req.user.id;
-    console.log(userId);
+    //console(userId);
     return this.userService.findOneByUserId(userId);
   }
 
   @Post('signup/student')
   async studentSignup(@Body() createStudentDto: CreateStudentDto) {
-    console.log(createStudentDto);
+    //console(createStudentDto);
     return this.userService.createStudent(createStudentDto);
   }
 

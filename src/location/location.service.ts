@@ -58,7 +58,7 @@ export class LocationService {
       location.state = state;
       return await this.locationRepository.save(location);
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
   }
@@ -82,7 +82,7 @@ export class LocationService {
 
       return await queryBuilder.getMany();
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw new InternalServerErrorException(error);
     }
   }
@@ -125,7 +125,7 @@ export class LocationService {
 
 
     } catch (error) {
-      console.log(error);
+      //console(error);
       throw error;
     }
 

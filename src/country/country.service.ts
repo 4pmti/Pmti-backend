@@ -27,8 +27,7 @@ export class CountryService {
       states : true
      }
     });
-    console.log(countries);
-  
+
    return countries;
   }
   
@@ -45,7 +44,7 @@ export class CountryService {
       return await this.countryRepository.delete(ids);
 
     } catch (error) {
-      console.log(error);
+      //console(error);
     }
   }
 
