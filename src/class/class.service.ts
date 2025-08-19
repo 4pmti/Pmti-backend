@@ -383,14 +383,21 @@ export class ClassService {
 
 
 
+  /**
+   * Dynamically adjusts class prices based on proximity to start date
+   * @param classes - Array of classes to check for price updates
+   * @returns Updated classes array
+   */
   async dynamicPrice(classes: Class[]) {
     try {
       const currentDate = new Date();
+      const currentDateString = this.formatDateWithoutTimezone(currentDate);
 
       // Step 1: Identify classes that need price updates in a single pass
       const classesToUpdate = classes.filter(classs => {
-        const startDate = new Date(classs.startDate);
-        const daysDiff = (startDate.getTime() - currentDate.getTime()) / (1000 * 3600 * 24);
+        // Use the formatted date string for comparison to avoid timezone issues
+        const startDateString = classs.startDate; // Already in YYYY-MM-DD format
+        const daysDiff = this.calculateDaysDifference(startDateString, currentDateString);
         return daysDiff < 14 && daysDiff >= 0 && !classs.isPriceIncreased;
       });
 
@@ -423,6 +430,19 @@ export class ClassService {
       console.error('Error in dynamicPrice:', error);
       throw error;
     }
+  }
+
+  /**
+   * Calculates the difference in days between two date strings (YYYY-MM-DD format)
+   * @param date1 - First date string in YYYY-MM-DD format
+   * @param date2 - Second date string in YYYY-MM-DD format
+   * @returns Difference in days (positive if date1 is later)
+   */
+  private calculateDaysDifference(date1: string, date2: string): number {
+    const d1 = new Date(date1 + 'T00:00:00'); // Add time to ensure consistent parsing
+    const d2 = new Date(date2 + 'T00:00:00');
+    const timeDiff = d1.getTime() - d2.getTime();
+    return Math.ceil(timeDiff / (1000 * 3600 * 24));
   }
 
 
@@ -623,6 +643,12 @@ export class ClassService {
     }
   }
 
+  /**
+   * Formats a date to YYYY-MM-DD format without timezone conversion
+   * Handles both Date objects and date strings (including UTC strings)
+   * @param date - Date object or date string
+   * @returns Formatted date string in YYYY-MM-DD format
+   */
   private formatDateWithoutTimezone(date: Date | string): string {
     let d: Date;
 
@@ -630,18 +656,23 @@ export class ClassService {
     if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
       const [year, month, day] = date.split('-').map(Number);
       d = new Date(year, month - 1, day); // month is 0-indexed in Date constructor
+    } else if (typeof date === 'string' && date.includes('T')) {
+      // Handle UTC date strings like "2025-08-22T00:00:00.000Z"
+      // Extract just the date part before the 'T' to avoid timezone conversion
+      const datePart = date.split('T')[0];
+      return datePart; // Already in YYYY-MM-DD format
     } else {
       d = new Date(date);
     }
 
+    // Format the date components
     let month = '' + (d.getMonth() + 1);
     let day = '' + d.getDate();
     const year = d.getFullYear();
 
-    if (month.length < 2)
-      month = '0' + month;
-    if (day.length < 2)
-      day = '0' + day;
+    // Pad with leading zeros if needed
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
 
     return [year, month, day].join('-');
   }
