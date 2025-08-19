@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsNumber, IsOptional, IsDate, IsBoolean, IsEnum, Matches } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsOptional, IsBoolean, IsEnum, Matches } from 'class-validator';
 import { Transform, Type } from "class-transformer";
 import { classStatus } from 'src/common/enums/enums';
 
@@ -34,12 +34,18 @@ export class ClassDto {
   locationId?: number;  // Optional: Location ID (Foreign Key)
 
   @IsNotEmpty()
-  @Transform(({ value }) => new Date(value))
-  startDate: Date;
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
+    message: 'startDate must be a valid date string in ISO format (YYYY-MM-DD)'
+  })
+  startDate: string;
 
   @IsNotEmpty()
-  @Transform(({ value }) => new Date(value))
-  endDate: Date;  
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
+    message: 'endDate must be a valid date string in ISO format (YYYY-MM-DD)'
+  })
+  endDate: string;  
 
   @IsNotEmpty()
   @IsNumber()

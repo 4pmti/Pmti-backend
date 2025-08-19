@@ -515,15 +515,17 @@ export class ClassService {
 
       // Fix: Handle date conversion for updates if dates are provided
       if (updateClassDto.startDate) {
-        console.log("updateClassDto.startDate", updateClassDto.startDate);
+        console.log("updateClassDto.startDate (original):", updateClassDto.startDate);
+        console.log("updateClassDto.startDate type:", typeof updateClassDto.startDate);
         const newStartDate = this.formatDateWithoutTimezone(updateClassDto.startDate);
-        console.log("newStartDate", newStartDate);
+        console.log("newStartDate (formatted):", newStartDate);
         classs.startDate = newStartDate;
       }
       if (updateClassDto.endDate) {
-        console.log("updateClassDto.endDate", updateClassDto.endDate);
+        console.log("updateClassDto.endDate (original):", updateClassDto.endDate);
+        console.log("updateClassDto.endDate type:", typeof updateClassDto.endDate);
         const newEndDate = this.formatDateWithoutTimezone(updateClassDto.endDate);
-        console.log("newEndDate", newEndDate);
+        console.log("newEndDate (formatted):", newEndDate);
         classs.endDate = newEndDate;
       }
 
@@ -650,21 +652,27 @@ export class ClassService {
    * @returns Formatted date string in YYYY-MM-DD format
    */
   private formatDateWithoutTimezone(date: Date | string): string {
-    let d: Date;
-
-    // If it's already a string in YYYY-MM-DD format, parse it properly
+    // If it's already a string in YYYY-MM-DD format, return as is
     if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
-      const [year, month, day] = date.split('-').map(Number);
-      d = new Date(year, month - 1, day); // month is 0-indexed in Date constructor
-    } else if (typeof date === 'string' && date.includes('T')) {
-      // Handle UTC date strings like "2025-08-22T00:00:00.000Z"
+      return date;
+    }
+    
+    // If it's a UTC date string like "2025-08-22T00:00:00.000Z"
+    if (typeof date === 'string' && date.includes('T') && date.endsWith('Z')) {
       // Extract just the date part before the 'T' to avoid timezone conversion
       const datePart = date.split('T')[0];
       return datePart; // Already in YYYY-MM-DD format
-    } else {
-      d = new Date(date);
+    }
+    
+    // If it's a date string with time but no timezone (like "2025-08-22T00:00:00")
+    if (typeof date === 'string' && date.includes('T') && !date.endsWith('Z')) {
+      const datePart = date.split('T')[0];
+      return datePart;
     }
 
+    // For Date objects or other string formats, create a new Date and format it
+    const d = new Date(date);
+    
     // Format the date components
     let month = '' + (d.getMonth() + 1);
     let day = '' + d.getDate();
