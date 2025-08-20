@@ -47,10 +47,10 @@ export class Class extends BaseEntity {
   @Column({ type: 'int' })
   minStudent: number;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'date' })
   startDate: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'date' })
   endDate: string;
 
   @Column({ type: 'decimal' })
