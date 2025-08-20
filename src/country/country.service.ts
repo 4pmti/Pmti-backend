@@ -19,6 +19,7 @@ export class CountryService {
   create(createCountryDto: CreateCountryDto) {
     return this.countryRepository.save(createCountryDto);
   }
+  //get all countries with locations and states
 
   async findAll() {
     const countries = await this.countryRepository.find({
