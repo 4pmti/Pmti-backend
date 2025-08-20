@@ -35,15 +35,15 @@ export class ClassDto {
 
   @IsNotEmpty()
   @IsString()
-  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
-    message: 'startDate must be a valid date string in ISO format (YYYY-MM-DD)'
+  @Matches(/^\d{2}-\d{2}-\d{4}$/, {
+    message: 'startDate must be a valid date string in ISO format (MM-DD-YYYY)'
   })
   startDate: string;
 
   @IsNotEmpty()
   @IsString()
-  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
-    message: 'endDate must be a valid date string in ISO format (YYYY-MM-DD)'
+  @Matches(/^\d{2}-\d{2}-\d{4}$/, {
+    message: 'endDate must be a valid date string in ISO format (MM-DD-YYYY)'
   })
   endDate: string;  
 
