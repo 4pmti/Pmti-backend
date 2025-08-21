@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { BulkUpdateEnrollmentDto, UpdateEnrollmentDto } from './dto/update-enrollment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -526,9 +526,9 @@ export class EnrollmentService {
       await queryRunner.commitTransaction();
       return enrollment;
     } catch (error) {
-      //console(error);
+      console.log("error in create offline course enrollment", error);
       await queryRunner.rollbackTransaction();
-      throw error;
+      throw new InternalServerErrorException("Error in create offline course enrollment, " + error);
     } finally {
       await queryRunner.release();
     }
@@ -623,15 +623,6 @@ export class EnrollmentService {
       // if (!state) {
       //   throw new NotFoundException("State not found");
       // }
-
-      const country = await queryRunner.manager.findOne(Country, {
-        where: {
-          id: createEnrollmentDto.country
-        }
-      });
-
-
-
 
       //validate the student
       let student = await queryRunner.manager.findOne(Student, {
@@ -847,9 +838,9 @@ export class EnrollmentService {
       await queryRunner.commitTransaction();
       return enrollment;
     } catch (error) {
-      //console("error in create enrollment", error);
+      console.log("error in create enrollment", error);
       await queryRunner.rollbackTransaction();
-      throw error;
+      throw new InternalServerErrorException("Error in create enrollment, " + error);
     } finally {
       await queryRunner.release();
     }
