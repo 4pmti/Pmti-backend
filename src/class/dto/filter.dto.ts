@@ -33,6 +33,11 @@ export class FilterDto {
     locationId?: number;
 
 
+    @IsString()
+    @IsOptional()
+    locationName?: string;
+
+
     instructorId?: number;
 
 

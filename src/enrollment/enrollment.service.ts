@@ -69,7 +69,6 @@ export class EnrollmentService {
 
 
 
-  //TODO : implement this 
   async rescheduleClass(userId: string, rescheduleDto: RescheduleDto) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -399,16 +398,6 @@ export class EnrollmentService {
         throw new NotFoundException("User not found");
       }
 
-      // const pastEnrollment = await queryRunner.manager.findOne(Enrollment, {
-      //   where: {
-      //     POID: offlineEnrollment.purchaseOrderId
-      //   }
-      // });
-
-      // if (!pastEnrollment) {
-      //   throw new NotFoundException("Enrollment not found");
-      // }
-
       let initialAmount = offlineEnrollment.amount;
       const currentDate = new Date();
       if (offlineEnrollment.Promotion) {
@@ -539,7 +528,7 @@ export class EnrollmentService {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-    //console(createEnrollmentDto);
+    console.log("createEnrollmentDto", createEnrollmentDto);
     try {
       //validate the class and course
       if (createEnrollmentDto.classId && createEnrollmentDto.courseId) {
@@ -600,30 +589,6 @@ export class EnrollmentService {
         }
       }
 
-
-
-
-
-
-      // check location, state and country
-      // const location = await queryRunner.manager.findOne(Location, {
-      //   where: {
-      //     id: createEnrollmentDto.city as number
-      //   }
-      // });
-      // if (!location) {
-      //   throw new NotFoundException("Location not found");
-      // }
-
-      // const state = await queryRunner.manager.findOne(State, {
-      //   where: {
-      //     id: createEnrollmentDto.state
-      //   }
-      // });
-      // if (!state) {
-      //   throw new NotFoundException("State not found");
-      // }
-
       //validate the student
       let student = await queryRunner.manager.findOne(Student, {
         where: {
@@ -652,8 +617,8 @@ export class EnrollmentService {
             referredBy: '',
           });
         } catch (error) {
-          //console(error);
-          throw error;
+          console.log("error in create enrollment", error);
+          throw new InternalServerErrorException("Error in create enrollment, " + error);
         }
       }
 

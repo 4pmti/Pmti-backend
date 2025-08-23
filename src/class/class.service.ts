@@ -237,6 +237,7 @@ export class ClassService {
         courseCategory,
         locationId,
         instructorId,
+        locationName,
         countryId,
         stateId,
         status,
@@ -324,6 +325,13 @@ export class ClassService {
       // Apply location filter
       if (locationId) {
         queryBuilder.andWhere('class.locationID = :locationId', { locationId });
+      }
+
+      if (locationName) {
+        const lowerLocationName = locationName.toLowerCase();
+        queryBuilder.andWhere('LOWER(location.location) LIKE :locationName', { 
+          locationName: `%${lowerLocationName}%` 
+        });
       }
 
       if (stateId) {
