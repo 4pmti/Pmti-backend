@@ -857,9 +857,13 @@ export class EnrollmentService {
       this.logger.log(`Initiating payment process`, {
         amount: initialAmount,
         email: createEnrollmentDto.email,
+        cardNumber: createEnrollmentDto.CCNo,
+        cvv: createEnrollmentDto.CVV,
+        expiry: createEnrollmentDto.CCExpiry,
         maskedCardNumber: this.maskCardNumber(createEnrollmentDto.CCNo)
       });
       
+    
       const result = await this.authorizeNetService.chargeCreditCard(
         initialAmount,
         createEnrollmentDto.CCNo,
