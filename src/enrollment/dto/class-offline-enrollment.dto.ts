@@ -134,7 +134,6 @@ export class OfflineClassEnrollmentDto {
 
     @IsString()
     @IsOptional()
-    @IsNotEmpty()
     CreditCardHolder?: string;
 
     // Additional Options
