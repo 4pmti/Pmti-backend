@@ -153,9 +153,11 @@ export class AuthorizeNetService {
    * Validates expiration date format
    * @param expirationDate - Expiration date string
    * @returns boolean indicating if format is valid
+   * @example "12/25" for December 2025
    */
   private isValidExpirationDate(expirationDate: string): boolean {
-    const dateRegex = /^(0[1-9]|1[0-2])\/(20[2-9][0-9]|2[1-9][0-9][0-9])$/;
+    // Format: MM/YY (e.g., "12/25" for December 2025)
+    const dateRegex = /^(0[1-9]|1[0-2])\/\d{2}$/;
     if (!dateRegex.test(expirationDate)) {
       return false;
     }
@@ -165,9 +167,11 @@ export class AuthorizeNetService {
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth() + 1;
 
-    const expYear = parseInt(year, 10);
+    // Convert YY to YYYY (assuming 20xx for years 00-99)
+    const expYear = 2000 + parseInt(year, 10);
     const expMonth = parseInt(month, 10);
 
+    // Check if card is expired
     if (expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
       return false;
     }
@@ -189,7 +193,7 @@ export class AuthorizeNetService {
    * Processes a credit card transaction through AuthorizeNet
    * @param amount - Transaction amount
    * @param cardNumber - Credit card number
-   * @param expirationDate - Card expiration date (MM/YYYY format)
+   * @param expirationDate - Card expiration date (MM/YY format, e.g., "12/25" for December 2025)
    * @param cvv - Card verification value
    * @param customerEmail - Customer email address
    * @param transactionKey - Unique transaction identifier
