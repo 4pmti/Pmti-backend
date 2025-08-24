@@ -71,34 +71,48 @@ export class EnrollmentService {
 
 
   async rescheduleClass(userId: string, rescheduleDto: RescheduleDto) {
+    this.logger.log(`Starting reschedule class process for user: ${userId}, enrollment: ${rescheduleDto.enrollmentId}, class: ${rescheduleDto.classId}`);
+    
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
+    
+    this.logger.log('Database transaction started for reschedule operation');
+    
     try {
+      // Validate admin permissions
+      this.logger.log(`Validating admin permissions for user: ${userId}`);
       if (!await isAdmin(userId, this.userRepository)) {
+        this.logger.warn(`Unauthorized reschedule attempt by user: ${userId}`);
         throw new UnauthorizedException("You dont have permission to perform this action!!!");
       }
-      //fetch the admin name
+      this.logger.log(`Admin permissions validated for user: ${userId}`);
+      
+      // Fetch the admin user details
+      this.logger.log(`Fetching admin user details for user: ${userId}`);
       const user = await queryRunner.manager.findOne(User, {
         where: {
           id: userId
         }
       });
-      //console(rescheduleDto);
+      this.logger.log(`Admin user found: ${user?.name || 'Unknown'} (ID: ${userId})`);
 
-      //fetch the student
+      // Fetch the student details
+      this.logger.log(`Fetching student details for student ID: ${rescheduleDto.studentId}`);
       const student = await queryRunner.manager.findOne(Student, {
         where: {
           id: rescheduleDto.studentId
         }
       });
-      //console(student);
-
+      
       if (!student) {
+        this.logger.error(`Student not found with ID: ${rescheduleDto.studentId}`);
         throw new NotFoundException('Student not found');
       }
+      this.logger.log(`Student found: ${student.name} (ID: ${student.id}, Email: ${student.email})`);
 
-      //fetch the class
+      // Fetch the class details
+      this.logger.log(`Fetching class details for class ID: ${rescheduleDto.classId}`);
       const classs = await queryRunner.manager.findOne(Class, {
         where: {
           id: rescheduleDto.classId
@@ -108,13 +122,14 @@ export class EnrollmentService {
         }
       });
 
-      //console(classs);
-
       if (!classs) {
+        this.logger.error(`Class not found with ID: ${rescheduleDto.classId}`);
         throw new NotFoundException('Class not found');
       }
+      this.logger.log(`Class found: ${classs.title || 'Untitled'} (ID: ${classs.id}, Location: ${classs.location?.location || 'Unknown'}, Start: ${classs.startDate}, End: ${classs.endDate})`);
 
-      //fetch the enrollment
+      // Fetch the enrollment details
+      this.logger.log(`Fetching enrollment details for enrollment ID: ${rescheduleDto.enrollmentId}, student ID: ${student.id}`);
       let enrollment = await queryRunner.manager.findOne(Enrollment, {
         where: {
           ID: rescheduleDto.enrollmentId,
@@ -127,12 +142,17 @@ export class EnrollmentService {
           class: true
         }
       });
-      //console(enrollment);
+      
       if (!enrollment) {
+        this.logger.error(`Enrollment not found with ID: ${rescheduleDto.enrollmentId} for student: ${student.id}`);
         throw new NotFoundException('Enrollment not found');
       }
+      this.logger.log(`Enrollment found: ID ${enrollment.ID}, Student: ${enrollment.student?.name || 'Unknown'}, Current Class: ${enrollment.class?.title || 'Unknown'}`);
 
       if (rescheduleDto.isPaid) {
+        this.logger.log(`Processing payment for reschedule. Amount: ${rescheduleDto.amount}, Student: ${student.name}`);
+        this.logger.log(`Credit card details - Last 4 digits: ${rescheduleDto.ccNo.slice(-4)}, Expiry: ${rescheduleDto.CCExpiry}`);
+        
         const result = await this.authorizeNetService.chargeCreditCard(
           rescheduleDto.amount,
           rescheduleDto.ccNo,
@@ -141,25 +161,34 @@ export class EnrollmentService {
           student.name,
           '', ''
         );
+        
+        this.logger.log(`Payment processed successfully. Transaction result: ${JSON.stringify(result)}`);
+        
         await queryRunner.manager.update(Enrollment, enrollment.ID, {
           class: classs,
           Comments: enrollment.Comments + `\nreschedule paid amount ${rescheduleDto.amount} on ${new Date().toISOString()}`
         });
+        this.logger.log(`Enrollment updated with payment information for enrollment ID: ${enrollment.ID}`);
+      } else {
+        this.logger.log(`No payment required for this reschedule operation`);
       }
 
-      //move the enrollment to the new class
+      // Move the enrollment to the new class
+      this.logger.log(`Updating enrollment ${enrollment.ID} to new class ${classs.id} (${classs.title})`);
       await queryRunner.manager.update(Enrollment, enrollment.ID, {
         class: classs,
         Comments: enrollment.Comments + `\nreschedule class on ${new Date().toISOString()}`
       });
+      
       const updatedEnrollment = await queryRunner.manager.findOne(Enrollment, {
         where: {
           ID: enrollment.ID
         }
       });
+      this.logger.log(`Enrollment successfully updated to new class. Updated enrollment ID: ${updatedEnrollment?.ID}`);
 
-      //console(classs.location);
-
+      // Prepare email notification data
+      this.logger.log(`Preparing email notification data for reschedule confirmation`);
       const rescheduleEmailData: RescheduleEmailData = {
         adminName: user.name,
         studentName: student.name,
@@ -174,20 +203,36 @@ export class EnrollmentService {
         address: student.address,
       }
 
+      this.logger.log(`Email data prepared - Admin: ${user.name}, Student: ${student.name}, Location: ${classs.location.location}, Dates: ${classs.startDate} to ${classs.endDate}`);
+
+      // Add email job to queue
+      this.logger.log(`Adding email notification job to queue for recipients: ${student.email}, ${process.env.ADMIN_EMAIL}`);
       await this.queueService.addJob({
         type: EmailJobType.RESCHEDULE_CONFIRMATION,
         data: rescheduleEmailData,
         recipients: [student.email, process.env.ADMIN_EMAIL]
       });
-      //console(rescheduleEmailData);
+      this.logger.log(`Email notification job successfully added to queue`);
+
+      // Commit transaction
+      this.logger.log(`Committing database transaction for reschedule operation`);
       await queryRunner.commitTransaction();
+      this.logger.log(`Reschedule class operation completed successfully for enrollment: ${enrollment.ID}`);
+      
       return updatedEnrollment;
     } catch (error) {
-      //console(error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : 'No stack trace available';
+      
+      this.logger.error(`Error during reschedule class operation: ${errorMessage}`, errorStack);
+      this.logger.error(`Rolling back database transaction due to error`);
       await queryRunner.rollbackTransaction();
+      this.logger.error(`Database transaction rolled back successfully`);
       throw error;
     } finally {
+      this.logger.log(`Releasing database query runner`);
       await queryRunner.release();
+      this.logger.log(`Database query runner released`);
     }
   }
 
