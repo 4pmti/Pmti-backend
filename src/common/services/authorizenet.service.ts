@@ -80,7 +80,8 @@ export class AuthorizeNetService {
     }
 
     // Validate card number (basic Luhn algorithm check)
-    if (!this.isValidCardNumber(cardNumber)) {
+    //check this into the prod only not in sandbox
+    if (process.env.AUTHORIZE_ENV === AuthorizeNetEnv.PRODUCTION && !this.isValidCardNumber(cardNumber)) {
       throw new PaymentValidationError('Invalid credit card number', 'cardNumber');
     }
 
