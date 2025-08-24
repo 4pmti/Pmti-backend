@@ -99,16 +99,6 @@ export class AuthorizeNetService {
     if (!this.isValidEmail(customerEmail)) {
       throw new PaymentValidationError('Invalid email address format', 'customerEmail');
     }
-
-    // Validate transaction key
-    if (!transactionKey || transactionKey.trim().length === 0) {
-      throw new PaymentValidationError('Transaction key is required', 'transactionKey');
-    }
-
-    // Validate transaction name
-    if (!transactionName || transactionName.trim().length === 0) {
-      throw new PaymentValidationError('Transaction name is required', 'transactionName');
-    }
   }
 
   /**
