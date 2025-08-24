@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException, Logger } from '@nestjs/common';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { BulkUpdateEnrollmentDto, UpdateEnrollmentDto } from './dto/update-enrollment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -24,6 +24,7 @@ import { EmailQueueService } from 'src/queue/emails/queue.service';
 import { EmailJobType, PortalLoginData, RescheduleEmailData, StudentRegistrationData } from 'src/common/templates/types';
 @Injectable()
 export class EnrollmentService {
+  private readonly logger = new Logger(EnrollmentService.name);
 
   constructor(
     private readonly dataSource: DataSource,
@@ -528,16 +529,30 @@ export class EnrollmentService {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-    console.log("createEnrollmentDto", createEnrollmentDto);
+    
+    this.logger.log(`Starting enrollment creation process for email: ${createEnrollmentDto.email}`, {
+      method: 'create',
+      email: createEnrollmentDto.email,
+      classId: createEnrollmentDto.classId,
+      courseId: createEnrollmentDto.courseId
+    });
+    
     try {
       //validate the class and course
       if (createEnrollmentDto.classId && createEnrollmentDto.courseId) {
+        this.logger.warn(`Invalid enrollment request: both classId and courseId provided`, {
+          email: createEnrollmentDto.email,
+          classId: createEnrollmentDto.classId,
+          courseId: createEnrollmentDto.courseId
+        });
         throw new NotFoundException("Either Class or Course is required");
       }
 
 
 
       // find user by email and check if hes already enrolled in this class or course
+      this.logger.log(`Checking existing user enrollment for email: ${createEnrollmentDto.email}`);
+      
       const user = await queryRunner.manager.findOne(User, {
         where: {
           email: createEnrollmentDto.email
@@ -548,18 +563,35 @@ export class EnrollmentService {
       });
 
       if (user) {
+        this.logger.log(`Existing user found, checking current enrollments`, {
+          userId: user.id,
+          studentId: user.student?.id
+        });
+        
         const enrollment = await queryRunner.manager.find(Enrollment, {
           where: {
             student: user.student,
           }
         });
+        
         if (enrollment.length > 0) {
+          this.logger.warn(`User already enrolled in existing class/course`, {
+            email: createEnrollmentDto.email,
+            existingEnrollments: enrollment.length,
+            userId: user.id
+          });
           throw new BadRequestException("You are already enrolled in this class or course");
         }
+        
+        this.logger.log(`User validation passed - no existing enrollments found`);
+      } else {
+        this.logger.log(`New user - will create student account during enrollment`);
       }
 
       let enrollmentTarget: Class | Course;
       if (createEnrollmentDto.courseId) {
+        this.logger.log(`Validating course enrollment target`, { courseId: createEnrollmentDto.courseId });
+        
         enrollmentTarget = await queryRunner.manager.findOne(Course, {
           where: {
             id: createEnrollmentDto.courseId
@@ -568,15 +600,24 @@ export class EnrollmentService {
             category: true
           }
         });
+        
         if (!enrollmentTarget) {
+          this.logger.error(`Course not found`, { courseId: createEnrollmentDto.courseId });
           throw new NotFoundException("Course not found");
         }
+        
+        this.logger.log(`Course validation successful`, {
+          courseId: createEnrollmentDto.courseId,
+          courseName: enrollmentTarget.courseName,
+          price: enrollmentTarget.price,
+          category: enrollmentTarget.category?.name
+        });
       } else if (createEnrollmentDto.classId) {
+        this.logger.log(`Validating class enrollment target`, { courseId: createEnrollmentDto.classId });
 
         enrollmentTarget = await queryRunner.manager.findOne(Class, {
           where: {
             id: createEnrollmentDto.classId,
-
           },
           relations: {
             category: true,
@@ -584,24 +625,39 @@ export class EnrollmentService {
             country: true
           }
         });
+        
         if (!enrollmentTarget) {
+          this.logger.error(`Class not found`, { courseId: createEnrollmentDto.classId });
           throw new NotFoundException("Class not found");
         }
+        
+        this.logger.log(`Class validation successful`, {
+          classId: createEnrollmentDto.classId,
+          title: enrollmentTarget.title,
+          price: enrollmentTarget.price,
+          category: enrollmentTarget.category?.name,
+          location: enrollmentTarget.location?.location,
+          country: enrollmentTarget.country?.CountryName
+        });
       }
 
       //validate the student
+      this.logger.log(`Validating student account for email: ${createEnrollmentDto.email}`);
+      
       let student = await queryRunner.manager.findOne(Student, {
         where: {
           email: createEnrollmentDto.email
         }
       });
 
-
-
       const password = this.generateRandomPassword();
       if (!student) {
+        this.logger.log(`Creating new student account`, {
+          email: createEnrollmentDto.email,
+          name: createEnrollmentDto.name
+        });
+        
         try {
-         
           student = await this.userService.createStudent({
             name: createEnrollmentDto.name,
             email: createEnrollmentDto.email,
@@ -616,16 +672,39 @@ export class EnrollmentService {
             companyName: createEnrollmentDto.companyName || null,
             referredBy: '',
           });
+          
+          this.logger.log(`Student account created successfully`, {
+            studentId: student.id,
+            email: student.email
+          });
         } catch (error) {
-          console.log("error in create enrollment", error);
+          this.logger.error(`Failed to create student account`, {
+            error: error instanceof Error ? error.message : String(error),
+            email: createEnrollmentDto.email,
+            stack: error instanceof Error ? error.stack : undefined
+          });
           throw new InternalServerErrorException("Error in create enrollment, " + error);
         }
+      } else {
+        this.logger.log(`Existing student account found`, {
+          studentId: student.id,
+          email: student.email
+        });
       }
 
       //check for the promotions here and validate them
       let initialAmount = enrollmentTarget.price;
       const currentDate = new Date();
+      
+      this.logger.log(`Starting promotion validation`, {
+        originalPrice: enrollmentTarget.price,
+        promotionCode: createEnrollmentDto.Promotion,
+        currentDate: currentDate.toISOString()
+      });
+      
       if (createEnrollmentDto.Promotion) {
+        this.logger.log(`Validating promotion code: ${createEnrollmentDto.Promotion}`);
+        
         const promotion = await queryRunner.manager.findOne(Promotions, {
           where: {
             promotionId: createEnrollmentDto.Promotion
@@ -635,53 +714,125 @@ export class EnrollmentService {
             country: true
           }
         });
-        //console(promotion);
 
         if (!promotion) {
+          this.logger.warn(`Invalid promotion code provided`, {
+            promotionCode: createEnrollmentDto.Promotion,
+            email: createEnrollmentDto.email
+          });
           throw new NotFoundException("Promotion is not valid");
         }
+        
+        this.logger.log(`Promotion found, validating eligibility`, {
+          promotionId: promotion.promotionId,
+          amount: promotion.amount,
+          category: promotion.category?.name,
+          country: promotion.country?.CountryName
+        });
 
         //time range validation check
         if (promotion.startDate && promotion.endDate) {
+          this.logger.log(`Validating promotion date range`, {
+            startDate: promotion.startDate,
+            endDate: promotion.endDate,
+            currentDate: currentDate.toISOString()
+          });
+          
           if (currentDate < new Date(promotion.startDate) || currentDate > new Date(promotion.endDate)) {
+            this.logger.warn(`Promotion date validation failed`, {
+              promotionCode: createEnrollmentDto.Promotion,
+              startDate: promotion.startDate,
+              endDate: promotion.endDate,
+              currentDate: currentDate.toISOString()
+            });
             throw new BadRequestException("Promotion is not active");
           }
+          
+          this.logger.log(`Promotion date validation passed`);
         }
 
         //class & country belonging check
         if (enrollmentTarget instanceof Class) {
-          // //console(enrollmentTarget.category, promotion.category);
+          this.logger.log(`Validating promotion for class enrollment`, {
+            classCategory: enrollmentTarget.category?.name,
+            promotionCategory: promotion.category?.name,
+            classCountry: enrollmentTarget.country?.CountryName,
+            promotionCountry: promotion.country?.CountryName
+          });
+          
           if (enrollmentTarget.category.id != promotion.category.id) {
+            this.logger.warn(`Promotion category mismatch for class`, {
+              promotionCode: createEnrollmentDto.Promotion,
+              classCategory: enrollmentTarget.category?.name,
+              promotionCategory: promotion.category?.name
+            });
             throw new BadRequestException("This promotion is not valid for this class.");
           }
 
           if (enrollmentTarget.country.id != promotion.country.id) {
+            this.logger.warn(`Promotion country mismatch for class`, {
+              promotionCode: createEnrollmentDto.Promotion,
+              classCountry: enrollmentTarget.country?.CountryName,
+              promotionCountry: promotion.country?.CountryName
+            });
             throw new BadRequestException("This promotion is not valid for this location.");
           }
+          
           initialAmount -= promotion.amount;
           if (initialAmount < 0) {
             initialAmount = 0;
           }
+          
+          this.logger.log(`Promotion applied successfully for class`, {
+            originalPrice: enrollmentTarget.price,
+            discountAmount: promotion.amount,
+            finalPrice: initialAmount
+          });
         }
+        
         if (enrollmentTarget instanceof Course) {
+          this.logger.log(`Validating promotion for course enrollment`, {
+            courseCategory: enrollmentTarget.category?.name,
+            promotionCategory: promotion.category?.name
+          });
+          
           if (enrollmentTarget.category.id != promotion.category.id) {
+            this.logger.warn(`Promotion category mismatch for course`, {
+              promotionCode: createEnrollmentDto.Promotion,
+              courseCategory: enrollmentTarget.category?.name,
+              promotionCategory: promotion.category?.name
+            });
             throw new BadRequestException("This promotion is not valid for this course.");
           }
-          //console(initialAmount, promotion.amount);
+          
           initialAmount -= promotion.amount;
           if (initialAmount < 0) {
             initialAmount = 0;
           }
+          
+          this.logger.log(`Promotion applied successfully for course`, {
+            originalPrice: enrollmentTarget.price,
+            discountAmount: promotion.amount,
+            finalPrice: initialAmount
+          });
         }
+      } else {
+        this.logger.log(`No promotion code provided, using original price: ${initialAmount}`);
       }
 
       // search for billing country ,state and city
+      this.logger.log(`Validating billing information`, {
+        billCountry: createEnrollmentDto.BillCountry,
+        billState: createEnrollmentDto.BillingState
+      });
+      
       const billingCountry = await queryRunner.manager.findOne(Country, {
         where: {
           id: createEnrollmentDto.BillCountry
         }
       });
       if (!billingCountry) {
+        this.logger.error(`Billing country not found`, { countryId: createEnrollmentDto.BillCountry });
         throw new NotFoundException("Billing country not found");
       }
 
@@ -691,12 +842,24 @@ export class EnrollmentService {
         }
       });
       if (!billingState) {
+        this.logger.error(`Billing state not found`, { stateId: createEnrollmentDto.BillingState });
         throw new NotFoundException("Billing state not found");
       }
+      
+      this.logger.log(`Billing validation successful`, {
+        country: billingCountry.CountryName,
+        state: billingState.name
+      });
 
       
 
       //start the payment process
+      this.logger.log(`Initiating payment process`, {
+        amount: initialAmount,
+        email: createEnrollmentDto.email,
+        maskedCardNumber: this.maskCardNumber(createEnrollmentDto.CCNo)
+      });
+      
       const result = await this.authorizeNetService.chargeCreditCard(
         initialAmount,
         createEnrollmentDto.CCNo,
@@ -705,10 +868,23 @@ export class EnrollmentService {
         createEnrollmentDto.BillMail,
         '', ''
       );
+      
+      this.logger.log(`Payment processed successfully`, {
+        transactionId: result.transId,
+        amount: initialAmount,
+        email: createEnrollmentDto.email
+      });
 
 
 
 
+      this.logger.log(`Creating enrollment record`, {
+        studentId: student.id,
+        enrollmentType: createEnrollmentDto.courseId ? "Course" : "Class",
+        price: initialAmount,
+        transactionId: result.transId
+      });
+      
       const enrollment = new Enrollment();
       enrollment.student = student;
       enrollment.course = !(createEnrollmentDto.courseId && !createEnrollmentDto.classId) ? null : enrollmentTarget as Course;
@@ -738,6 +914,12 @@ export class EnrollmentService {
       enrollment.Discount = enrollmentTarget.price - initialAmount;
 
       await queryRunner.manager.save(enrollment);
+      
+      this.logger.log(`Enrollment record saved successfully`, {
+        enrollmentId: enrollment.ID,
+        studentId: student.id,
+        enrollmentType: enrollment.enrollmentType
+      });
 
       const emailConfirmationData: StudentRegistrationData = {
         studentName: createEnrollmentDto.name,
@@ -787,12 +969,22 @@ export class EnrollmentService {
 
 
 
+      this.logger.log(`Adding email confirmation job to queue`, {
+        recipients: [createEnrollmentDto.email, process.env.ADMIN_EMAIL],
+        jobType: EmailJobType.REGISTRATION_CONFIRMATION
+      });
+      
       await this.queueService.addJob({
         type: EmailJobType.REGISTRATION_CONFIRMATION,
         data: emailConfirmationData,
         recipients: [createEnrollmentDto.email, process.env.ADMIN_EMAIL]
       });
 
+      this.logger.log(`Adding portal login job to queue`, {
+        recipients: [createEnrollmentDto.email, process.env.ADMIN_EMAIL],
+        jobType: EmailJobType.PORTAL_LOGIN
+      });
+      
       await this.queueService.addJob({
         type: EmailJobType.PORTAL_LOGIN,
         data: portalLoginData,
@@ -801,10 +993,29 @@ export class EnrollmentService {
 
 
       await queryRunner.commitTransaction();
+      
+      this.logger.log(`Enrollment creation completed successfully`, {
+        enrollmentId: enrollment.ID,
+        studentId: student.id,
+        email: createEnrollmentDto.email,
+        enrollmentType: enrollment.enrollmentType,
+        price: enrollment.Price,
+        transactionId: enrollment.TransactionId
+      });
+      
       return enrollment;
     } catch (error) {
-      console.log("error in create enrollment", error);
+      this.logger.error(`Enrollment creation failed`, {
+        error: error instanceof Error ? error.message : String(error),
+        email: createEnrollmentDto.email,
+        classId: createEnrollmentDto.classId,
+        courseId: createEnrollmentDto.courseId,
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      
       await queryRunner.rollbackTransaction();
+      this.logger.log(`Transaction rolled back due to error`);
+      
       throw new InternalServerErrorException("Error in create enrollment, " + error);
     } finally {
       await queryRunner.release();
@@ -812,11 +1023,28 @@ export class EnrollmentService {
   }
 
   async bulkUpdate(bulkUpdateEnrollmentDto: BulkUpdateEnrollmentDto) {
+    this.logger.log(`Starting bulk update operation`, {
+      method: 'bulkUpdate',
+      numberOfIds: bulkUpdateEnrollmentDto.ids.length,
+      changes: Object.keys(bulkUpdateEnrollmentDto.changes)
+    });
+    
     try {
       const { ids, changes } = bulkUpdateEnrollmentDto;
-      return await this.enrollmentRepository.update(ids, changes);
+      const result = await this.enrollmentRepository.update(ids, changes);
+      
+      this.logger.log(`Bulk update completed successfully`, {
+        affectedRows: result.affected,
+        numberOfIds: ids.length
+      });
+      
+      return result;
     } catch (error) {
-      //console(error);
+      this.logger.error(`Bulk update failed`, {
+        error: error instanceof Error ? error.message : String(error),
+        ids: bulkUpdateEnrollmentDto.ids,
+        stack: error instanceof Error ? error.stack : undefined
+      });
       throw error;
     }
   }
@@ -830,6 +1058,12 @@ export class EnrollmentService {
   }
 
   async update(id: number, updateEnrollmentDto: UpdateEnrollmentDto) {
+    this.logger.log(`Starting enrollment update`, {
+      method: 'update',
+      enrollmentId: id,
+      updateFields: Object.keys(updateEnrollmentDto)
+    });
+    
     try {
       // Check if the enrollment exists
       const enrollment = await this.enrollmentRepository.findOne({
@@ -837,8 +1071,14 @@ export class EnrollmentService {
       });
 
       if (!enrollment) {
+        this.logger.warn(`Enrollment not found for update`, { enrollmentId: id });
         throw new NotFoundException(`Enrollment with ID ${id} not found`);
       }
+
+      this.logger.log(`Enrollment found, proceeding with update`, {
+        enrollmentId: id,
+        currentStatus: enrollment.enrollmentType
+      });
 
       // Merge the existing enrollment with the new data
       const updated = this.enrollmentRepository.merge(enrollment, updateEnrollmentDto);
@@ -846,11 +1086,20 @@ export class EnrollmentService {
       // Save the updated enrollment
       await this.enrollmentRepository.save(updated);
 
+      this.logger.log(`Enrollment updated successfully`, {
+        enrollmentId: id,
+        updateFields: Object.keys(updateEnrollmentDto)
+      });
+
       // Return the updated enrollment
       return updated;
-    } catch (e) {
-      //console(e);
-      throw e;
+    } catch (error) {
+      this.logger.error(`Enrollment update failed`, {
+        error: error instanceof Error ? error.message : String(error),
+        enrollmentId: id,
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      throw error;
     }
   }
 
