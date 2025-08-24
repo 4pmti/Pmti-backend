@@ -237,20 +237,30 @@ export class EnrollmentService {
   }
 
   async createOfflineClassEnrollment(userId: string, offlineEnrollment: OfflineClassEnrollmentDto) {
+    this.logger.log(`Starting offline class enrollment process for user: ${userId}, class: ${offlineEnrollment.classId}, student: ${offlineEnrollment.studentId}`);
+    
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-    //console(offlineEnrollment);
+    
+    this.logger.log('Database transaction started for offline class enrollment operation');
+    
     try {
+      // Validate admin permissions
+      this.logger.log(`Validating admin permissions for user: ${userId}`);
       const user = await queryRunner.manager.findOne(User, {
         where: {
           id: userId,
         }
       });
       if (!user.roles.includes(Role.ADMIN)) {
+        this.logger.warn(`Unauthorized offline enrollment attempt by user: ${userId}`);
         throw new UnauthorizedException("You are not authorized to perform this action!");
       }
+      this.logger.log(`Admin permissions validated for user: ${user.name || 'Unknown'} (ID: ${userId})`);
 
+      // Fetch class details
+      this.logger.log(`Fetching class details for class ID: ${offlineEnrollment.classId}`);
       const classs = await queryRunner.manager.findOne(Class, {
         where: {
           id: offlineEnrollment.classId,
@@ -262,32 +272,31 @@ export class EnrollmentService {
         }
       });
       if (!classs) {
+        this.logger.error(`Class not found with ID: ${offlineEnrollment.classId}`);
         throw new NotFoundException("Class not found");
       }
+      this.logger.log(`Class found: ${classs.title || 'Untitled'} (ID: ${classs.id}, Location: ${classs.location?.location || 'Unknown'})`);
+
+      // Fetch student details
+      this.logger.log(`Fetching student details for student ID: ${offlineEnrollment.studentId}`);
       const student = await queryRunner.manager.findOne(Student, {
         where: {
           id: offlineEnrollment.studentId
         }
       });
       if (!student) {
+        this.logger.error(`Student not found with ID: ${offlineEnrollment.studentId}`);
         throw new NotFoundException("User not found");
       }
+      this.logger.log(`Student found: ${student.name} (ID: ${student.id}, Email: ${student.email})`);
 
-      //TODO: check if the student has already enrolled in the class
-
-      // const pastEnrollment = await queryRunner.manager.findOne(Enrollment, {
-      //   where: {
-      //     POID: offlineEnrollment.purchaseOrderId
-      //   }
-      // });
-
-      // if (!pastEnrollment) {
-      //   throw new NotFoundException("Enrollment not found");
-      // }
-
+      // Process promotion if applicable
       let initialAmount = offlineEnrollment.amount;
       const currentDate = new Date();
+      this.logger.log(`Initial enrollment amount: ${initialAmount}, Promotion code: ${offlineEnrollment.Promotion || 'None'}`);
+      
       if (offlineEnrollment.Promotion) {
+        this.logger.log(`Processing promotion: ${offlineEnrollment.Promotion}`);
         const promotion = await queryRunner.manager.findOne(Promotions, {
           where: {
             promotionId: offlineEnrollment.Promotion
@@ -298,29 +307,38 @@ export class EnrollmentService {
           }
         });
         if (!promotion) {
+          this.logger.error(`Invalid promotion code: ${offlineEnrollment.Promotion}`);
           throw new NotFoundException("Promotion is not valid");
         }
 
+        this.logger.log(`Promotion found: ${promotion.promotionId}, Amount: ${promotion.amount}, Category: ${promotion.category?.name || 'Unknown'}`);
+
         if (promotion.startDate && promotion.endDate) {
           if (currentDate < new Date(promotion.startDate) || currentDate > new Date(promotion.endDate)) {
+            this.logger.warn(`Promotion ${offlineEnrollment.Promotion} is not active. Start: ${promotion.startDate}, End: ${promotion.endDate}, Current: ${currentDate.toISOString()}`);
             throw new BadRequestException("Promotion is not active");
           }
         }
 
         if (classs.category.id != promotion.category.id) {
+          this.logger.warn(`Promotion category mismatch. Class category: ${classs.category.id}, Promotion category: ${promotion.category.id}`);
           throw new BadRequestException("This promotion is not valid for this class.");
         }
-        //console(initialAmount, promotion.amount);
+        
         initialAmount -= promotion.amount;
         if (initialAmount < 0) {
           initialAmount = 0;
         }
+        this.logger.log(`Promotion applied. Final amount after discount: ${initialAmount}`);
       }
 
+      // Process payment if required
       let result: any = null;
       if (offlineEnrollment.isPaid) {
-        // Only process payment if isPaid is true
+        this.logger.log(`Processing payment for offline enrollment. Amount: ${initialAmount}, Payment required: ${offlineEnrollment.isPaid}`);
+        
         if (initialAmount > 0) {
+          this.logger.log(`Validating payment fields for amount: ${initialAmount}`);
           // Validate payment-related fields when payment is required
           const paymentFields = {
             'Credit Card Number': offlineEnrollment.CCNo,
@@ -335,9 +353,13 @@ export class EnrollmentService {
             .map(([key]) => key);
 
           if (missingPaymentFields.length > 0) {
+            this.logger.error(`Missing required payment fields: ${missingPaymentFields.join(', ')}`);
             throw new BadRequestException(`Missing required payment fields: ${missingPaymentFields.join(', ')}`);
           }
 
+          this.logger.log(`Payment fields validated. Processing credit card payment for amount: ${initialAmount}`);
+          this.logger.log(`Credit card details - Last 4 digits: ${offlineEnrollment.CCNo.slice(-4)}, Expiry: ${offlineEnrollment.CCExpiry}, Holder: ${offlineEnrollment.CreditCardHolder}`);
+          
           result = await this.authorizeNetService.chargeCreditCard(
             initialAmount,
             offlineEnrollment.CCNo,
@@ -346,27 +368,43 @@ export class EnrollmentService {
             offlineEnrollment.BillMail,
             '', ''
           );
+          
+          this.logger.log(`Payment processed successfully. Transaction result: ${JSON.stringify(result)}`);
+        } else {
+          this.logger.log(`No payment required as final amount is 0`);
         }
+      } else {
+        this.logger.log(`No payment required for this offline enrollment`);
       }
 
+      // Fetch billing country
+      this.logger.log(`Fetching billing country details for country ID: ${offlineEnrollment.BillCountry}`);
       const billingCountry = await queryRunner.manager.findOne(Country, {
         where: {
           id: offlineEnrollment.BillCountry
         }
       });
       if (!billingCountry) {
+        this.logger.error(`Billing country not found with ID: ${offlineEnrollment.BillCountry}`);
         throw new NotFoundException("Billing country not found");
       }
+      this.logger.log(`Billing country found: ${billingCountry.CountryName}`);
 
+      // Fetch billing state
+      this.logger.log(`Fetching billing state details for state ID: ${offlineEnrollment.BillingState}`);
       const billingState = await queryRunner.manager.findOne(State, {
         where: {
           id: offlineEnrollment.BillingState
         }
       });
       if (!billingState) {
+        this.logger.error(`Billing state not found with ID: ${offlineEnrollment.BillingState}`);
         throw new NotFoundException("Billing state not found");
       }
+      this.logger.log(`Billing state found: ${billingState.name}`);
 
+      // Create enrollment entity
+      this.logger.log(`Creating enrollment entity for student: ${student.name}, class: ${classs.title}`);
       const enrollment = new Enrollment();
       enrollment.student = student;
       enrollment.course = null;
@@ -396,16 +434,28 @@ export class EnrollmentService {
       enrollment.POID = offlineEnrollment.purchaseOrderId;
       enrollment.Discount = offlineEnrollment.amount - initialAmount <= 0 ? 0 : offlineEnrollment.amount - initialAmount;
 
-
+      this.logger.log(`Enrollment entity prepared. Saving to database...`);
       await queryRunner.manager.save(enrollment);
+      this.logger.log(`Enrollment saved successfully with ID: ${enrollment.ID}`);
+      
+      this.logger.log(`Committing database transaction for offline enrollment`);
       await queryRunner.commitTransaction();
+      this.logger.log(`Offline class enrollment completed successfully for student: ${student.name}, class: ${classs.title}`);
+      
       return enrollment;
     } catch (error) {
-      //console(error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : 'No stack trace available';
+      
+      this.logger.error(`Error during offline class enrollment: ${errorMessage}`, errorStack);
+      this.logger.error(`Rolling back database transaction due to error`);
       await queryRunner.rollbackTransaction();
+      this.logger.error(`Database transaction rolled back successfully`);
       throw error;
     } finally {
+      this.logger.log(`Releasing database query runner`);
       await queryRunner.release();
+      this.logger.log(`Database query runner released`);
     }
   }
 
