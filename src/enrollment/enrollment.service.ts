@@ -158,7 +158,7 @@ export class EnrollmentService {
           rescheduleDto.ccNo,
           rescheduleDto.CCExpiry,
           rescheduleDto.CVV,
-          student.name,
+          student.email,
           '', ''
         );
         
