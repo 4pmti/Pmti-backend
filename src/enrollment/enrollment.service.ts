@@ -178,7 +178,7 @@ export class EnrollmentService {
       await queryRunner.manager.update(Enrollment, enrollment.ID, {
         class: classs,
         Comments: enrollment.Comments + `
-        \nreschedule class from ${enrollment.class.title} to ${classs.title}
+        \nreschedule class from ${enrollment.class.title} with id ${enrollment.class.id} to ${classs.title} with id ${classs.id}
         \nreschedule class on ${new Date().toISOString()}`
       });
       
