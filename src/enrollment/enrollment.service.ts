@@ -177,7 +177,9 @@ export class EnrollmentService {
       this.logger.log(`Updating enrollment ${enrollment.ID} to new class ${classs.id} (${classs.title})`);
       await queryRunner.manager.update(Enrollment, enrollment.ID, {
         class: classs,
-        Comments: enrollment.Comments + `\nreschedule class on ${new Date().toISOString()}`
+        Comments: enrollment.Comments + `
+        \nreschedule class from ${enrollment.class.title} to ${classs.title}
+        \nreschedule class on ${new Date().toISOString()}`
       });
       
       const updatedEnrollment = await queryRunner.manager.findOne(Enrollment, {
