@@ -262,7 +262,8 @@ export class ClassService {
         .leftJoinAndSelect('class.addedBy', 'addedBy')
         .leftJoinAndSelect('class.updatedBy', 'updatedBy')
         .leftJoinAndSelect('class.state', 'state')
-        .loadRelationCountAndMap('class.enrollmentCount', 'class.enrollments');
+        .loadRelationCountAndMap('class.enrollmentCount', 'class.enrollments')
+        .loadRelationCountAndMap('class.activeEnrollmentCount', 'class.enrollments', 'enrollment', qb => qb.where('enrollment.status = :status', { status: true }));
 
       // Apply search if provided
       if (search) {
@@ -329,8 +330,8 @@ export class ClassService {
 
       if (locationName) {
         const lowerLocationName = locationName.toLowerCase();
-        queryBuilder.andWhere('LOWER(location.location) LIKE :locationName', { 
-          locationName: `%${lowerLocationName}%` 
+        queryBuilder.andWhere('LOWER(location.location) LIKE :locationName', {
+          locationName: `%${lowerLocationName}%`
         });
       }
 
@@ -664,14 +665,14 @@ export class ClassService {
     if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return date;
     }
-    
+
     // If it's a UTC date string like "2025-08-22T00:00:00.000Z"
     if (typeof date === 'string' && date.includes('T') && date.endsWith('Z')) {
       // Extract just the date part before the 'T' to avoid timezone conversion
       const datePart = date.split('T')[0];
       return datePart; // Already in YYYY-MM-DD format
     }
-    
+
     // If it's a date string with time but no timezone (like "2025-08-22T00:00:00")
     if (typeof date === 'string' && date.includes('T') && !date.endsWith('Z')) {
       const datePart = date.split('T')[0];
@@ -680,7 +681,7 @@ export class ClassService {
 
     // For Date objects or other string formats, create a new Date and format it
     const d = new Date(date);
-    
+
     // Format the date components
     let month = '' + (d.getMonth() + 1);
     let day = '' + d.getDate();
