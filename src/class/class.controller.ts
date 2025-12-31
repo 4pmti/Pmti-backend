@@ -32,6 +32,16 @@ export class ClassController {
     return this.classService.findAll(filterDto);
   }
 
+  @UseGuards(AuthGuard)
+  @Get('admin/all')
+  findAllForAdmin(
+    @Req() req: Request,
+    @Query() filterDto: FilterDto
+  ) {
+   // const userId = req.user?.id ?? '';
+    return this.classService.findAll(filterDto,true);
+  }
+
   @Get(":id/detail")
   findClassDetails(@Param('id') id: string) {
     return this.classService.findClassDetails(+id);

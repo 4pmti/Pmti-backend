@@ -26,13 +26,13 @@ export class UploadController {
       }
 
       let processedFile = file;
-      
+
       // Convert image to webp if it's an image file
       if (this.isImageFile(file.mimetype)) {
         const webpBuffer = await sharp(file.buffer)
           .webp({ quality: 90 }) // High quality webp conversion
           .toBuffer();
-        
+
         // Update file properties for webp
         processedFile = {
           ...file,
@@ -61,7 +61,7 @@ export class UploadController {
         mimeType: processedFile.mimetype
       };
     } catch (error) {
-      //console(error);
+      console.log(error);
       throw error;
     }
   }
