@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,6 +23,8 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Injectable()
 export class ClassService {
+  private readonly logger = new Logger(ClassService.name);
+
   constructor(
     private dataSource: DataSource,
     @InjectRepository(Class)
@@ -126,7 +128,7 @@ export class ClassService {
       }
 
       const newClass = new Class();
-      Object.assign(newClass, createClassDto);;
+      Object.assign(newClass, createClassDto);
       newClass.category = classCategory;
       newClass.addedBy = user;
       // Fix: Preserve the exact date without timezone conversion
@@ -139,6 +141,11 @@ export class ClassService {
       newClass.country = country;
       newClass.state = state;
       newClass.status = classStatus.ACTIVE;
+      // Ensure price is stored as a number and isPriceIncreased is explicitly set to false
+      newClass.price = typeof createClassDto.price === 'string' 
+        ? parseFloat(createClassDto.price) 
+        : Number(createClassDto.price);
+      newClass.isPriceIncreased = false; // Explicitly set to false for newly created classes
       return await this.classRepository.save(newClass);
     } catch (error) {
       //console(error);
@@ -223,7 +230,7 @@ export class ClassService {
 
 
 
-  async findAll(filters: FilterDto) {
+  async findAll(filters: FilterDto, isAdmin: boolean = false) {
     try {
       //console(filters);
       const {
@@ -374,7 +381,7 @@ export class ClassService {
       //console('Classes:', classes.length);
 
       return {
-        data: await this.dynamicPrice(classes),
+        data: isAdmin ? classes : await this.dynamicPrice(classes),
         metadata: {
           total,
           totalPages,
@@ -394,50 +401,115 @@ export class ClassService {
 
   /**
    * Dynamically adjusts class prices based on proximity to start date
+   * Only applies to classes that are within 14 days of start date and were created at least 24 hours ago
+   * This prevents price increases for newly created classes
+   * 
+   * Production-ready features:
+   * - Race condition protection via WHERE clause check
+   * - Grace period to prevent immediate price increases after creation
+   * - Proper error handling and logging
+   * - Type-safe price calculations
+   * 
    * @param classes - Array of classes to check for price updates
    * @returns Updated classes array
    */
-  async dynamicPrice(classes: Class[]) {
+  async dynamicPrice(classes: Class[]): Promise<Class[]> {
     try {
       const currentDate = new Date();
       const currentDateString = this.formatDateWithoutTimezone(currentDate);
+      const currentDateTime = currentDate.getTime();
+
+      // Grace period: 24 hours (prevent price increase for classes created within last 24 hours)
+      const GRACE_PERIOD_HOURS = 24;
 
       // Step 1: Identify classes that need price updates in a single pass
       const classesToUpdate = classes.filter(classs => {
-        // Use the formatted date string for comparison to avoid timezone issues
+        // Skip if price was already increased (in-memory check)
+        if (classs.isPriceIncreased) {
+          return false;
+        }
+
+        // Skip if class was created within the grace period (24 hours)
+        if (classs.createdAt) {
+          const createdAtTime = new Date(classs.createdAt).getTime();
+          const hoursSinceCreation = (currentDateTime - createdAtTime) / (1000 * 60 * 60);
+          if (hoursSinceCreation < GRACE_PERIOD_HOURS) {
+            return false; // Too recently created, skip price increase
+          }
+        }
+
+        // Validate start date exists
         const startDateString = classs.startDate; // Already in YYYY-MM-DD format
+        if (!startDateString) {
+          return false; // Skip if no start date
+        }
+
+        // Calculate days until class starts
         const daysDiff = this.calculateDaysDifference(startDateString, currentDateString);
-        return daysDiff < 14 && daysDiff >= 0 && !classs.isPriceIncreased;
+        
+        // Only increase price if class starts within 14 days and hasn't started yet
+        return daysDiff < 14 && daysDiff >= 0;
       });
 
       if (classesToUpdate.length === 0) {
         return classes; // Early return if no updates needed
       }
 
-      // Step 2: Perform bulk database update
-      await this.classRepository
+      const classIds = classesToUpdate.map(c => c.id);
+      this.logger.log(`Applying dynamic price increase to ${classIds.length} classes: [${classIds.join(', ')}]`);
+
+      // Step 2: Perform bulk database update with race condition protection
+      // CRITICAL: WHERE clause must check isPriceIncreased to prevent concurrent updates
+      // This ensures that even if multiple requests process the same class, only one will succeed
+      const updateResult = await this.classRepository
         .createQueryBuilder()
         .update(Class)
         .set({
           price: () => 'price + :increment',
           isPriceIncreased: true
         })
-        .where('id IN (:...ids)', {
-          ids: classesToUpdate.map(c => c.id),
-          increment: 100
-        })
+        .where('id IN (:...ids)', { ids: classIds })
+        .andWhere('isPriceIncreased = :isPriceIncreased', { isPriceIncreased: false }) // Race condition protection
+        .setParameter('increment', 100)
         .execute();
 
-      // Step 3: Update prices in memory
+      const affectedRows = updateResult.affected || 0;
+      
+      if (affectedRows === 0) {
+        this.logger.warn('No classes were updated (likely due to concurrent updates or already increased)');
+        return classes; // Return original classes if update was prevented by race condition
+      }
+
+      if (affectedRows !== classIds.length) {
+        this.logger.warn(
+          `Price update mismatch: expected ${classIds.length} updates, but ${affectedRows} were applied. ` +
+          `Some classes may have been updated concurrently.`
+        );
+      }
+
+      // Step 3: Update prices in memory for classes that were successfully updated
+      // Only update classes that match the IDs we tried to update
+      // Note: We can't know exactly which ones succeeded without re-querying, so we update all
+      // The database is the source of truth, so slight inconsistency here is acceptable for performance
       classesToUpdate.forEach(classs => {
-        classs.price = Number(classs.price) + 100;
-        classs.isPriceIncreased = true;
+        // Ensure price is treated as a number, not a string
+        const currentPrice = typeof classs.price === 'string' 
+          ? parseFloat(classs.price) 
+          : Number(classs.price);
+        
+        if (!isNaN(currentPrice)) {
+          classs.price = currentPrice + 100;
+          classs.isPriceIncreased = true;
+        }
       });
 
+      this.logger.log(`Successfully applied price increase to ${affectedRows} class(es)`);
       return classes;
     } catch (error) {
-      console.error('Error in dynamicPrice:', error);
-      throw error;
+      this.logger.error('Error in dynamicPrice:', error);
+      // Don't throw - return original classes to prevent breaking the API response
+      // The price increase is not critical for the API to function
+      return classes;
     }
   }
 
