@@ -381,7 +381,8 @@ export class ClassService {
       //console('Classes:', classes.length);
 
       return {
-        data: isAdmin ? classes : await this.dynamicPrice(classes),
+     //   data: isAdmin ? classes : await this.dynamicPrice(classes),
+        data: classes,
         metadata: {
           total,
           totalPages,
