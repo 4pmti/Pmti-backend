@@ -24,18 +24,38 @@ export class AllExceptionsFilter implements ExceptionFilter {
         : 'Internal server error';
 
     let errorMessage = 'Something went wrong!';
+    let data: unknown = null;
+
     if (exception instanceof HttpException) {
       const errorResponse = exception.getResponse();
       if (typeof errorResponse === 'object' && errorResponse !== null) {
-        errorMessage = (errorResponse as any).message || errorMessage;
+        const er = errorResponse as Record<string, unknown>;
+        const msg = er.message;
+        if (typeof msg === 'string') {
+          errorMessage = msg;
+        } else if (Array.isArray(msg)) {
+          errorMessage = msg.join(', ');
+        }
+
+        // Forward custom payload fields (e.g. `classes` on ConflictException) into `data`.
+        const reservedKeys = new Set(['message', 'statusCode', 'error']);
+        const extras: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(er)) {
+          if (!reservedKeys.has(key)) {
+            extras[key] = value;
+          }
+        }
+        if (Object.keys(extras).length > 0) {
+          data = extras;
+        }
       }
     }
-   
+
     const responseBody = new ResponseDto(
       message,
       errorMessage,
       false,
-      null,
+      data,
     );
 
     response.status(status).json(responseBody);
