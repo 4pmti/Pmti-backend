@@ -139,13 +139,29 @@ export class InstructorService {
         throw new NotFoundException('Instructor not found');
       }
 
-      const linkedClassCount = await this.classRepository.count({
+      const linkedClasses = await this.classRepository.find({
         where: { instructor: { id } },
+        select: {
+          id: true,
+          title: true,
+          startDate: true,
+          endDate: true,
+          status: true,
+        },
+        order: { id: 'ASC' },
       });
-      if (linkedClassCount > 0) {
-        throw new ConflictException(
-          'Cannot delete the instructor because they are assigned to one or more classes.',
-        );
+      if (linkedClasses.length > 0) {
+        throw new ConflictException({
+          message:
+            'Cannot delete the instructor because they are assigned to one or more classes.',
+          classes: linkedClasses.map((c) => ({
+            id: c.id,
+            title: c.title,
+            startDate: c.startDate,
+            endDate: c.endDate,
+            status: c.status,
+          })),
+        });
       }
 
       return await this.instructorRepository.remove(instructor);
