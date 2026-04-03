@@ -1,10 +1,11 @@
-import { BadRequestException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateInstructorDto } from './dto/create-instructor.dto';
 import { UpdateInstructorDto } from './dto/update-instructor.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Country } from 'src/country/entities/country.entity';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
+import { Class } from 'src/class/entities/class.entity';
 import { Instructor } from './entities/instructor.entity';
 import { InstructorFilterDto, InstructorStatus } from './dto/intructorfilter.dto';
 import { isAdmin } from 'src/common/util/utilities';
@@ -19,6 +20,8 @@ export class InstructorService {
     private readonly countryRepository: Repository<Country>,
     @InjectRepository(Instructor)
     private readonly instructorRepository: Repository<Instructor>,
+    @InjectRepository(Class)
+    private readonly classRepository: Repository<Class>,
   ) { }
 
   async create(userId: string, createInstructorDto: CreateInstructorDto) {
@@ -129,10 +132,22 @@ export class InstructorService {
       if (!await isAdmin(userId, this.userRepository)) {
         throw new UnauthorizedException('You are not authorized to perform this action');
       }
+
       const instructor = await this.instructorRepository.findOne({ where: { id } });
+      
       if (!instructor) {
         throw new NotFoundException('Instructor not found');
       }
+
+      const linkedClassCount = await this.classRepository.count({
+        where: { instructor: { id } },
+      });
+      if (linkedClassCount > 0) {
+        throw new ConflictException(
+          'Cannot delete the instructor because they are assigned to one or more classes.',
+        );
+      }
+
       return await this.instructorRepository.remove(instructor);
     } catch (error) {
       console.error(error);
