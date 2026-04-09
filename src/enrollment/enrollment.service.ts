@@ -1026,7 +1026,7 @@ export class EnrollmentService {
         studentName: createEnrollmentDto.name,
         studentEmail: createEnrollmentDto.email,
         studentPhone: createEnrollmentDto.phone,
-        studentAddress: createEnrollmentDto.address,
+        studentAddress: createEnrollmentDto.address ,
         className: enrollmentTarget instanceof Class ? enrollmentTarget.title : enrollmentTarget.courseName,
         location: createEnrollmentDto.BillingCity,
         startDate: enrollmentTarget instanceof Class ? new Date(enrollmentTarget.startDate) : new Date(),

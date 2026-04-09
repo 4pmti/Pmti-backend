@@ -72,7 +72,7 @@ export class OfflineClassEnrollmentDto {
     name: string;
 
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     address: string;
 
     @IsString()
@@ -100,7 +100,7 @@ export class OfflineClassEnrollmentDto {
     companyName?: string;
 
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     profession: string;
 
     @IsEmail()
