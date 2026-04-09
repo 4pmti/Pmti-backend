@@ -99,9 +99,9 @@ export class OfflineClassEnrollmentDto {
     @IsOptional()
     companyName?: string;
 
-    @IsString()
     @IsOptional()
-    profession: string;
+    @IsString()
+    profession?: string;
 
     @IsEmail()
     @IsNotEmpty()
