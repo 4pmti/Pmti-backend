@@ -83,10 +83,11 @@ export class StudentService {
         throw new BadRequestException('Student not found');
       }
 
-      if (updateStudentDto.email) {
+      if (updateStudentDto.email && updateStudentDto.email !== student.email) {
         const existingStudent = await this.studentRepository.findOne({
           where: { email: updateStudentDto.email }
         });
+        //check if the email is the same as the current email then let it go
         if (existingStudent) {
           throw new BadRequestException('Email already exists');
         }
