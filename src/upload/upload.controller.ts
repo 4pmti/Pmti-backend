@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UploadService } from './upload.service';
 import { CreateUploadDto } from './dto/create-upload.dto';
 import { UpdateUploadDto } from './dto/update-upload.dto';
@@ -6,12 +7,31 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { FileUploadDto } from './dto/file-upload.dto';
 import sharp from 'sharp';
 
+@ApiTags('Upload')
 @Controller('upload')
 export class UploadController {
   constructor(private readonly uploadService: UploadService) { }
 
   @Post()
   @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: 'Upload a file', description: 'Upload an image, document, video or font file. Images are automatically converted to WebP format.' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'File upload with metadata',
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary', description: 'The file to upload' },
+        fileType: { type: 'string', enum: ['IMAGE', 'DOCUMENT', 'VIDEO', 'AUDIO'], description: 'Type of file being uploaded' },
+        isPublic: { type: 'string', example: 'true', description: 'Whether the file should be publicly accessible' },
+        unique: { type: 'string', example: 'true', description: 'Generate a unique filename' },
+        path: { type: 'string', description: 'Custom storage path' },
+      },
+      required: ['file'],
+    },
+  })
+  @ApiResponse({ status: 201, description: 'File uploaded successfully. Returns key, url, filename, size, and mimeType.' })
+  @ApiResponse({ status: 400, description: 'No file provided or invalid file type' })
   async create(
     @UploadedFile() file: Express.Multer.File,
     @Body() uploadDto: FileUploadDto) {

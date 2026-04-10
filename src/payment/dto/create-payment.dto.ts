@@ -1,21 +1,26 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString, IsEmail } from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class CreatePaymentDto {
     // Payment Information
     @IsNotEmpty()
     @IsNumber()
+    @ApiProperty({ example: 299.99, description: 'Payment amount in USD' })
     amount: number;
 
     @IsNotEmpty()
     @IsString()
+    @ApiProperty({ example: '4111111111111111', description: 'Credit card number' })
     cardNumber: string;
 
     @IsNotEmpty()
     @IsString()
+    @ApiProperty({ example: '12/2027', description: 'Card expiration date (MM/YYYY)' })
     expirationDate: string;
 
     @IsNotEmpty()
     @IsString()
+    @ApiProperty({ example: '123', description: 'Card CVV/security code' })
     cvv: string;
 
     @IsString()

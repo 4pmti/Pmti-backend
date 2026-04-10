@@ -114,8 +114,13 @@ export class StudentService {
         }
         student.state = state;
       }
-      Object.assign(student, updateStudentDto);
-      return await this.studentRepository.save(student);
+      const { country, state, ...rest } = updateStudentDto;
+      Object.assign(student, rest);
+      await this.studentRepository.save(student);
+      return await this.studentRepository.findOne({
+        where: { id },
+        relations: { country: true, state: true }
+      });
     } catch (error) {
       //console(error);
       throw error;

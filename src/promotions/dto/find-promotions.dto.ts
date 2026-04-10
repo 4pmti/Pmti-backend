@@ -1,33 +1,26 @@
-// promotions.dto.ts
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class FindPromotionsDto {
-    /**
-     * Filter by ID (partial match)
-     */
+    @ApiPropertyOptional({ description: 'Filter by ID (partial match)', example: 'PROMO' })
     id?: string;
-  
-    /**
-     * Filter by amount with optional conditions
-     */
+
+    @ApiPropertyOptional({
+      description: 'Filter by amount with conditions: lt (less than), gt (greater than), eq (equal to)',
+      example: { lt: 100, gt: 10 },
+    })
     amount?: {
-      lt?: number; // Less than
-      gt?: number; // Greater than
-      eq?: number; // Equal to
+      lt?: number;
+      gt?: number;
+      eq?: number;
     };
-  
-    /**
-     * Filter by country (partial match)
-     */
+
+    @ApiPropertyOptional({ type: Number, description: 'Filter by country ID', example: 1 })
     countryId?: number;
-  
-    /**
-     * Filter by start date (inclusive)
-     */
+
+    @ApiPropertyOptional({ description: 'Filter by start date (inclusive)', example: '2025-01-01' })
     startDateFrom?: Date;
-  
-    /**
-     * Filter by end date (inclusive)
-     */
+
+    @ApiPropertyOptional({ description: 'Filter by end date (inclusive)', example: '2025-12-31' })
     endDateTo?: Date;
   }
   

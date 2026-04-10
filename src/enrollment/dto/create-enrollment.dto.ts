@@ -1,5 +1,6 @@
 import { IsBoolean, IsDate, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, Min, ValidateIf } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateEnrollmentDto {
     @ValidateIf(o => !o.classId)
@@ -97,22 +98,27 @@ export class CreateEnrollmentDto {
 
     @IsEnum(['Vegetarian', 'Non-Vegetarian'])
     @IsNotEmpty()
+    @ApiProperty({ enum: ['Vegetarian', 'Non-Vegetarian'], example: 'Vegetarian' })
     MealType: 'Vegetarian' | 'Non-Vegetarian';
 
     @IsOptional()
+    @ApiPropertyOptional({ description: 'Promotion code to apply', example: 'EARLYBIRD20' })
     Promotion?: string;
 
     // Payment Information
     @IsString()
     @IsNotEmpty({ message: 'Credit Card number is required' })
+    @ApiProperty({ example: '4111111111111111', description: 'Credit card number' })
     CCNo: string;
 
     @IsString()
     @IsNotEmpty({message: 'CVV  is required'})
+    @ApiProperty({ example: '123', description: 'Card CVV/security code' })
     CVV: string;
 
     @IsString()
     @IsNotEmpty()
+    @ApiProperty({ example: '12/2027', description: 'Card expiration date (MM/YYYY)' })
     CCExpiry?: string;
 
     @IsString()
