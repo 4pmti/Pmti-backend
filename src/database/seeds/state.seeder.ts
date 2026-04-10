@@ -36,8 +36,9 @@ export class StatesSeederService {
         countryName: 'Canada',
         states: [
           'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick',
-          'Newfoundland and Labrador', 'Nova Scotia', 'Ontario',
-          'Prince Edward Island', 'Quebec', 'Saskatchewan',
+          'Newfoundland and Labrador', 'Northwest Territories', 'Nova Scotia',
+          'Nunavut', 'Ontario', 'Prince Edward Island', 'Quebec',
+          'Saskatchewan', 'Yukon',
         ],
       },
     ];
